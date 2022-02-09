@@ -1,0 +1,7 @@
+include: "rules/snATACseq_processing.smk"
+
+rule all:
+    input:
+        expand("../results/snATACseq_QC_{REGION}.html", REGION = config['ATAC_REGIONS'])
+
+
