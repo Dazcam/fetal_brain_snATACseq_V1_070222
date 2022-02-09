@@ -1,0 +1,9 @@
+workflow/ArchRLogs/
+results/logs/
+workflow/510_FC_ATAC.arrow
+workflow/611_FC_ATAC.arrow
+workflow/993_FC_ATAC.arrow
+workflow/510_GE_ATAC.arrow
+workflow/611_GE_ATAC.arrow
+workflow/993_GE_ATAC.arrow
+workflow/tmp/

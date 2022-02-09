@@ -141,7 +141,7 @@ cat('\nLoading pre-filtered data ... \n')
 for (SAMPLE in 1:length(SAMPLE_IDs)) {
   
   # Subset IDs
-  sampleID <- substr(SAMPLE_IDs[SAMPLE], 1, 7)
+  sampleID <- substr(SAMPLE_IDs[SAMPLE], 1, 6)
   donorID <- substr(SAMPLE_IDs[SAMPLE], 1, 3)
   
   # Load Pre-filtered data
