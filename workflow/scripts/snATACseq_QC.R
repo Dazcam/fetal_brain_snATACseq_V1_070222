@@ -91,7 +91,7 @@ ArrowFiles <- createArrowFiles(
                  paste0(DATA_DIR, SAMPLES[3], "/outs/fragments.tsv.gz")),
   sampleNames = SAMPLE_IDs,
   minTSS = 4, # Dont set this too high because you can always increase later
-  minFrags = 1000, 
+  minFrags = 3160, 
   addTileMat = TRUE,
   addGeneScoreMat = TRUE,
   QCDir = paste0(OUT_DIR, "/QualityControl"),

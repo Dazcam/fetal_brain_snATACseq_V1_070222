@@ -1,0 +1,55 @@
+---
+title: "snATACseq ArchR: constrained integration report - `r REGION`"
+author: "Darren Cameron"
+date: "`r format(Sys.time(), '%d/%m/%y')`"
+output: 
+  html_document:
+    theme: paper
+---
+
+
+
+```{r packages, echo=FALSE, include=FALSE}
+library(SingleCellExperiment)
+library(scater)
+library(cowplot)
+library(knitr)
+```
+
+snATACseq analysis with ArchR - constrained integration.
+
+*** 
+
+### Results {.tabset}
+
+#### Constrained Integration 
+
+The results from the unconstrained analysis are used to inform the constrained analysis. So we assign the RNA cluster IDs found in the ATAC clusters to broader groups i.e. InN-1/4 is assigned to InN, but note this is only to help inform the algorithm of the broad cell category each cell-type is likely to derive from, it will not necessarily clump all InNs into one broad category after constrained integration.
+
+```{R, integration_compare_plot, echo=FALSE}
+clust_UMAP_newOldLabel_compare
+```
+
+**Donor specific counts after integration**
+
+```{R, atac_clustIDs_after_integration, echo=FALSE, warning=FALSE}
+knitr::kable(postRNAint_donor_cnts)
+```
+
+***
+
+**Plots to compare pre- and post-integration cluster labeling**
+
+**Confusion matrix**
+
+```{R, CM_integration_compare, echo=FALSE}
+clust_CM_oldNew_compare
+```
+
+***
+
+**Clustree**
+
+```{R, clusttree_integration_compare, echo=FALSE}
+clustTree_OldNew_mappings_plot
+```

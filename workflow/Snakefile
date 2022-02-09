@@ -2,6 +2,6 @@ include: "rules/snATACseq_processing.smk"
 
 rule all:
     input:
-        expand("../results/snATACseq_QC_{REGION}.html", REGION = config['ATAC_REGIONS'])
-
-
+        expand("../results/snATACseq_QC_{REGION}.html", REGION = config['ATAC_REGIONS']), # Can remove this once testing complete
+        expand("../results/snATACseq_remove_batch_effects_{REGION}.html", REGION = config['ATAC_REGIONS']), # Can remove this once testing complete
+        expand("../results/snATACseq_unconstrained_integration_{REGION}.html", REGION = config['ATAC_REGIONS']) 
