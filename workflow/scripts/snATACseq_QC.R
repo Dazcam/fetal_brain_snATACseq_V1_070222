@@ -59,6 +59,11 @@ OUT_DIR <- args$archR_out_dir
 MARKDOWN_FILE <- args$markdown_file
 REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
+FRAGS_THRESH <- 3000
+TSS_THRESH <- 4 
+MAX_CLUSTERS <- 4
+VAR_FEATURES <- 15000
+N_START <- 10
 
 addArchRThreads(threads = 24) # Set Hawk to 32 cores so 0.75 of total
 addArchRGenome("hg38")
@@ -90,8 +95,8 @@ ArrowFiles <- createArrowFiles(
                  paste0(DATA_DIR, SAMPLES[2], "/outs/fragments.tsv.gz"),
                  paste0(DATA_DIR, SAMPLES[3], "/outs/fragments.tsv.gz")),
   sampleNames = SAMPLE_IDs,
-  minTSS = 4, # Dont set this too high because you can always increase later
-  minFrags = 3160, 
+  minTSS = TSS_THRESH, # Dont set this too high because you can always increase later
+  minFrags = FRAGS_THRESH, 
   addTileMat = TRUE,
   addGeneScoreMat = TRUE,
   QCDir = paste0(OUT_DIR, "/QualityControl"),
@@ -234,9 +239,10 @@ archR.2 <- addIterativeLSI(
   clusterParams = list( #See Seurat::FindClusters
     resolution = c(0.2), 
     sampleCells = 10000, 
-    n.start = 10
+    n.start = 10,
+    maxClusters = MAX_CLUSTERS
   ), 
-  varFeatures = 25000, 
+  varFeatures = VAR_FEATURES, 
   dimsToUse = 1:30
   
 )
