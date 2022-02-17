@@ -1,0 +1,51 @@
+---
+title: "snATAC ArchR QC report `r REGION`: `r PARAMETER`"
+author: "Darren Cameron"
+date: "`r format(Sys.time(), '%d/%m/%y')`"
+output:
+  html_document:
+    theme: paper
+---
+
+```{r packages, echo=FALSE, include=FALSE}
+library(SingleCellExperiment)
+library(scater)
+library(cowplot)
+library(knitr)
+```
+
+snATACseq QC with ArchR. Altering LSI parameter: `r PARAMETER`
+
+*** 
+
+### Results {.tabset}
+
+#### QC
+
+ArchR pre-filters the cells using thresholds:
+
+  + TSS Enrichment > `r TSS`
+  + Min frags per cell > `r FRAGS`
+
+***
+
+**Counts**
+
+```{R, filt_cells_dropped, echo=FALSE}
+knitr::kable(counts_df)
+```
+
+***
+
+#### PARAMETER {.tabset}
+
+```{r, results='asis', echo=FALSE, fig.height = 10, fig.width = 10}
+for(i in 1:length(PARAMETERS)) {
+  cat('##### ', PARAMETER ,': ', PARAMETERS[i],' \n')
+  plot <- get(paste0(PARAMETER ,'_QC_grp_plt_', PARAMETERS[i]))
+  print(plot)
+  cat('\n \n')
+}
+
+```
+
