@@ -67,10 +67,10 @@ addArchRGenome("hg38")
 
 # Default QC parameters (for markdown doc)
 TSS <- 4
-FRAGS <- 2500
+FRAGS <- 1000
 
 # Initial QC parameters
-#FRAGS_THRESH <- c(1000, 1500, 2000, 2500, 3000) # Default 2500
+#FRAGS_THRESH <- c(1000, 1500, 2000, 2500, 3000) # Default 1000
 #TSS_THRESH <- c(3, 4, 5, 6, 7) # Default 4
 
 # Iterative LSI parameters
@@ -172,6 +172,8 @@ if (REGION == "FC") {
   SAMPLE_IDs <- SAMPLES %>% str_remove("W") %>% str_remove("14") 
   
 } 
+
+LEVELS <- SAMPLE_IDs %>% str_remove("_ATAC") # For stacked barplots
 
 ##  Inital ArchR QC -------------------------------------------------------------------
 # ArchR does some QC when loading the files in so need to load the pre-QC info
@@ -332,7 +334,7 @@ for (i in 1:length(PARAMETERS)) {
   # Confusion matrices - cell counts per donor
   cat('Creating confusion matrix for cell counts per donor ... \n')
   cM_LSI <- confusionMatrix(paste0(archR$Clusters), paste0(archR$Sample))
-  colnames(cM_LSI) <- c("611_FC", "510_FC", "993_FC")
+  colnames(cM_LSI) <- colnames(cM_LSI) %>% str_remove("_ATAC")
   cM_LSI <- cM_LSI[ mixedsort(row.names(cM_LSI)), ]
   rownames(cM_LSI) <- factor(rownames(cM_LSI), 
                              levels = rownames(cM_LSI))
@@ -381,9 +383,7 @@ for (i in 1:length(PARAMETERS)) {
   
   # Get the levels for type in the required order - https://stackoverflow.com/questions/22231124
   cnts_per_donor_melt$variable = factor(cnts_per_donor_melt$variable, 
-                                        levels = c("510_FC",  
-                                                   "611_FC", 
-                                                   "993_FC"))
+                                        levels = LEVELS)
   cnts_per_donor_melt = arrange(cnts_per_donor_melt, Cluster, desc(variable))
   
   # Calculate percentages
@@ -391,7 +391,7 @@ for (i in 1:length(PARAMETERS)) {
   
   # Format the labels and calculate their positions
   cnts_per_donor_melt <- plyr::ddply(cnts_per_donor_melt, .(Cluster), transform, pos = (cumsum(value) - 0.5 * value))
-  cnts_per_donor_melt$label = paste0(sprintf("%.0f", df$percent), "%")
+  cnts_per_donor_melt$label = paste0(sprintf("%.0f", cnts_per_donor_melt$percent), "%")
   
   # Plot - Note this could also be shown with bars filling plot
   plot_stacked_pct <- ggplot(cnts_per_donor_melt, aes(x = factor(Cluster), y = percent, fill = variable)) +

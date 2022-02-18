@@ -59,10 +59,10 @@ OUT_DIR <- args$archR_out_dir
 MARKDOWN_FILE <- args$markdown_file
 REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
-FRAGS_THRESH <- 3000
+FRAGS_THRESH <- 1000
 TSS_THRESH <- 4 
-MAX_CLUSTERS <- 4
-VAR_FEATURES <- 15000
+MAX_CLUSTERS <- 6
+VAR_FEATURES <- 25000
 N_START <- 10
 
 addArchRThreads(threads = 24) # Set Hawk to 32 cores so 0.75 of total
@@ -76,9 +76,18 @@ dir.create(OUT_DIR, recursive = TRUE) # Required ArchR doesn't create this for y
 # Loop to extract sample IDs 
 if (REGION == "FC") {
   
-  SAMPLES <- c("14510_PFC_ATAC", "14611_PFC_ATAC", "14993_PFC_ATAC")
-  SAMPLE_IDs <- SAMPLES %>% str_remove("P") %>% str_remove("14")  
-  
+  # Without 993 AGGR
+  #SAMPLES <- c("14510_PFC_ATAC", "14611_PFC_ATAC", "14993_PFC_ATAC")
+  #SAMPLE_IDs <- SAMPLES %>% str_remove("P") %>% str_remove("14")  
+
+  # With 993 AGGR
+  SAMPLES <- c("14510_PFC_ATAC", "14611_PFC_ATAC", "14993_PFC_ATAC_AGGR")
+  SAMPLE_IDs <- SAMPLES %>% str_remove("P") %>% str_remove("14")  %>% str_remove("_AGGR")  
+
+} else if (REGION == "Cer") {
+
+  SAMPLES <- c("14510_Cerebellum_ATAC", "14611_Cerebellum_ATAC", "14993_PFC_Cerebellum")
+  SAMPLE_IDs <- SAMPLES %>% str_remove("ebellum") %>% str_remove("14")  
   
 } else {
   
@@ -87,6 +96,7 @@ if (REGION == "FC") {
   
 } 
 
+LEVELS <- SAMPLE_IDs %>% str_remove("_ATAC") # For stacked barplots
 
 ##  Load data - Cptr 1.5  -------------------------------------------------------------
 cat('\nCreating Arrow files ... \n')
@@ -228,7 +238,6 @@ doublet_df$cells_removed <- 100 - doublet_df[3] / doublet_df[2] * 100
 colnames(doublet_df) <- c("Sample", "Pre_DoubRem", "Post_DoubRem", "pc_cells_removed")
 doublet_df
 
-
 ##  Dimensionality reduction  ---------------------------------------------------------
 cat('\nRunning dimensionality reduction - pre-batch correction ... \n')
 archR.2 <- addIterativeLSI(
@@ -276,20 +285,93 @@ rownames(clusters_cnts) <- NULL
 colnames(clusters_cnts) <- names(table(archR.2$Clusters))
 
 # Confusion matrix - cell counts per donor
+cat('Creating confusion matrix for cell counts per donor ... \n')
 cM_LSI <- confusionMatrix(paste0(archR.2$Clusters), paste0(archR.2$Sample))
+colnames(cM_LSI) <- colnames(cM_LSI) %>% str_remove("_ATAC")
+cM_LSI <- cM_LSI[ mixedsort(row.names(cM_LSI)), ]
+rownames(cM_LSI) <- factor(rownames(cM_LSI),
+                           levels = rownames(cM_LSI))
+
 clust_CM_LSI <- pheatmap::pheatmap(
-  mat = as.matrix(cM_LSI), 
-  color = paletteContinuous("whiteBlue"), 
-  border_color = "black", display_numbers = TRUE, number_format =  "%.0f"
-)
+  mat = cM_LSI,
+  color = paletteContinuous("whiteBlue"),
+  border_color = "black", display_numbers = TRUE, number_format =  "%.0f",
+  cluster_rows = F, # Needed for row order https://stackoverflow.com/questions/59306714
+  treeheight_col = 0,
+  treeheight_row = 0,
+  angle_col = 0,
+  number_color = 'black'
+  )
 clust_CM_LSI
 
+#Old
+#cM_LSI <- confusionMatrix(paste0(archR.2$Clusters), paste0(archR.2$Sample))
+#clust_CM_LSI <- pheatmap::pheatmap(
+#  mat = as.matrix(cM_LSI), 
+#  color = paletteContinuous("whiteBlue"), 
+#  border_color = "black", display_numbers = TRUE, number_format =  "%.0f",
+#  cluster_rows = F, # Needed for row order https://stackoverflow.com/questions/59306714
+#  treeheight_col = 0,
+#  treeheight_row = 0,
+#  angle_col = 0,
+#  number_color = 'black'
+#)
+#clust_CM_LSI
+
+
 # Plot UMAP - for Integrated LSI clusters
+cat('Create UMAPs ... \n')
 clusters_UMAP <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
-                               name = "Clusters", embedding = "UMAP")
+                               name = "Clusters", embedding = "UMAP") +
+  NoLegend() + ggtitle('Clusters)
 clusters_UMAP_BySample <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
                                         name = "Sample", embedding = "UMAP")
-cluster_plot <- ggAlignPlots(clusters_UMAP, clusters_UMAP_BySample, type = "h")
+cluster_plot <- ggAlignPlots(clusters_UMAP, clusters_UMAP_BySample, type = "h")  +
+    NoLegend() + ggtitle('By Donor. R: 510, B: 611, G: 993')
+
+
+# Stacked barplots
+cat('Creating stacked barplots ... \n')
+cnts_per_donor <- as.data.frame(as.matrix(cM_LSI)) %>%
+ 
+  rownames_to_column("Cluster")
+cnts_per_donor$Cluster <- as.factor(cnts_per_donor$Cluster)
+cnts_per_donor_melt <- reshape2::melt(cnts_per_donor, id = 'Cluster')
+cnts_per_donor_melt$Cluster <- factor(cnts_per_donor_melt$Cluster,
+                                      levels = rownames(cM_LSI))
+
+# Get the levels for type in the required order - https://stackoverflow.com/questions/22231124
+cnts_per_donor_melt$variable = factor(cnts_per_donor_melt$variable,
+                                        levels = LEVELS)
+cnts_per_donor_melt = arrange(cnts_per_donor_melt, Cluster, desc(variable))
+
+# Calculate percentages
+cnts_per_donor_melt = plyr::ddply(cnts_per_donor_melt, .(Cluster), transform, percent = value/sum(value) * 100)
+
+# Format the labels and calculate their positions
+cnts_per_donor_melt <- plyr::ddply(cnts_per_donor_melt, .(Cluster), transform, pos = (cumsum(value) - 0.5 * value))
+cnts_per_donor_melt$label = paste0(sprintf("%.0f", cnts_per_donor_melt$percent), "%")
+
+# Plot - Note this could also be shown with bars filling plot
+plot_stacked_pct <- ggplot(cnts_per_donor_melt, aes(x = factor(Cluster), y = percent, fill = variable)) +
+  geom_bar(position = position_stack(), stat = "identity") +
+  geom_text(aes(label = label), position = position_stack(vjust = 0.5), size = 2) +
+  theme(legend.position = "none",
+        plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", size = 1, fill = NA),
+        panel.background = element_blank(),
+        plot.title = element_text(hjust = 0.5, size = 16, face = 'bold'),
+        axis.title.x = element_text(colour = "#000000", size = 14),
+        axis.title.y = element_text(colour = "#000000", size = 14),
+        axis.text.x  = element_text(colour = "#000000", size = 12, vjust = 0.5, angle = 45),
+        axis.text.y  = element_text(colour = "#000000", size = 12)) +
+xlab(NULL) + ylab(NULL)
+
+cat('Creating group plot ... \n')
+  group_plot <- plot_grid(clusters_UMAP, clusters_UMAP_BySample, plot_stacked_pct,
+                          clust_CM_LSI$gtable, ncol = 2, align = 'hv', axis = 'rl')
 
 
 ## Save ArchR project  ----------------------------------------------------------------
