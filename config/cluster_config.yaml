@@ -19,6 +19,12 @@ CR_cnt_ATAC:
     total_mem: 143G
     duration: 1-00:00:00
 
+CR_aggr_ATAC:
+    num_cores: 32
+    total_mem: 143G
+    duration: 1-00:00:00
+
+
 # ----------  ARCHR  ---------------
 snATAC_seq_QC:
     num_cores: 32
@@ -26,6 +32,9 @@ snATAC_seq_QC:
 snATAC_seq_cluster_QC:
     num_cores: 12
     total_mem: 96G
+snATAC_seq_QC_LSI_params:
+    num_cores: 32
+    total_mem: 128G
 snATAC_remove_batch_effects:
     num_cores: 12
     total_mem: 96G

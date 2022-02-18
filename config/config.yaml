@@ -1,3 +1,37 @@
 ATAC_REGIONS:
+#    Cer:
     FC:
-    GE:
+#    GE:
+
+SAMPLES_ATAC:
+    14510_Cerebellum_ATAC:
+    14510_Hippocampus_ATAC:
+    14510_PFC_ATAC:
+    14510_Thalamus_ATAC:
+    14510_WGE_ATAC:
+    14611_Cerebellum_ATAC:
+    14611_Hippocampus_ATAC:
+    14611_PFC_ATAC:
+    14611_Thalamus_ATAC:
+    14611_WGE_ATAC:
+    14993_Cerebellum_ATAC:
+    14993_Hippocampus_ATAC:
+    14993_PFC_ATAC:
+    14993_Thalamus_ATAC:
+    14993_WGE_ATAC:
+    14493_PFC_ATAC_10X_Hiseq:
+
+SAMPLES_ATAC_AGGR:
+    14993_PFC_ATAC_AGGR:
+
+FASTQ_DIR: ../resources/fq 
+REFERENCE_ATAC: ../resources/refdata-cellranger-atac-GRCh38-1.2.0
+
+LSI_PARAMS:
+    Iteration:
+    Resolution:
+    Variable_Features:
+    Max_Clusters:
+    N_starts:
+    Dimensions:
+    Sample_cells:

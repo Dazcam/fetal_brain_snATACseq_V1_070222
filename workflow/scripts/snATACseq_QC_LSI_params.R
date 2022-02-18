@@ -65,7 +65,7 @@ REPORT_FILE <- args$report_file
 addArchRThreads(threads = 24) # Set Hawk to 32 cores so 0.75 of total
 addArchRGenome("hg38")
 
-# Default QC paramters (for markdown doc)
+# Default QC parameters (for markdown doc)
 TSS <- 4
 FRAGS <- 2500
 
@@ -133,7 +133,7 @@ if (PARAMETER == 'Iteration') {
   DIMENSION <- 30
   SAMPLE_CELL <- 10000
   
-} else if (PARAMETER == 'Dimesions') {
+} else if (PARAMETER == 'Dimensions') {
   
   ITERATION <- 2
   RESOLUTION <- 0.2
@@ -151,7 +151,7 @@ if (PARAMETER == 'Iteration') {
   MAX_CLUSTER <- 6
   N.START <- 10
   DIMENSION <- 30
-  SAMPLE_CELL <- SAMPLE_CELLS
+  PARAMETERS <- SAMPLE_CELLS
   
 }
   
@@ -224,7 +224,7 @@ for (i in 1:length(PARAMETERS)) {
     
     N.START <- PARAMETERS[i]
     
-  } else if (PARAMETER == 'Dimesions') {
+  } else if (PARAMETER == 'Dimensions') {
     
     DIMENSION <- PARAMETERS[i]
     
@@ -284,8 +284,7 @@ for (i in 1:length(PARAMETERS)) {
   if (REGION == 'FC') {
     
     cat(paste0('\nLoading Seurat object for ', REGION, ' ... \n'))
-  #  seurat.obj <- readRDS("../resources/R_objects/seurat.pfc.final.rds")
-    seurat.obj <- readRDS("Desktop/single_cell/scRNAseq/batch2_CR5_200121/r_objects/final/seurat.pfc.final.rds")
+    seurat.obj <- readRDS("../resources/R_objects/seurat.pfc.final.rds")
     seurat.obj$cellIDs <- gsub('FC-', '', seurat.obj$cellIDs)
     
   } else {
@@ -302,7 +301,7 @@ for (i in 1:length(PARAMETERS)) {
     ArchRProj = archR.2, 
     useMatrix = "GeneScoreMatrix",
     matrixName = "GeneIntegrationMatrix",
-    reducedDims = LSI_NAME, # Note using Harmony here
+    reducedDims = LSI_NAME,
     seRNA = seurat.obj,
     addToArrow = FALSE,
     groupRNA = "cellIDs",
@@ -329,11 +328,6 @@ for (i in 1:length(PARAMETERS)) {
   clusters_cnts <- as.data.frame(t(as.data.frame(as.vector((table(archR$Clusters))))))
   rownames(clusters_cnts) <- NULL
   colnames(clusters_cnts) <- names(table(archR$Clusters))
-  
-  # Unconstrained integration cluster assignments
-  integration_df <- t(as.data.frame(cbind(preClust, rownames(cM_geneExp)))) #Assignments
-  rownames(integration_df) <- c("RNA", "ATAC")
-  colnames(integration_df) <- NULL 
   
   # Confusion matrices - cell counts per donor
   cat('Creating confusion matrix for cell counts per donor ... \n')
@@ -368,7 +362,14 @@ for (i in 1:length(PARAMETERS)) {
     fontsize_col = 8,
     legend = FALSE
   )
-  
+
+  # Unconstrained integration cluster assignments
+  preClust <- colnames(cM_geneExp)[apply(cM_geneExp, 1 , which.max)]
+  integration_df <- t(as.data.frame(cbind(preClust, rownames(cM_geneExp)))) #Assignments
+  rownames(integration_df) <- c("RNA", "ATAC")
+  colnames(integration_df) <- NULL 
+
+
   # Stacked barplots
   cat('Creating stacked barplots ... \n')
   cnts_per_donor <- as.data.frame(as.matrix(cM_LSI)) %>%
@@ -431,7 +432,7 @@ for (i in 1:length(PARAMETERS)) {
             ncol = 2, align = 'hv', axis = 'rl')
   
   assign(paste0(PARAMETER ,'_QC_grp_plt_', PARAMETERS[i]), group_plot)
-  
+  assign(paste0(PARAMETER ,'_integration_df', PARAMETERS[i]),integration_df) 
 
 }
 
