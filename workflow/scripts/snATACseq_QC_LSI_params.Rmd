@@ -45,7 +45,7 @@ for(i in 1:length(PARAMETERS)) {
   plot <- get(paste0(PARAMETER ,'_QC_grp_plt_', PARAMETERS[i]))
   print(plot)
   df <- get(paste0(PARAMETER ,'_integration_df', PARAMETERS[i]))
-  print(df)
+  print(knitr::kable(df))
   cat('\n \n')
 }
 

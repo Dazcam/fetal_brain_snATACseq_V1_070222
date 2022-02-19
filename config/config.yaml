@@ -1,7 +1,7 @@
 ATAC_REGIONS:
-#    Cer:
+    Cer:
     FC:
-#    GE:
+    GE:
 
 SAMPLES_ATAC:
     14510_Cerebellum_ATAC:

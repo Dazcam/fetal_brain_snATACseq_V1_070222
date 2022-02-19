@@ -19,7 +19,7 @@ configfile: "../config/config.yaml"
 rule snATAC_seq_QC:
     input:  markdown = "scripts/snATACseq_QC.Rmd"
     output: "../results/snATACseq_QC_{REGION}.html"
-    params: data_dir = "/scratch/c.c1477909/snATACseq_CR-atac_1.2.0/", 
+    params: data_dir = "../results/snATACseq_CR-atac_1.2.0/", 
             archR_out_dir = "../results/ARCHR/{REGION}",
             report_dir = "../results/",
             report_file = "snATACseq_QC_{REGION}.html"

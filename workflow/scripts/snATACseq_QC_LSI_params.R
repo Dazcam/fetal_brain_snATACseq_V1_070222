@@ -38,6 +38,7 @@ library(rmarkdown)
 library(argparser)
 library(plyr)
 library(gtools)
+library(ggplot2)
 
 ## Parse region / set region variable -------------------------------------------------
 cat('\nParsing args ... \n')
@@ -322,18 +323,18 @@ for (i in 1:length(PARAMETERS)) {
   
   clusters_UMAP_BySample <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
                                           name = "Sample", embedding = UMAP_NAME) +
-    NoLegend() + ggtitle('By Donor. R: 510, B: 611, G: 993')
+    NoLegend() + ggtitle("By Donor. R: 510, B: 611, G: 993")
   
   
   # Cell count df - per cluster
   cat('Creating cell count per sample confusion matrix ... \n')
-  clusters_cnts <- as.data.frame(t(as.data.frame(as.vector((table(archR$Clusters))))))
+  clusters_cnts <- as.data.frame(t(as.data.frame(as.vector((table(archR.2$Clusters))))))
   rownames(clusters_cnts) <- NULL
-  colnames(clusters_cnts) <- names(table(archR$Clusters))
+  colnames(clusters_cnts) <- names(table(archR.2$Clusters))
   
   # Confusion matrices - cell counts per donor
   cat('Creating confusion matrix for cell counts per donor ... \n')
-  cM_LSI <- confusionMatrix(paste0(archR$Clusters), paste0(archR$Sample))
+  cM_LSI <- confusionMatrix(paste0(archR.2$Clusters), paste0(archR.2$Sample))
   colnames(cM_LSI) <- colnames(cM_LSI) %>% str_remove("_ATAC")
   cM_LSI <- cM_LSI[ mixedsort(row.names(cM_LSI)), ]
   rownames(cM_LSI) <- factor(rownames(cM_LSI), 

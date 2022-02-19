@@ -38,6 +38,8 @@ library(clustree)
 library(cowplot)
 library(rmarkdown)
 library(argparser)
+library(plyr)
+library(gtools)
 
 ## Parse region / set region variable -------------------------------------------------
 cat('\nParsing args ... \n')
@@ -86,7 +88,7 @@ if (REGION == "FC") {
 
 } else if (REGION == "Cer") {
 
-  SAMPLES <- c("14510_Cerebellum_ATAC", "14611_Cerebellum_ATAC", "14993_PFC_Cerebellum")
+  SAMPLES <- c("14510_Cerebellum_ATAC", "14611_Cerebellum_ATAC", "14993_Cerebellum_ATAC")
   SAMPLE_IDs <- SAMPLES %>% str_remove("ebellum") %>% str_remove("14")  
   
 } else {
@@ -288,7 +290,7 @@ colnames(clusters_cnts) <- names(table(archR.2$Clusters))
 cat('Creating confusion matrix for cell counts per donor ... \n')
 cM_LSI <- confusionMatrix(paste0(archR.2$Clusters), paste0(archR.2$Sample))
 colnames(cM_LSI) <- colnames(cM_LSI) %>% str_remove("_ATAC")
-cM_LSI <- cM_LSI[ mixedsort(row.names(cM_LSI)), ]
+cM_LSI <- cM_LSI[ gtools::mixedsort(row.names(cM_LSI)), ]
 rownames(cM_LSI) <- factor(rownames(cM_LSI),
                            levels = rownames(cM_LSI))
 
@@ -323,10 +325,9 @@ clust_CM_LSI
 cat('Create UMAPs ... \n')
 clusters_UMAP <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
                                name = "Clusters", embedding = "UMAP") +
-  NoLegend() + ggtitle('Clusters)
+  NoLegend() + ggtitle('Clusters')
 clusters_UMAP_BySample <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
-                                        name = "Sample", embedding = "UMAP")
-cluster_plot <- ggAlignPlots(clusters_UMAP, clusters_UMAP_BySample, type = "h")  +
+                                        name = "Sample", embedding = "UMAP") +
     NoLegend() + ggtitle('By Donor. R: 510, B: 611, G: 993')
 
 
