@@ -61,7 +61,7 @@ OUT_DIR <- args$archR_out_dir
 MARKDOWN_FILE <- args$markdown_file
 REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
-FRAGS_THRESH <- 1000
+FRAGS_THRESH <- 3000
 TSS_THRESH <- 4 
 MAX_CLUSTERS <- 6
 VAR_FEATURES <- 25000

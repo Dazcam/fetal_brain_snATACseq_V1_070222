@@ -81,7 +81,7 @@ VAR_FEATURES <- c(10000, 15000, 20000, 25000, 30000) # Default 25000
 MAX_CLUSTERS <- c(2, 4, 6, 8, 10) # Default 6
 N.STARTS <- c(6, 8, 10, 12) # Default 10
 DIMENSIONS <- c(20, 25, 30, 35) # Default 30
-SAMPLE_CELLS <- c(5000, 7500, 10000, 12500) # Default 10000
+SAMPLE_CELLS <- c(5000, 7500, 10000) # Default 10000 - crashes when > 10000
 
 # Set the Variables for LSI
 if (PARAMETER == 'Iteration') {

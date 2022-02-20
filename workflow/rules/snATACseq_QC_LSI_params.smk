@@ -13,7 +13,8 @@ configfile: "../config/config.yaml"
 # -------------  RULES  ---------------
 
 rule snATAC_seq_QC_LSI_params:
-    input:  markdown = "scripts/snATACseq_QC_LSI_params.Rmd"
+    input:  markdown = "scripts/snATACseq_QC_LSI_params.Rmd",
+            qc_html = "../results/snATACseq_QC_{REGION}.html" # For rule order  
     output: "../results/QC_LSI_params/snATACseq_QC_{REGION}_LSI_{LSI_PARAM}.html"
     params: data_dir = "../resources/snATACseq_CR-atac_1.2.0/",
             archR_out_dir = "../results/ARCHR/{REGION}",
