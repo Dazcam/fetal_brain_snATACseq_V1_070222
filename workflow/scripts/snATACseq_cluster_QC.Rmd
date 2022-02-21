@@ -1,0 +1,46 @@
+---
+title: "snATACseq ArchR: Cluster QC 1 report - `r REGION`"
+author: "Darren Cameron"
+date: "`r format(Sys.time(), '%d/%m/%y')`"
+output: 
+  html_document:
+    theme: paper
+---
+
+
+
+```{r packages, echo=FALSE, include=FALSE}
+library(SingleCellExperiment)
+library(scater)
+library(cowplot)
+library(knitr)
+```
+
+
+snATACseq analysis with ArchR - cluster QC 1.
+
+*** 
+
+
+### Results {.tabset}
+
+***
+
+#### Cluster QC {.tabset}
+
+Remove clusters that have < 10 cells from 2 out of 3 donors
+
++ Cell count at this stage = `length(archR$cellNames)`
++ Clusters to be removed = `cluster_list`
++ No. of cells to be removed = `length(archR$cellNames) - length(cells_to_keep)`
++ Cell count after QC = `length(archR.2$cellNames)`
+
+***
+**Cell counts per donor in each cluster**
+
+```{R, Cluster_CM_reClust, echo=FALSE}
+re_clust_CM_LSI
+```
+
+***
+

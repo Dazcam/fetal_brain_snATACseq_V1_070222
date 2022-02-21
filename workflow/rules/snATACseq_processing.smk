@@ -18,10 +18,10 @@ configfile: "../config/config.yaml"
 
 rule snATAC_seq_QC:
     input:  markdown = "scripts/snATACseq_QC.Rmd"
-    output: "../results/snATACseq_QC_{REGION}.html"
-    params: data_dir = "../results/snATACseq_CR-atac_1.2.0/", 
+    output: "../results/ArchR_data_processing/snATACseq_QC_{REGION}.html"
+    params: data_dir = "../results/ArchR_data_processing/snATACseq_CR-atac_1.2.0/", 
             archR_out_dir = "../results/ARCHR/{REGION}",
-            report_dir = "../results/",
+            report_dir = "../results/ArchR_data_processing/",
             report_file = "snATACseq_QC_{REGION}.html"
     log:    "../results/logs/archR_data_processsing/snATAC_QC_{REGION}.log"
     shell:
@@ -36,26 +36,26 @@ rule snATAC_seq_QC:
             
             """
 
-#rule snATAC_seq_cluster_QC:
-#    input:  markdown = MARKDOWN_DIR + "snATACseq_cluster_QC.Rmd",
-#            html = RESULTS_DIR + "snATACseq_QC_Cer.html"
-#    output: RESULTS_DIR + "snATACseq_cluster_QC_Cer.html"
-#    params: data_dir = ATAC_DATA_DIR,
-#            archR_out_dir = RESULTS_DIR + "ARCHR/Cer",
-#            report_dir = RESULTS_DIR,
-#            report_file = "snATACseq_cluster_QC_Cer.html"
-#    log:    LOG_DIR + "snATAC_cluster_QC_Cer.log"
-#    shell:
-#            """
-#
-#            export R_LIBS_USER=/scratch/c.c1477909/R/library
-#            module load libgit2/1.1.0
-#            module load pandoc/2.7.3
-#            /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
-#            scripts/R/snATACseq_cluster_QC.R Cer {params.data_dir} \
-#            {params.archR_out_dir} {input.markdown} {params.report_dir} {params.report_file} 2> {log}
+rule snATAC_seq_cluster_QC:
+    input:  markdown = "scripts/snATACseq_cluster_QC.Rmd",
+            html = "../results/ArchR_data_processing/snATACseq_QC_FC.html"
+    output: "../results/ArchR_data_processing/snATACseq_cluster_QC_FC.html"
+    params: data_dir = ATAC_DATA_DIR,
+            archR_out_dir = RESULTS_DIR + "ARCHR/FC",
+            report_dir = "../results/ArchR_data_processing/",
+            report_file = "snATACseq_cluster_QC_FC.html"
+    log:    "../results/logs/archR_data_processsing/snATAC_cluster_QC_FC.log"
+    shell:
+            """
 
-#            """
+            export R_LIBS_USER=/scratch/c.c1477909/R/library
+            module load libgit2/1.1.0
+            module load pandoc/2.7.3
+            /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
+            scripts/R/snATACseq_cluster_QC.R Cer {params.data_dir} \
+            {params.archR_out_dir} {input.markdown} {params.report_dir} {params.report_file} 2> {log}
+
+            """
 
 rule snATAC_remove_batch_effects:
     input:  markdown = "scripts/snATACseq_remove_batch_effects.Rmd",
