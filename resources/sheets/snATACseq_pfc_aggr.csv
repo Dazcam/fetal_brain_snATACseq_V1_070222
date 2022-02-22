@@ -1,0 +1,3 @@
+library_id,fragments,cells
+14493_PFC_ATAC_10X_Hiseq,/scratch/c.c1477909/fetal_brain_snATACseq_070222/results/snATACseq_CR-atac_1.2.0/14493_PFC_ATAC_10X_Hiseq/outs/fragments.tsv.gz,/scratch/c.c1477909/fetal_brain_snATACseq_070222/results/snATACseq_CR-atac_1.2.0/14493_PFC_ATAC_10X_Hiseq/outs/singlecell.csv
+14993_PFC_ATAC,/scratch/c.c1477909/fetal_brain_snATACseq_070222/results/snATACseq_CR-atac_1.2.0/14993_PFC_ATAC/outs/fragments.tsv.gz,/scratch/c.c1477909/fetal_brain_snATACseq_070222/results/snATACseq_CR-atac_1.2.0/14993_PFC_ATAC/outs/singlecell.csv
