@@ -28,7 +28,7 @@ snATACseq analysis with ArchR - cluster QC 1.
 
 #### Cluster QC {.tabset}
 
-Remove clusters that have < 10 cells from 2 out of 3 donors
+Remove clusters that do not have >= 30 cells in at least 2 donors
 
 + Cell count at this stage = `length(archR$cellNames)`
 + Clusters to be removed = `cluster_list`
@@ -36,6 +36,7 @@ Remove clusters that have < 10 cells from 2 out of 3 donors
 + Cell count after QC = `length(archR.2$cellNames)`
 
 ***
+
 **Cell counts per donor in each cluster**
 
 ```{R, Cluster_CM_reClust, echo=FALSE}
@@ -44,3 +45,11 @@ re_clust_CM_LSI
 
 ***
 
+
+#### Cluster plots
+
+```{R, Clusters, echo=FALSE, , fig.height = 10, fig.width = 10}
+print(group_plot)
+```
+
+***
