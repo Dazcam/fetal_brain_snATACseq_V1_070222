@@ -7,3 +7,7 @@ workflow/510_GE_ATAC.arrow
 workflow/611_GE_ATAC.arrow
 workflow/993_GE_ATAC.arrow
 workflow/tmp/
+.DS_Store
+resources/.DS_Store
+results/.DS_Store
+results/QC_testing/.DS_Store

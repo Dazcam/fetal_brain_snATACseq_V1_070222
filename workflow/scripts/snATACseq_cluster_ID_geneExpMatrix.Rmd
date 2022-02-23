@@ -1,0 +1,41 @@
+---
+title: "snATACseq ArchR: Cluster IDing - `r REGION`"
+author: "Darren Cameron"
+date: "`r format(Sys.time(), '%d/%m/%y')`"
+output: 
+  html_document:
+    theme: paper
+---
+
+
+
+```{r packages, echo=FALSE, include=FALSE}
+library(scater)
+library(cowplot)
+library(knitr)
+```
+
+
+snATACseq analysis with ArchR - cluster IDs using marker genes on gene expression matrix.
+
+*** 
+
+### Results {.tabset}
+
+***
+
+#### Gene 'Exp' {.tabset}
+
+```{R, GeneExp_heatmap, echo=FALSE, fig.height = 10, fig.width = 10}
+geneExp_plot
+```
+
+***
+
+#### Cluster plots
+
+```{R, Clusters, echo=FALSE, fig.height = 10, fig.width = 10}
+print(group_plot)
+```
+
+***
