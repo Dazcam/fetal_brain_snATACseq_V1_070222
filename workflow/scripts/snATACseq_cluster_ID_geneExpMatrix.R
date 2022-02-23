@@ -79,15 +79,17 @@ MARKER_GENES <- unique(MARKER_GENES[!is.na(MARKER_GENES)])
 
 
 ##  Gene Scores and Marker Genes  -----------------------------------------------------
+cat('Extracting marker genes for each cluster ... \n')
 markersGS <- getMarkerFeatures(
   ArchRProj = archR, 
   useMatrix = "GeneScoreMatrix", 
-  groupBy = clustID,
+  groupBy = clust_ID,
   bias = c("TSSEnrichment", "log10(nFrags)"),
   testMethod = "wilcoxon"
 )
 
 # Create df of top markers
+cat('Creating top marker df ... \n')
 markerList <- getMarkers(markersGS, cutOff = "FDR <= 0.01 & Log2FC >= 1.25")
 gene_markers <- as.data.frame(unlist(markerList))
 
@@ -98,6 +100,7 @@ markerList[[1]][["name"]]
 markerGenes  <- c(MARKER_GENES)
 
 # Create list of heatmaps of top marker genes
+cat('Creating gene expression heatmap ... \n')
 heatmapGS <- plotMarkerHeatmap(
   seMarker = markersGS, 
   cutOff = "FDR <= 0.01 & Log2FC >= 1.25", 
@@ -106,10 +109,12 @@ heatmapGS <- plotMarkerHeatmap(
 )
 
 # Plot gene expression heatmap
-cat('Create gene expression heatmap ... \n')
+cat('Plotting gene expression heatmap ... \n')
 geneExp_plot <- ComplexHeatmap::draw(heatmapGS, heatmap_legend_side = "bot", 
                                      annotation_legend_side = "bot")
 dev.off()
+
+plotPDF(heatmapGS, name = "GeneScores-Marker-Heatmap", width = 8, height = 6, ArchRProj = archR, addDOC = FALSE)
 
 # Plot UMAP - for Integrated LSI clusters
 cat('Create UMAPs ... \n')
@@ -119,8 +124,6 @@ clusters_reclust_UMAP <- plotEmbedding(ArchRProj = archR, colorBy = "cellColData
 clusters_reclust_UMAP_BySample <- plotEmbedding(ArchRProj = archR, colorBy = "cellColData", 
                                                 name = "Sample", embedding = UMAP_ID) +
   NoLegend() + ggtitle('By Donor. R: 510, B: 611, G: 993')
-
-cluster_plot <- ggAlignPlots(clusters_reclust_UMAP, clusters_reclust_UMAP_BySample, type = "h")
 
 cat('Creating group plot ... \n')
 group_plot <- plot_grid(clusters_reclust_UMAP, clusters_reclust_UMAP_BySample, 
