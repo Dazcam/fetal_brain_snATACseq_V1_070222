@@ -101,16 +101,21 @@ donor_cell_cnts
 cluster_list <- vector()
 
 # Loop to extract cluster IDs for clusters that have >= 30 cells in at least 2 donors 
+cat('Do the following clusters have >= 30 cells in at least 2 donors?')
 for (line in 1:dim(donor_cell_cnts)[1]) {
   
-  donor_510 <- donor_cell_cnts[line, 2] >= 30
-  donor_611 <- donor_cell_cnts[line, 3] >= 30
-  donor_993 <- donor_cell_cnts[line, 4] >= 30
+  donor_A <- donor_cell_cnts[line, 2] >= 30
+  donor_B <- donor_cell_cnts[line, 3] >= 30
+  donor_C <- donor_cell_cnts[line, 4] >= 30
   
   # If statement for clusters to retain
-  if (donor_510 + donor_611 + donor_993 >= 2) {cluster_list <- c(cluster_list, donor_cell_cnts[line, 1])}
-  
+  if (donor_A + donor_B + donor_C >= 2) {cluster_list <- c(cluster_list, donor_cell_cnts[line, 1])}
+   
+  cat(paste0('Cluster ', donor_cell_cnts[line, 1], ': ', donor_A + donor_B + donor_C >= 2), '\n')
+
 }
+
+cat('The clusters to be retained are: ', cluster_list, '\n')
 
 cell_list <- as.data.frame(getCellColData(archR, select = c("donor", "Clusters")))
 cells_to_keep <- rownames(cell_list %>% filter(Clusters %in% cluster_list))
@@ -118,7 +123,7 @@ cells_num_deleted <- length(archR$cellNames) - length(cells_to_keep)
 
 # Remove cells
 archR
-cat(paste0('\nRemoving the following clusters:', cluster_list))
+cat(paste0('\nRetaining the following clusters:', cluster_list))
 cat(paste0('\nCells deleted: ', cells_num_deleted, '\n'))
 archR.2 <- archR[cells_to_keep, ]
 archR.2
