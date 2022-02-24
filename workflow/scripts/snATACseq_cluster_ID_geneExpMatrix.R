@@ -50,7 +50,7 @@ MARKDOWN_FILE <- args$markdown_file
 REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
 MARKER_DIR <- "../resources/sheets/"
-MARKER_FDR <- 0.05 # Default 0.01
+MARKER_FDR <- c(0.001, 0.01, 0.05, 0.1) # Default 0.01
 MARKER_LOG2FC <- 1.25 # Default 1.25
 
 addArchRThreads(threads = 8) # Set Hawk to 32 cores so 0.75 of total
