@@ -44,7 +44,7 @@ Showing cell counts per donor in each cluster. The threshold for cluster inclusi
 
 
 ```{R, Cluster_CM_harmony, echo=FALSE}
-clust_CM_harmony
+clust_cM_harmony
 ```
 
 ***
@@ -54,7 +54,7 @@ clust_CM_harmony
 **Confusion matrix**
 
 ```{R, Cluster_CM_harmony_compare, echo=FALSE}
-clust_CM_harmony_compare
+clust_cM_harmony_compare
 ```
 
 ***

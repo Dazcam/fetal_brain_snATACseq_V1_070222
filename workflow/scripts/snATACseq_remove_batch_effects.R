@@ -66,16 +66,33 @@ addArchRGenome("hg38")
 #setwd(OUT_DIR) # Required or saves all files to ~/
 
 
+
 ##  Load ArchR project  -------------------------------------------------------------------
 cat('\nLoading ArchR project ... \n')
 archR <- loadArchRProject(path = OUT_DIR)
+
+##  If statement to specify cluster ID to use  --------------------------------------------
+# Load Seurat RNA data
+if (REGION == 'FC') {
+  
+  LSI_ID <- 'IterativeLSI_reclust'
+  clust_ID <- 'Clusters_reclust' # Due to cluster QC being run on FC
+  UMAP_ID<- 'UMAP_reclust'
+  
+} else {
+  
+  LSI_ID <- 'IterativeLSI'
+  clust_ID <- 'Clusters'
+  UMAP_ID<- 'UMAP'
+  
+}
 
 ## Batch effect correction - correcting for Sample based batch effects  ---------------
 # Batch correct the LSI reduction using harmony save as new reduction named 'Harmony'
 cat(paste0('\nRunning batch correction for ', REGION, ' ... \n'))
 archR.2 <- addHarmony(
   ArchRProj = archR,
-  reducedDims = "IterativeLSI",
+  reducedDims = LSI_ID,
   name = "Harmony",
   groupBy = "Sample",
   force = TRUE
@@ -105,21 +122,32 @@ archR.2 <- addUMAP(
 
 
 ## Batch effects - reporting  -------------------------------------------------------------
-# Cluster counts - after batch corrected Iterative LSI based clustering
-cat('\nCreate tables and confusion matrices ... \n')
+# Cluster counts - after Iterative LSI based clustering
+cat('\nCreating tables and plots for Iterative LSI based clustering ... \n')
 clusters_cnts_harmony <- as.data.frame(t(as.data.frame(as.vector((table(archR.2$Clusters_harmony))))))
 rownames(clusters_cnts_harmony) <- NULL
 colnames(clusters_cnts_harmony) <- names(table(archR.2$Clusters_harmony))
 
 # Confusion matrix - cell counts per donor
-cM_harmony <- confusionMatrix(paste0(archR.2$Clusters_harmony), 
-                              paste0(archR.2$Sample))
-clust_CM_harmony <- pheatmap::pheatmap(
-  mat = as.matrix(cM_harmony), 
-  color = paletteContinuous("whiteBlue"), 
-  border_color = "black", display_numbers = TRUE, number_format =  "%.0f"
-)
-clust_CM_harmony
+cat('Creating confusion matrix for cell counts per donor ... \n')
+cM_harmony <- confusionMatrix(paste0(archR.2$Clusters_harmony), paste0(archR.2$Sample))
+colnames(cM_harmony) <- colnames(cM_harmony) %>% str_remove("_ATAC")
+cM_harmony <- cM_harmony[ gtools::mixedsort(row.names(cM_harmony)), ]
+rownames(cM_harmony) <- factor(rownames(cM_harmony),
+                           levels = rownames(cM_harmony))
+
+clust_cM_harmony <- pheatmap::pheatmap(
+  mat = cM_harmony,
+  color = paletteContinuous("whiteBlue"),
+  border_color = "black", display_numbers = TRUE, number_format =  "%.0f",
+  cluster_rows = F, # Needed for row order https://stackoverflow.com/questions/59306714
+  treeheight_col = 0,
+  treeheight_row = 0,
+  angle_col = 0,
+  number_color = 'black'
+  )
+print(clust_cM_harmony)
+
 
 # Plot UMAPs
 cat('\nPlotting UMAPs ... \n')
@@ -130,18 +158,18 @@ clusters_UMAP_BySample_har <- plotEmbedding(ArchRProj = archR.2, colorBy = "cell
 cluster_plot_har <- ggAlignPlots(clusters_UMAP_har, clusters_UMAP_BySample_har, type = "h")
 
 # Confusion matrix to compare LSI based and batch corrected based clusters
-cM_harmony_compare <- confusionMatrix(paste0(archR.2$Clusters),
+cM_harmony_compare <- confusionMatrix(paste0(unname(unlist(getCellColData(archR.2)[clust_ID]))),
                                       paste0(archR.2$Clusters_harmony))
-clust_CM_harmony_compare <- pheatmap::pheatmap(
+clust_cM_harmony_compare <- pheatmap::pheatmap(
   mat = as.matrix(cM_harmony_compare),
   color = paletteContinuous("whiteBlue"),
   border_color = "black", display_numbers = TRUE, number_format =  "%.0f"
 )
-clust_CM_harmony_compare
+print(clust_cM_harmony_compare)
 
 # Cluster tree to compare LSI based and batch corrected based clusters
 clusttree_harmony_df <- as.data.frame(getCellColData(archR.2,
-                                                     select = c("Clusters",
+                                                     select = c(clust_ID,
                                                                 "Clusters_harmony")))
 colnames(clusttree_harmony_df) <- c("K1", "K2")
 clustTree_harmony_plot <- clustree(clusttree_harmony_df, prefix = "K", prop_filter = 0.01)
