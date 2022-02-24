@@ -27,7 +27,12 @@ snATACseq analysis with ArchR - cluster IDs using marker genes on gene expressio
 #### Gene 'Exp' {.tabset}
 
 ```{R, GeneExp_heatmap, echo=FALSE, fig.height = 10, fig.width = 10}
-geneExp_plot
+for (FDR_THRESH in c(MARKER_FDR)) {
+
+ geneExp_plot <- get(paste0('geneExp_plot_FDR_', FDR_THRESH, '_Log2FC_', MARKER_LOG2FC))
+ print(geneExp_plot)
+ 
+}
 ```
 
 ***

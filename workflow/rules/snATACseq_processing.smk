@@ -80,12 +80,12 @@ rule snATAC_seq_cluster_ID:
             """
 
 rule snATAC_remove_batch_effects:
-    input:  markdown = "scripts/.Rmd",
-            html = "../results/snATACseq_QC_{REGION}.html", # Needed for rule order
+    input:  markdown = "scripts/snATACseq_remove_batch_effects.Rmd",
+            html = "../results/snATACseq_cluster_QC_FC.html", # Needed for rule order
     output: "../results/snATACseq_remove_batch_effects_{REGION}.html"
     params: data_dir = "/scratch/c.c1477909/snATACseq_CR-atac_1.2.0/",
             archR_out_dir = "../results/ARCHR/{REGION}",
-            report_dir = "../results/",
+            report_dir = "../results/archR_data_processing/",
             report_file = "snATACseq_remove_batch_effects_{REGION}.html"
     log:    "../results/logs/archR_data_processsing/snATAC_remove_batch_effects_{REGION}.log"
     shell:
