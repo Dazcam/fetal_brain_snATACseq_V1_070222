@@ -385,6 +385,7 @@ saveArchRProject(ArchRProj = archR.2,
 cat('\nCreating markdown report ... \n')
 render(MARKDOWN_FILE, output_file = REPORT_FILE, output_dir = REPORT_DIR)
 
+cat('\nDONE.\n')
 
 #--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------

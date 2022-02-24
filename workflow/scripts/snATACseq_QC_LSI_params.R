@@ -441,6 +441,8 @@ for (i in 1:length(PARAMETERS)) {
 cat('\nCreating markdown report ... \n')
 render(MARKDOWN_FILE, output_file = REPORT_FILE, output_dir = REPORT_DIR)
 
+cat('\nDONE.\n')
+
 #--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------
 

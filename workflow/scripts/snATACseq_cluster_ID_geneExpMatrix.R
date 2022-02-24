@@ -25,6 +25,7 @@ library(ComplexHeatmap)
 library(clustree)
 library(cowplot)
 library(argparser)
+library(ggplot2)
 
 ## Parse region / set region variable -------------------------------------------------
 cat('\nParsing args ... \n')
@@ -47,7 +48,7 @@ OUT_DIR <- args$archR_out_dir
 MARKDOWN_FILE <- args$markdown_file
 REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
-MARKER_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/resources/sheets/"
+MARKER_DIR <- "../resources/sheets/"
 
 addArchRThreads(threads = 8) # Set Hawk to 32 cores so 0.75 of total
 addArchRGenome("hg38")
@@ -120,10 +121,10 @@ plotPDF(heatmapGS, name = "GeneScores-Marker-Heatmap", width = 8, height = 6, Ar
 cat('Create UMAPs ... \n')
 clusters_reclust_UMAP <- plotEmbedding(ArchRProj = archR, colorBy = "cellColData", 
                                        name = clust_ID, embedding = UMAP_ID) +
-  NoLegend() + ggtitle('Clusters')
+  Seurat::NoLegend() + ggtitle('Clusters')
 clusters_reclust_UMAP_BySample <- plotEmbedding(ArchRProj = archR, colorBy = "cellColData", 
                                                 name = "Sample", embedding = UMAP_ID) +
-  NoLegend() + ggtitle('By Donor. R: 510, B: 611, G: 993')
+  Seurat::NoLegend() + ggtitle('By Donor. R: 510, B: 611, G: 993')
 
 cat('Creating group plot ... \n')
 group_plot <- plot_grid(clusters_reclust_UMAP, clusters_reclust_UMAP_BySample, 

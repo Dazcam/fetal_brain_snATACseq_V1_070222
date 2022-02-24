@@ -31,13 +31,13 @@ snATACseq analysis with ArchR - cluster QC 1.
 Remove clusters that do not have >= 30 cells in at least 2 donors
 
 + Cell count at this stage = `r length(archR$cellNames)`
-+ Clusters to be removed = `r cluster_list`
++ Clusters to be retained from initial QC pass  = `r cluster_list`
 + No. of cells to be removed = `r length(archR$cellNames) - length(cells_to_keep)`
 + Cell count after QC = `r length(archR.2$cellNames)`
 
 ***
 
-**Cell counts per donor in each cluster**
+**Cell counts per donor in each cluster after cluster QC**
 
 ```{R, Cluster_CM_reClust, echo=FALSE}
 re_clust_CM_LSI

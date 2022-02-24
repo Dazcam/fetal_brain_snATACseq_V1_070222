@@ -1,0 +1,63 @@
+---
+title: "snATACseq ArchR: unconstrained integration report - `r REGION`"
+author: "Darren Cameron"
+date: "`r format(Sys.time(), '%d/%m/%y')`"
+output: 
+  html_document:
+    theme: paper
+---
+
+
+
+```{r packages, echo=FALSE, include=FALSE}
+library(SingleCellExperiment)
+library(scater)
+library(cowplot)
+library(knitr)
+```
+
+snATACseq analysis with ArchR - unconstrained integration.
+
+*** 
+
+### Results {.tabset}
+
+
+#### Unconstrained Integration 
+
+***
+
+**Cells mapping to ATAC and RNA data**
+
+```{R, GeneExp_cM, echo=FALSE}
+clust_CM_geneExp
+```
+
+***
+
+**Table showing the snRNA-seq / snATAC-seq cluster mappings after unconstrained**
+
+```{R, GeneExp_df, echo=FALSE, warning=FALSE}
+knitr::kable(integration_df)
+```
+
+***
+
+**Table showing the unconstrained integration cluster mappings**
+
+```{R, preclust_df, echo=FALSE, warning=FALSE}
+knitr::kable(preClust)
+knitr::kable(cM_unconstrained2)
+```
+
+***
+
+**UMAP - RNA and ATAC seq for comparison**
+
+```{R, integration_UMAP, echo=FALSE}
+integration_UMAP_plot
+```
+
+***
+
+
