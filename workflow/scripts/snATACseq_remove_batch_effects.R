@@ -33,11 +33,11 @@ library(tidyverse)
 library(rmarkdown)
 library(BSgenome.Hsapiens.UCSC.hg38) 
 library(ComplexHeatmap)
-library(clustree)
 library(cowplot)
 library(rmarkdown)
 library(argparser)
-
+library(plyr)
+library(gtools)
 
 ## Parse region / set region variable -------------------------------------------------
 cat('\nParsing args ... \n')
@@ -65,6 +65,30 @@ addArchRThreads(threads = 8) # Set Hawk to 12 cores so 0.75 of total
 addArchRGenome("hg38")
 #setwd(OUT_DIR) # Required or saves all files to ~/
 
+# Loop to extract sample IDs 
+if (REGION == "FC") {
+  
+  # Without 993 AGGR
+  #SAMPLES <- c("14510_PFC_ATAC", "14611_PFC_ATAC", "14993_PFC_ATAC")
+  #SAMPLE_IDs <- SAMPLES %>% str_remove("P") %>% str_remove("14")  
+
+  # With 993 AGGR
+  SAMPLES <- c("14510_PFC_ATAC", "14611_PFC_ATAC", "14993_PFC_ATAC_AGGR")
+  SAMPLE_IDs <- SAMPLES %>% str_remove("P") %>% str_remove("14")  %>% str_remove("_AGGR")  
+
+} else if (REGION == "Cer") {
+
+  SAMPLES <- c("14510_Cerebellum_ATAC", "14611_Cerebellum_ATAC", "14993_Cerebellum_ATAC")
+  SAMPLE_IDs <- SAMPLES %>% str_remove("ebellum") %>% str_remove("14")  
+  
+} else {
+  
+  SAMPLES <- c("14510_WGE_ATAC", "14611_WGE_ATAC", "14993_WGE_ATAC")
+  SAMPLE_IDs <- SAMPLES %>% str_remove("W") %>% str_remove("14") 
+  
+} 
+
+LEVELS <- SAMPLE_IDs %>% str_remove("_ATAC") # For stacked barplots
 
 
 ##  Load ArchR project  -------------------------------------------------------------------
@@ -152,10 +176,55 @@ print(clust_cM_harmony)
 # Plot UMAPs
 cat('\nPlotting UMAPs ... \n')
 clusters_UMAP_har <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
-                                   name = "Clusters_harmony", embedding = "UMAPHarmony")
+                                   name = "Clusters_harmony", embedding = "UMAPHarmony") +
+  Seurat::NoLegend() + ggtitle('Clusters')
+
 clusters_UMAP_BySample_har <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
-                                            name = "Sample", embedding = "UMAPHarmony")
-cluster_plot_har <- ggAlignPlots(clusters_UMAP_har, clusters_UMAP_BySample_har, type = "h")
+                                            name = "Sample", embedding = "UMAPHarmony") +
+  Seurat::NoLegend() + ggtitle('By Donor. R: 510, B: 611, G: 993')
+
+# Stacked barplots
+cat('Creating stacked barplots ... \n')
+cnts_per_donor <- as.data.frame(as.matrix(cM_harmony)) %>%
+  rownames_to_column("Cluster")
+cnts_per_donor$Cluster <- as.factor(cnts_per_donor$Cluster)
+cnts_per_donor_melt <- reshape2::melt(cnts_per_donor, id = 'Cluster')
+cnts_per_donor_melt$Cluster <- factor(cnts_per_donor_melt$Cluster,
+                                      levels = rownames(cM_harmony))
+
+# Get the levels for type in the required order - https://stackoverflow.com/questions/22231124
+cnts_per_donor_melt$variable = factor(cnts_per_donor_melt$variable,
+                                        levels = LEVELS)
+cnts_per_donor_melt = arrange(cnts_per_donor_melt, Cluster, desc(variable))
+
+# Calculate percentages
+cnts_per_donor_melt = plyr::ddply(cnts_per_donor_melt, .(Cluster), transform, percent = value/sum(value) * 100)
+
+# Format the labels and calculate their positions
+cnts_per_donor_melt <- plyr::ddply(cnts_per_donor_melt, .(Cluster), transform, pos = (cumsum(value) - 0.5 * value))
+cnts_per_donor_melt$label = paste0(sprintf("%.0f", cnts_per_donor_melt$percent), "%")
+
+# Plot - Note this could also be shown with bars filling plot
+plot_stacked_pct <- ggplot(cnts_per_donor_melt, aes(x = factor(Cluster), y = percent, fill = variable)) +
+  geom_bar(position = position_stack(), stat = "identity") +
+  geom_text(aes(label = label), position = position_stack(vjust = 0.5), size = 2) +
+  theme(legend.position = "none",
+        plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", size = 1, fill = NA),
+        panel.background = element_blank(),
+        plot.title = element_text(hjust = 0.5, size = 16, face = 'bold'),
+        axis.title.x = element_text(colour = "#000000", size = 14),
+        axis.title.y = element_text(colour = "#000000", size = 14),
+        axis.text.x  = element_text(colour = "#000000", size = 12, vjust = 0.5, angle = 45),
+        axis.text.y  = element_text(colour = "#000000", size = 12)) +
+xlab(NULL) + ylab(NULL)
+
+cat('Creating group plot ... \n')
+  group_plot <- plot_grid(clusters_UMAP_har, clusters_UMAP_BySample_har, plot_stacked_pct,
+                          clust_cM_harmony$gtable, ncol = 2, align = 'hv', axis = 'rl')
+
 
 # Confusion matrix to compare LSI based and batch corrected based clusters
 cM_harmony_compare <- confusionMatrix(paste0(unname(unlist(getCellColData(archR.2)[clust_ID]))),
@@ -163,16 +232,17 @@ cM_harmony_compare <- confusionMatrix(paste0(unname(unlist(getCellColData(archR.
 clust_cM_harmony_compare <- pheatmap::pheatmap(
   mat = as.matrix(cM_harmony_compare),
   color = paletteContinuous("whiteBlue"),
-  border_color = "black", display_numbers = TRUE, number_format =  "%.0f"
+  border_color = "black", display_numbers = TRUE, number_format =  "%.0f",
+  cluster_rows = F, # Needed for row order https://stackoverflow.com/questions/59306714
+  treeheight_col = 0,
+  treeheight_row = 0,
+  angle_col = 0,
+  number_color = 'black'
 )
 print(clust_cM_harmony_compare)
 
-# Cluster tree to compare LSI based and batch corrected based clusters
-clusttree_harmony_df <- as.data.frame(getCellColData(archR.2,
-                                                     select = c(clust_ID,
-                                                                "Clusters_harmony")))
-colnames(clusttree_harmony_df) <- c("K1", "K2")
-clustTree_harmony_plot <- clustree(clusttree_harmony_df, prefix = "K", prop_filter = 0.01)
+
+
 
 ## Save ArchR project  ----------------------------------------------------------------
 cat('\nSaving project ... \n')

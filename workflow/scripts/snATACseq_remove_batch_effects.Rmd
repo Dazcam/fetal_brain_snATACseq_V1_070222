@@ -20,12 +20,10 @@ snATACseq analysis with ArchR - batch correction.
 
 ### Results {.tabset}
 
-#### Batch Effects
+#### Cluster plots {.tabset}
 
-This is correcting for per-sample batch effects. More covariates can be added.
-
-```{R, clusters_harmony, echo=FALSE}
-ggAlignPlots(clusters_UMAP_har, clusters_UMAP_BySample_har, type = "h")
+```{R, Clusters, echo=FALSE, , fig.height = 10, fig.width = 10}
+print(group_plot)
 ```
 
 ***
@@ -38,20 +36,7 @@ knitr::kable(clusters_cnts_harmony)
 
 ***
 
-**Confusion Matrix**
-
-Showing cell counts per donor in each cluster. The threshold for cluster inclusion at this stage is clusters must have at least 10 cells from 2 out of 3 donors to be included in downstream analyses. All clusters pass this threshold for GE.
-
-
-```{R, Cluster_CM_harmony, echo=FALSE}
-clust_cM_harmony
-```
-
-***
-
-**Plots to compare LSI based and batch corrected based clusters**
-
-**Confusion matrix**
+**Compare**
 
 ```{R, Cluster_CM_harmony_compare, echo=FALSE}
 clust_cM_harmony_compare
@@ -59,10 +44,3 @@ clust_cM_harmony_compare
 
 ***
 
-**Clustree**
-
-```{R, clusttree_harmony_compare, echo=FALSE}
-clustTree_harmony_plot
-```
-
-***
