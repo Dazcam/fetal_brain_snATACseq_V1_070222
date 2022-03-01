@@ -34,6 +34,7 @@ library(clustree)
 library(cowplot)
 library(argparser)
 
+
 ## Parse region / set region variable -------------------------------------------------
 cat('\nParsing args ... \n')
 p <- arg_parser("\nRead brain region and output directory for snATACseq QC ... \n")
@@ -69,18 +70,23 @@ archR <- loadArchRProject(path = OUT_DIR)
 # Load Seurat RNA data
 if (REGION == 'FC') {
   
-  cat(paste0('\nLoading Seurat object for ', REGION, ' ... \n'))
+  cat(paste0('\nLoading Seurat object for and region specific variables for', REGION, ' ... \n'))
   seurat.obj <- readRDS("../resources/R_objects/seurat.pfc.final.rds")
   seurat.obj$cellIDs <- gsub('FC-', '', seurat.obj$cellIDs)
-  
+  reducedDim_ID <- 'IterativeLSI_reclust'
+  clust_ID <- 'Clusters_reclust' # Due to cluster QC being run on FC
+  UMAP_ID<- 'UMAP_reclust'
+
 } else {
   
-  cat(paste0('\nLoading Seurat object for ', REGION, ' ... \n'))
+  cat(paste0('\nLoading Seurat object for and region specific variables for', REGION, ' ... \n'))
   seurat.obj <- readRDS("../resources/R_objects/seurat.wge.final.rds")
   seurat.obj$cellIDs <- gsub('GE-', '', seurat.obj$cellIDs)
-  
-}
+  reducedDim_ID	<- 'IterativeLSI'
+  clust_ID <- 'Clusters'
+  UMAP_ID<- 'UMAP'  
 
+}
 
 #  Run unconstrained integration
 cat('\nRunning unconstrained integration ... \n')
@@ -88,7 +94,7 @@ archR.2 <- addGeneIntegrationMatrix(
   ArchRProj = archR, 
   useMatrix = "GeneScoreMatrix",
   matrixName = "GeneIntegrationMatrix",
-  reducedDims = "Harmony", # Note using Harmony here
+  reducedDims = reducedDim_ID,
   seRNA = seurat.obj,
   addToArrow = FALSE,
   groupRNA = "cellIDs",
@@ -100,12 +106,18 @@ archR.2 <- addGeneIntegrationMatrix(
 ## Unconstrained integration - reporting  ---------------------------------------------
 # Confusion matrix - unconstrained cell mappings 
 cat('\nCreating tables and plots ... \n')
-cM_geneExp <- as.matrix(confusionMatrix(archR.2$Clusters_harmony, archR.2$predictedGroup_Un))
+cM_geneExp <- as.matrix(confusionMatrix(unname(unlist(getCellColData(archR.2)[clust_ID])), archR.2$predictedGroup_Un))
 clust_CM_geneExp <- pheatmap::pheatmap(
   mat = as.matrix(cM_geneExp), 
   color = paletteContinuous("whiteBlue"), 
-  border_color = "black", display_numbers = TRUE, number_format =  "%.0f"
+  border_color = "black", display_numbers = TRUE, number_format =  "%.0f",
+  cluster_rows = F, # Needed for row order https://stackoverflow.com/questions/59306714
+  treeheight_col = 0,
+  treeheight_row = 0,
+  angle_col = 0,
+  number_color = 'black'
 )
+
 
 # Get df of top cellID matches from RNA for each ATAC cluster
 preClust <- colnames(cM_geneExp)[apply(cM_geneExp, 1 , which.max)]
@@ -115,11 +127,8 @@ colnames(integration_df) <- NULL
 
 
 # Plot RNA and ATAC UMAPs for comparison
-clusters_UMAP_har <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
-                                   name = "Clusters_harmony", embedding = "UMAPHarmony")
-umap_seurat_plot <- DimPlot(seurat.obj, pt.size = 0.2, reduction = "umap", 
-                            label = TRUE) + NoLegend()
-integration_UMAP_plot <- plot_grid(umap_seurat_plot, clusters_UMAP_har)
+clusters_UMAP <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
+                                   name = clust_ID, embedding = UMAP_ID)
 
 
 # Prepare cell groupings for constrained integration

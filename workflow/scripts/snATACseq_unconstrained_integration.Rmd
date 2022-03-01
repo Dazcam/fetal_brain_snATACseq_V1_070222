@@ -25,17 +25,7 @@ snATACseq analysis with ArchR - unconstrained integration.
 
 #### Unconstrained Integration 
 
-***
-
-**Cells mapping to ATAC and RNA data**
-
-```{R, GeneExp_cM, echo=FALSE}
-clust_CM_geneExp
-```
-
-***
-
-**Table showing the snRNA-seq / snATAC-seq cluster mappings after unconstrained**
+**Cluster mappings**
 
 ```{R, GeneExp_df, echo=FALSE, warning=FALSE}
 knitr::kable(integration_df)
@@ -43,19 +33,18 @@ knitr::kable(integration_df)
 
 ***
 
-**Table showing the unconstrained integration cluster mappings**
+**Cell counts**
 
-```{R, preclust_df, echo=FALSE, warning=FALSE}
-knitr::kable(preClust)
-knitr::kable(cM_unconstrained2)
+```{R, GeneExp_cM, echo=FALSE}
+clust_CM_geneExp
 ```
 
 ***
 
-**UMAP - RNA and ATAC seq for comparison**
+**UMAP**
 
 ```{R, integration_UMAP, echo=FALSE}
-integration_UMAP_plot
+clusters_UMAP
 ```
 
 ***

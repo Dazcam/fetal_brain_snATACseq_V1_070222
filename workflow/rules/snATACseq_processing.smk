@@ -40,7 +40,7 @@ rule snATAC_seq_cluster_QC:
     input:  markdown = "scripts/snATACseq_cluster_QC.Rmd",
             html = "../results/archR_data_processing/snATACseq_QC_FC.html"
     output: "../results/archR_data_processing/snATACseq_cluster_QC_FC.html"
-    params: data_dir = "../results/archR_data_processing/snATACseq_CR-atac_1.2.0/",
+    params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
             archR_out_dir = "../results/ARCHR/FC",
             report_dir = "../results/archR_data_processing/",
             report_file = "snATACseq_cluster_QC_FC.html"
@@ -61,7 +61,7 @@ rule snATAC_seq_cluster_ID:
     input:  markdown = "scripts/snATACseq_cluster_ID_geneExpMatrix.Rmd",
             html = "../results/archR_data_processing/snATACseq_cluster_QC_FC.html"
     output: "../results/archR_data_processing/snATACseq_cluster_ID_geneExpMatrix_{REGION}.html"
-    params: data_dir = "../results/archR_data_processing/snATACseq_CR-atac_1.2.0/",
+    params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
             archR_out_dir = "../results/ARCHR/{REGION}",
             report_dir = "../results/archR_data_processing/",
             report_file = "snATACseq_cluster_ID_geneExpMatrix_{REGION}.html"
@@ -83,7 +83,7 @@ rule snATAC_remove_batch_effects:
     input:  markdown = "scripts/snATACseq_remove_batch_effects.Rmd",
             html = "../results/archR_data_processing/snATACseq_cluster_QC_FC.html", # Needed for rule order
     output: "../results/archR_data_processing/snATACseq_remove_batch_effects_{REGION}.html"
-    params: data_dir = "/scratch/c.c1477909/snATACseq_CR-atac_1.2.0/",
+    params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
             archR_out_dir = "../results/ARCHR/{REGION}",
             report_dir = "../results/archR_data_processing/",
             report_file = "snATACseq_remove_batch_effects_{REGION}.html"
@@ -102,11 +102,11 @@ rule snATAC_remove_batch_effects:
 
 rule snATAC_unconstrained_integration:
     input:  markdown = "scripts/snATACseq_unconstrained_integration.Rmd",
-            html = "../results/snATACseq_remove_batch_effects_{REGION}.html" # Needed for rule order
+            html = "../results/archR_data_processing/snATACseq_cluster_QC_FC.html" # Needed for rule order
     output: "../results/snATACseq_unconstrained_integration_{REGION}.html"
-    params: data_dir = "/scratch/c.c1477909/snATACseq_CR-atac_1.2.0/",
+    params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
             archR_out_dir = "../results/ARCHR/{REGION}",
-            report_dir = "../results/",
+            report_dir = "../results/archR_data_processing/",
             report_file = "snATACseq_unconstrained_integration_{REGION}.html"
     log:    "../results/logs/archR_data_processsing/snATAC_unconstrained_integration_{REGION}.log"
     shell:

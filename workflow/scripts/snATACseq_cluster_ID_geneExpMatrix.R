@@ -50,8 +50,8 @@ MARKDOWN_FILE <- args$markdown_file
 REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
 MARKER_DIR <- "../resources/sheets/"
-MARKER_FDR <- c(0.001, 0.01, 0.05, 0.1) # Default 0.01
-MARKER_LOG2FC <- 1.25 # Default 1.25
+MARKER_FDR <- c(0.05) # Default 0.01
+MARKER_LOG2FC <- c(0.585, 1) # Default 1.25
 
 addArchRThreads(threads = 8) # Set Hawk to 32 cores so 0.75 of total
 addArchRGenome("hg38")
@@ -93,36 +93,41 @@ markersGS <- getMarkerFeatures(
 )
 
 # Loop to extract top makrer genes at different FDR and Log2FC thresholds
-for (FDR_THRESH in c(MARKER_FDR)) {
-  
-  cat(paste0('Creating top marker lists for ', REGION, '. FDR Thresh: ', 
-             FDR_THRESH,  'Log2FC Thresh: ', MARKER_LOG2FC, '\n'))
-  markerList <- getMarkers(markersGS, cutOff = paste0("FDR <= ", FDR_THRESH, " & Log2FC >= ", MARKER_LOG2FC))
-  #gene_markers <- as.data.frame(unlist(markerList))
 
-  # Crete vector of genes of interest
-  markerGenes  <- c(MARKER_GENES)
+for (LOG2FC_THRESH in c(MARKER_LOG2FC)) {
+
+  for (FDR_THRESH in c(MARKER_FDR)) {
   
-  # Create list of heatmaps of top marker genes
-  cat('Creating gene expression heatmap ... \n')
-  heatmapGS <- plotMarkerHeatmap(
-    seMarker = markersGS, 
-    cutOff = paste0("FDR <= ", FDR_THRESH, " & Log2FC >= ", MARKER_LOG2FC), 
-    labelMarkers = markerGenes,
-    transpose = TRUE
-  )
+    cat(paste0('Creating top marker lists for ', REGION, '. FDR Thresh: ', 
+               FDR_THRESH,  'Log2FC Thresh: ', LOG2FC_THRESH, '\n'))
+    markerList <- getMarkers(markersGS, cutOff = paste0("FDR <= ", FDR_THRESH, " & Log2FC >= ", LOG2FC_THRESH))
+    #gene_markers <- as.data.frame(unlist(markerList))
+
+    # Crete vector of genes of interest
+    markerGenes  <- c(MARKER_GENES)
   
-  # Plot gene expression heatmap
-  cat('Plotting gene expression heatmap ... \n')
-  geneExp_plot <- ComplexHeatmap::draw(heatmapGS, heatmap_legend_side = "bot", 
-                                       annotation_legend_side = "bot")
-  dev.off()
-  assign(paste0('geneExp_plot_FDR_', FDR_THRESH, '_Log2FC_', MARKER_LOG2FC), geneExp_plot)
+    # Create list of heatmaps of top marker genes
+    cat('Creating gene expression heatmap ... \n')
+    heatmapGS <- plotMarkerHeatmap(
+      seMarker = markersGS, 
+      cutOff = paste0("FDR <= ", FDR_THRESH, " & Log2FC >= ", LOG2FC_THRESH), 
+      labelMarkers = markerGenes,
+      transpose = TRUE
+    )
   
-  # Create gene exp tables
-  write.xlsx(as.list(markerList), paste0(REPORT_DIR, REGION, "_FDR_", 
-                                         FDR_THRESH, "_Log2FC_", 
-                                         MARKER_LOG2FC, ".xlsx"))
+    # Plot gene expression heatmap
+    cat('Plotting gene expression heatmap ... \n')
+    geneExp_plot <- ComplexHeatmap::draw(heatmapGS, heatmap_legend_side = "bot", 
+                                         annotation_legend_side = "bot")
+    dev.off()
+    assign(paste0('geneExp_plot_FDR_', FDR_THRESH, '_Log2FC_', LOG2FC_THRESH), geneExp_plot)
+  
+    # Create gene exp tables
+    write.xlsx(as.list(markerList), paste0(REPORT_DIR, REGION, "_FDR_", 
+                                           FDR_THRESH, "_Log2FC_", 
+                                           LOG2FC_THRESH, ".xlsx"))
+
+  }
 
 }
 
