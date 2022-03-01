@@ -33,7 +33,7 @@ library(ComplexHeatmap)
 library(clustree)
 library(cowplot)
 library(argparser)
-
+library(Seurat) 
 
 ## Parse region / set region variable -------------------------------------------------
 cat('\nParsing args ... \n')
@@ -114,7 +114,6 @@ clust_CM_geneExp <- pheatmap::pheatmap(
   cluster_rows = F, # Needed for row order https://stackoverflow.com/questions/59306714
   treeheight_col = 0,
   treeheight_row = 0,
-  angle_col = 0,
   number_color = 'black'
 )
 
@@ -128,8 +127,8 @@ colnames(integration_df) <- NULL
 
 # Plot RNA and ATAC UMAPs for comparison
 clusters_UMAP <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
-                                   name = clust_ID, embedding = UMAP_ID)
-
+                                   name = clust_ID, embedding = UMAP_ID) +
+  NoLegend() + ggtitle('Clusters')
 
 # Prepare cell groupings for constrained integration
 # Only cell-types in preClust need to be included 

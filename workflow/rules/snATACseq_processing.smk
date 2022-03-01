@@ -103,7 +103,7 @@ rule snATAC_remove_batch_effects:
 rule snATAC_unconstrained_integration:
     input:  markdown = "scripts/snATACseq_unconstrained_integration.Rmd",
             html = "../results/archR_data_processing/snATACseq_cluster_QC_FC.html" # Needed for rule order
-    output: "../results/snATACseq_unconstrained_integration_{REGION}.html"
+    output: "../results/archR_data_processing/snATACseq_unconstrained_integration_{REGION}.html"
     params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
             archR_out_dir = "../results/ARCHR/{REGION}",
             report_dir = "../results/archR_data_processing/",
