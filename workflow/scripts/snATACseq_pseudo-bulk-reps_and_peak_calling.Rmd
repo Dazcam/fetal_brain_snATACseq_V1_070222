@@ -1,0 +1,76 @@
+---
+title: "snATACseq ArchR: pseudo-bulk reps and peak calling report - `r REGION`"
+author: "Darren Cameron"
+date: "`r format(Sys.time(), '%d/%m/%y')`"
+output: 
+  html_document:
+    theme: paper
+---
+
+
+
+```{r packages, echo=FALSE, include=FALSE}
+library(SingleCellExperiment)
+library(scater)
+library(cowplot)
+library(knitr)
+```
+
+snATACseq analysis with ArchR - pseudo-bulk replicate generation and peak calling.
+
++ Extension - 250bp
++ FDR - 0.01
+
+*** 
+
+
+### Results {.tabset}
+
+***
+
+#### Peak calling {.tabset}
+
+##### Input params
+
+***
+
+```{R, Peaks_input_params, echo=FALSE}
+knitr::kable(peakCallParams_summary_df)
+```
+
+***
+
+
+##### Summary plot
+
+***
+
+```{R, Peaks_summary_plot, echo=FALSE}
+peak_call_summary_plot
+```
+
+***
+
+
+##### Peak counts
+
+***
+
+```{R, Peaks_counts, echo=FALSE}
+knitr::kable(PEAK_CNT_DF)
+```
+
+***
+
+##### UMAP
+
+***
+
+```{R, UMAP_broad, echo=FALSE}
+UMAP_broad
+```
+
+***
+
+
+

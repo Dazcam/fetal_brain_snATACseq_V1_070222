@@ -27,6 +27,8 @@ SAMPLES_ATAC_AGGR:
 FASTQ_DIR: ../resources/fq 
 REFERENCE_ATAC: ../resources/refdata-cellranger-atac-GRCh38-1.2.0
 
+MACS2_PATH: '~/.conda/envs/macs2/bin/macs2'
+
 LSI_PARAMS:
     Iteration:
     Resolution:
