@@ -59,7 +59,7 @@ MARKDOWN_FILE <- args$markdown_file
 REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
 MACS2_PATH <- args$macs2_path
-FDR_THRESHOLD <- 0.01
+FDR_THRESHOLD <- 0.05
 EXTEND_BPs <- 250
 
 
