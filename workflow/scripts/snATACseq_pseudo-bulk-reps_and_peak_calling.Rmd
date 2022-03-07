@@ -18,8 +18,9 @@ library(knitr)
 
 snATACseq analysis with ArchR - pseudo-bulk replicate generation and peak calling.
 
-+ Extension - 250bp
-+ FDR - 0.01
++ Extension - `r EXTEND_BPs`bps
++ FDR - `r FDR_THRESHOLD`
+
 
 *** 
 

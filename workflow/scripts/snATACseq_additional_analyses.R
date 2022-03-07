@@ -18,20 +18,11 @@
 
 ##  Load Packages  --------------------------------------------------------------------
 source('envs/archR_env.R')
-#library(ArchR)
-#library(tidyverse)
-#library(rmarkdown)
-#library(chromVARmotifs)
-#library(ComplexHeatmap)
-#library(argparser)
-#library(pheatmap)
-#library(cowplot)
-#library(ggplotify) # required to convert grob to ggplot object - footprinting
-
 
 ## Parse region / set region variable -------------------------------------------------
 cat('\nParsing args ... \n')
 p <- arg_parser("\nRead markdown and report file and directory info ... \n")
+#p <- add_argument(p, "archR_out_dir", help = "No ArchR output directory specified")
 p <- add_argument(p, "markdown_file", help = "No markdown file path specified")
 p <- add_argument(p, "rds_dir", help = "No RDS output directory specified")
 p <- add_argument(p, "report_dir", help = "No report output directory specified")
@@ -41,7 +32,7 @@ print(args)
 
 ##  Define global variables  -----------------------------------------------------------
 cat('\nDefining variables ... \n')
-OUT_DIR <- "results/reports/ATAC/ARCHR/"
+OUT_DIR <- args$archR_out_dir
 MARKDOWN_FILE <- args$markdown_file
 RDS_DIR <- args$rds_dir
 REPORT_DIR <- args$report_dir
@@ -58,7 +49,7 @@ for (REGION in c("FC", "GE")) {
   
   ##  Load ArchR project  ---------------------------------------------------------------
   cat(paste0('\nLoading ArchR project for ', REGION, ' ... \n'))
-  archR <- loadArchRProject(paste0(OUT_DIR, REGION))
+  archR <- loadArchRProject(paste0('../results/ARCHR/', REGION))
   
   cat(paste0('\nAdding peak matrix ... \n'))
   archR <- addPeakMatrix(archR) 
@@ -96,13 +87,13 @@ for (REGION in c("FC", "GE")) {
   
   # Export enrichMotifs and motif p-val table used for plotting
   saveRDS(enrichMotifs, paste0(RDS_DIR, REGION, '_motifs.rds'))
-  saveRDS(assays(enrichMotifs)[["mlog10Padj"]], paste0('results/figures/', REGION, '_motifs_mlogPs.rds'))
+  saveRDS(assays(enrichMotifs)[["mlog10Padj"]], paste0(RDS_DIR, REGION, '_motifs_mlogPs.rds'))
 
   heatmapEM <- plotEnrichHeatmap(enrichMotifs, n = 15, transpose = TRUE)
   assign(paste0("motif_heatmap_", REGION), heatmapEM)
   
-  ## Create motif heatmap RDS files for figures 5E-F  -----------------------------------
-  cat(paste0('\nCreating rds files for figs 5E-F ... \n'))
+  ## Create motif heatmap RDS files  ----------------------------------------------------
+  cat(paste0('\nCreating rds files  ... \n'))
   # Return heatmap matrix
   heatmap_matrix <- plotEnrichHeatmap(enrichMotifs, n = 15, transpose = TRUE,
                                       returnMatrix = TRUE)
@@ -119,168 +110,160 @@ for (REGION in c("FC", "GE")) {
                            fontsize_col = 12)) 
   
   # Save motif heatmap RDS files
-  if (REGION == 'FC') {
+  saveRDS(motif_heatmap_plot, paste0(RDS_DIR, REGION, '_motif_enrichment_heatmap_plot.rds')) 
+  saveRDS(heatmap_matrix, paste0(RDS_DIR, REGION, '_motif_enrichment_heatmap_matrix.rds'))    
+
+}
+
+#  ## Motif Footprinting  -  Chptr 14  ---------------------------------------------------
+#  cat(paste0('\nRunning footprinting ... \n'))
+#  if (REGION == 'FC') {
+
+#   MOTIFS <- c('NEUROD2_73', 'DLX5_412')
+   
+#   } else {
+   
+#   MOTIFS <- c('NEUROD2_73', 'DLX5_412')
+   
+#   }
+   
   
-    saveRDS(motif_heatmap_plot, paste0(RDS_DIR, 'fig_5E.rds')) 
-    saveRDS(heatmap_matrix, paste0(RDS_DIR, 'fig_5E_matrix.rds'))    
-
-  } else {
-    
-    saveRDS(motif_heatmap_plot, paste0(RDS_DIR, 'fig_5F.rds'))
-    saveRDS(heatmap_matrix, paste0(RDS_DIR, 'fig_5F_matrix.rds'))    
-
-  }
-
-
-  ## Motif Footprinting  -  Chptr 14  ---------------------------------------------------
-  cat(paste0('\nRunning footprinting ... \n'))
-  if (REGION == 'FC') {
-
+#  cat(paste0('\nGenerating motif footprints for ', REGION, ' ... \n'))
+#  motifPositions <- getPositions(archR)
+#  motifPositions
   
-    cat(paste0('\nGenerating motif footprints for ', REGION, ' ... \n'))
-    motifPositions <- getPositions(archR)
-    motifPositions
-  
-  cat(paste0('\nCreating rds files for figs 5G-H ... \n'))
-  for (MOTIF in c('NEUROD2_73', 'DLX5_412')) {
+#  cat(paste0('\nCreating rds files for footprints ... \n'))
+#  for (MOTIF in MOTIFS) {
       
-      motifs <- MOTIF
-      markerMotifs <- unlist(lapply(motifs, function(x) grep(x, names(motifPositions), value = TRUE)))
-      markerMotifs
+#    motifs <- MOTIF
+#    markerMotifs <- unlist(lapply(motifs, function(x) grep(x, names(motifPositions), value = TRUE)))
+#    markerMotifs
       
-      # Compute footprints
-      cat(paste0(MOTIF, ' ... \n'))
-      seFoot <- getFootprints(
-        ArchRProj = archR, 
-        positions = motifPositions[markerMotifs], 
-        groupBy = "Clusters_broad"
-      )
+#    # Compute footprints
+#    cat(paste0(MOTIF, ' ... \n'))
+#    seFoot <- getFootprints(
+#        ArchRProj = archR, 
+#        positions = motifPositions[markerMotifs], 
+#        groupBy = "Clusters_broad"
+#    )
       
-      # Plot footprint - plot = FALSE required to get grob object
-      cat(paste0('Plotting ... \n'))
-      footprint_grob <-  plotFootprints(
-          seFoot = seFoot,
-          ArchRProj = archR, 
-          normMethod = "Subtract",
-          plotName = "Footprints_subtract_bias",
-          addDOC = FALSE,
-          smoothWindow = 5,
-          plot = FALSE
+#    # Plot footprint - plot = FALSE required to get grob object
+#    cat(paste0('Plotting ... \n'))
+#    footprint_grob <-  plotFootprints(
+#        seFoot = seFoot,
+#        ArchRProj = archR, 
+#        normMethod = "Subtract",
+#        plotName = "Footprints_subtract_bias",
+#        addDOC = FALSE,
+#        smoothWindow = 5,
+#        plot = FALSE
           
-        )
+#    )
     
-      # Convert to ggplot object 
-      cat(paste0('Converting grob to ggplot object ... \n'))
-      footprint_plot <- ggplotify::as.ggplot(footprint_grob[[MOTIF]])
-      
-      if (MOTIF == 'NEUROD2_73') {
-        
-        saveRDS(footprint_plot, paste0(RDS_DIR, 'fig_5G.rds'))
-        saveRDS(footprint_grob, paste0(RDS_DIR, 'fig_5G_grob.rds'))        
-
-      } else {
-        
-        saveRDS(footprint_plot, paste0(RDS_DIR, 'fig_5H.rds')) 
-        saveRDS(footprint_grob, paste0(RDS_DIR, 'fig_5H_grob.rds'))
-      }
+#    # Convert to ggplot object 
+#    cat(paste0('Converting grob to ggplot object ... \n'))
+#    footprint_plot <- ggplotify::as.ggplot(footprint_grob[[MOTIF]])
     
-    }
+#    saveRDS(footprint_plot, paste0(RDS_DIR, REGION, MOTIF, '_footprint_plot.rds')) 
+#    saveRDS(footprint_grob, paste0(RDS_DIR, REGION, MOTIF, '_footprint_grob.rds'))     
 
-  }
+#    }
+    
+#}
 
-  ## Peak to gene links  -  Chptr 15.3  -------------------------------------------------
-  cat(paste0("Starting peak to gene linkage analysis for ", REGION, " ... \n"))
-  cat("Adding Peak to gene links ... \n")
-  archR <- addPeak2GeneLinks(
-  ArchRProj = archR,
-  reducedDims = "Harmony"
-  )
 
-  cat("\nRetrieving Peak to gene links ... \n")
-  p2g <- getPeak2GeneLinks(
-  ArchRProj = archR,
-  corCutOff = 0.45,
-  resolution = 1,
-  returnLoops = FALSE
-  )
 
-  cat("\nCreating Peak to gene links dataframes ... \n")
-  p2g_df <- base::as.data.frame(p2g)
-  geneIDs_df <- Repitools::annoGR2DF(metadata(p2g)$geneSet)
-  peakIDs_df <- Repitools::annoGR2DF(metadata(p2g)$peakSet)
+#  ## Peak to gene links  -  Chptr 15.3  -------------------------------------------------
+#  cat(paste0("Starting peak to gene linkage analysis for ", REGION, " ... \n"))
+#  cat("Adding Peak to gene links ... \n")
+#  archR <- addPeak2GeneLinks(
+#  ArchRProj = archR,
+#  reducedDims = "Harmony"
+#  )
+
+#  cat("\nRetrieving Peak to gene links ... \n")
+#  p2g <- getPeak2GeneLinks(
+#  ArchRProj = archR,
+#  corCutOff = 0.45,
+#  resolution = 1,
+#  returnLoops = FALSE
+#  )
+
+#  cat("\nCreating Peak to gene links dataframes ... \n")
+#  p2g_df <- base::as.data.frame(p2g)
+#  geneIDs_df <- Repitools::annoGR2DF(metadata(p2g)$geneSet)
+#  peakIDs_df <- Repitools::annoGR2DF(metadata(p2g)$peakSet)
   
-  markerGenes  <- c("MYTL1", "FUT9", "DLX1", "DLX2")
+#  markerGenes  <- c("MYTL1", "FUT9", "DLX1", "DLX2")
 
-  p <- plotBrowserTrack(
-    ArchRProj = archR, 
-    groupBy = "Clusters_broad", 
-    geneSymbol = markerGenes, 
-    upstream = 50000,
-    downstream = 50000,
-    loops = getPeak2GeneLinks(archR)
-)
+#  p <- plotBrowserTrack(
+#    ArchRProj = archR, 
+#    groupBy = "Clusters_broad", 
+#    geneSymbol = markerGenes, 
+#    upstream = 50000,
+#    downstream = 50000,
+#    loops = getPeak2GeneLinks(archR)
+#)
 
-  # Plot p2g links
-  tiff(paste0("results/figures/MYTL1_peak2gene", REGION, ".tiff"), height = 10, width = 10, units='cm', 
-       compression = "lzw", res = 300)
-  grid::grid.newpage()    
-  grid::grid.draw(p$MYTL1)
-  dev.off()
+#  # Plot p2g links
+#  tiff(paste0("results/figures/MYTL1_peak2gene", REGION, ".tiff"), height = 10, width = 10, units='cm', 
+#       compression = "lzw", res = 300)
+#  grid::grid.newpage()    
+#  grid::grid.draw(p$MYTL1)
+#  dev.off()
 
-  tiff(paste0("results/figures/DLX1_peak2gene", REGION, ".tiff"), height = 10, width = 10, units='cm', 
-       compression = "lzw", res = 300)
-  grid::grid.newpage()
-  grid::grid.draw(p$DLX1)
-  dev.off()
+#  tiff(paste0("results/figures/DLX1_peak2gene", REGION, ".tiff"), height = 10, width = 10, units='cm', 
+#       compression = "lzw", res = 300)
+#  grid::grid.newpage()
+#  grid::grid.draw(p$DLX1)
+#  dev.off()
 
-  tiff(paste0("results/figures/DLX2_peak2gene", REGION, ".tiff"), height = 10, width = 10, units='cm', 
-       compression = "lzw", res = 300)
-  grid::grid.newpage()
-  grid::grid.draw(p$DLX2)
-  dev.off()
+#  tiff(paste0("results/figures/DLX2_peak2gene", REGION, ".tiff"), height = 10, width = 10, units='cm', 
+#       compression = "lzw", res = 300)
+#  grid::grid.newpage()
+#  grid::grid.draw(p$DLX2)
+#  dev.off()
   
 
-  cat("\nObtaining peak start/stop coordinates and gene IDs for links ... \n")
+ # cat("\nObtaining peak start/stop coordinates and gene IDs for links ... \n")
 
   # Need to remove dfs between regions or region specific entries will be appended
-  if (exists("peak2gene_df")) { rm(peak2gene_df) }
-  if (exists("peak2gene_final_df")) { rm(peak2gene_final_df) }
+#  if (exists("peak2gene_df")) { rm(peak2gene_df) }
+#  if (exists("peak2gene_final_df")) { rm(peak2gene_final_df) }
   
-  for (LOOP in 1:nrow(p2g_df)) {
+#  for (LOOP in 1:nrow(p2g_df)) {
     
-    gene_index <- p2g_df[LOOP, 2]
-    peak_index <- p2g_df[LOOP, 1]
+#    gene_index <- p2g_df[LOOP, 2]
+#    peak_index <- p2g_df[LOOP, 1]
     
-    gene_TSS <- geneIDs_df[gene_index, ]$start
-    gene_ID <- geneIDs_df[gene_index, ]$name
-    peak_start <- peakIDs_df[peak_index, ]$start
-    peak_end <- peakIDs_df[peak_index, ]$end
-    chr <- as.vector(peakIDs_df[peak_index, ]$chr)
+#    gene_TSS <- geneIDs_df[gene_index, ]$start
+#    gene_ID <- geneIDs_df[gene_index, ]$name
+#    peak_start <- peakIDs_df[peak_index, ]$start
+#    peak_end <- peakIDs_df[peak_index, ]$end
+#    chr <- as.vector(peakIDs_df[peak_index, ]$chr)
     
-    if (exists("peak2gene_df")) {
+#    if (exists("peak2gene_df")) {
       
-      peak2gene_row <- cbind(chr, peak_start, peak_end, gene_TSS, gene_ID)
-      peak2gene_df <- rbind(peak2gene_df, peak2gene_row)
+#      peak2gene_row <- cbind(chr, peak_start, peak_end, gene_TSS, gene_ID)
+#      peak2gene_df <- rbind(peak2gene_df, peak2gene_row)
       
-    } else {
+#    } else {
       
-      peak2gene_df <- cbind(chr, peak_start, peak_end, gene_TSS, gene_ID)
+#      peak2gene_df <- cbind(chr, peak_start, peak_end, gene_TSS, gene_ID)
       
-    }
+#    }
     
     
-  }
+#  }
   
-  # Join peak start/stop coordinates and gene IDs to original table
-  peak2gene_final_df <- cbind(peak2gene_df, p2g_df)
+#  # Join peak start/stop coordinates and gene IDs to original table
+#  peak2gene_final_df <- cbind(peak2gene_df, p2g_df)
   
   
-  cat("\nWriting table to file ... \n")
-  write_tsv(peak2gene_final_df, paste0('results/peak2gene_table_', REGION, '.tsv'))
+#  cat("\nWriting table to file ... \n")
+#  write_tsv(peak2gene_final_df, paste0('results/peak2gene_table_', REGION, '.tsv'))
   
-}  
-
-
+#}  
 
 
 ## Create markdown doc  ---------------------------------------------------------------
@@ -291,4 +274,3 @@ cat('\nDONE.\n')
 
 #--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------
-

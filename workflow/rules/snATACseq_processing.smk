@@ -166,25 +166,26 @@ rule snATAC_pseudo_bulk_reps_and_peak_calling:
 
             """
 
-#rule snATAC_additional_analyses:
-#    input:  markdown = MARKDOWN_DIR + "snATACseq_additional_analyses.Rmd",
-#            html1 = RESULTS_DIR + "snATACseq_pseudo-bulk-reps_and_peak_calling_FC.html", # Needed for rule order
-#            html2 = RESULTS_DIR + "snATACseq_pseudo-bulk-reps_and_peak_calling_GE.html",
-#    output: RESULTS_DIR + "snATACseq_additional_analyses.html"
-#    params: report_dir = RESULTS_DIR,
-#            report_file = "snATACseq_additional_analyses.html",
-#    log:    LOG_DIR + "snATAC_additional_analyses.log"
-#    shell:
-#            """
+rule snATAC_additional_analyses:
+    input:  markdown = "scripts/snATACseq_additional_analyses.Rmd",
+            html1 = "../results/archR_data_processing/snATACseq_pseudo-bulk-reps_and_peak_calling_FC.html", # Needed for rule order
+            html2 = "../results/archR_data_processing/snATACseq_pseudo-bulk-reps_and_peak_calling_GE.html",
+    output: "../results/archR_data_processing/snATACseq_additional_analyses.html"
+    params:  rds_dir = "../results/archR_data_processing/rds_files/",
+            report_dir = "../results/archR_data_processing/",
+            report_file = "snATACseq_additional_analyses.html",
+    log:    "../results/logs/archR_data_processing/snATAC_additional_analyses.log"
+    shell:
+            """
 
-#            export R_LIBS_USER=/scratch/c.c1477909/R/library
-#            module load libgit2/1.1.0
-#            module load pandoc/2.7.3
-#            /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
-#            scripts/R/snATACseq_additional_analyses.R {input.markdown} \
-#            {params.report_dir} {params.report_file} 2> {log}             
+            export R_LIBS_USER=/scratch/c.c1477909/R/library
+            module load libgit2/1.1.0
+            module load pandoc/2.7.3
+            /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
+            scripts/snATACseq_additional_analyses.R {input.markdown} {params.rds_dir} \
+            {params.report_dir} {params.report_file} 2> {log}             
 
-#            """
+            """
 
 # -------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------

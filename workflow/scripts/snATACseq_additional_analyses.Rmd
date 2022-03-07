@@ -40,15 +40,4 @@ ComplexHeatmap::draw(motif_heatmap_GE, heatmap_legend_side = "bot", annotation_l
 ***
 
 
-#### **Footprinting** {.tabset}
-
-##### **FC**
-
-Footprints for motifs of interest
-
-***
-
-![footprints_fc](../results/reports/ATAC/ARCHR/FC/Plots/Footprints-Subtract-Bias.pdf)
-
-***
 
