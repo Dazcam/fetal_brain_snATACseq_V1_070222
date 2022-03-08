@@ -39,6 +39,8 @@ REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
 addArchRThreads(threads = 12) # Set Hawk to 32 cores so 0.75 of total
 addArchRGenome("hg38")
+FC_motifs <- c('NEUROD2', 'NEUROD4', 'NEUROD6', 'ASCL1', 'SPI1', 'PAX6')
+GE_motifs <- c('DLX5', 'ASCL1', 'FOXP1', 'ISL1', 'MEIS2', 'SIX3', 'NFIX', 'WT1')
 
 ## Create directories  ------------------------------------------------------------------
 cat('\nCreating directories that snakemake is not tracking ... \n')
@@ -113,64 +115,79 @@ for (REGION in c("FC", "GE")) {
   saveRDS(motif_heatmap_plot, paste0(RDS_DIR, REGION, '_motif_enrichment_heatmap_plot.rds')) 
   saveRDS(heatmap_matrix, paste0(RDS_DIR, REGION, '_motif_enrichment_heatmap_matrix.rds'))    
 
+
+  #  ## Motif Footprinting  -  Chptr 14  ---------------------------------------------------
+  #  cat(paste0('\nRunning footprinting ... \n'))
+  # Loop to pull out cisbp codes for motifs of interest
+  REGION_MOTIFS <- get(paste0(REGION, '_motifs'))
+  cat(paste0('\nRegion motifs are:\n'))
+  cat(REGION_MOTIFS)
+
+  cat(paste0('\nLoading motif file ... \n'))
+  motifs <- enrichMotifs
+
+  cat(paste0('\nRetrieving cisbp codes for motifs of interest in ', REGION, ' ... \n'))
+  MOTIFS_recode_all <- vector()
+
+  for (MOTIF in REGION_MOTIFS) {
+  
+    MOTIFS_recode <- grep(MOTIF, rownames(motifs), value = TRUE)
+    print(MOTIFS_recode)
+    MOTIFS_recode_all <- c(MOTIFS_recode_all, MOTIFS_recode)
+  
+  
+  }
+  
+  cat(paste0('\nAll ', length(REGION_MOTIFS), ' motifs have a cisbp code? ', 
+           length(REGION_MOTIFS) == length(MOTIFS_recode_all),'\n'))
+
+
+  cat(paste0('\nGenerating motif footprints for ', REGION, ' ... \n'))
+  motifPositions <- getPositions(archR)
+  motifPositions
+  
+  markerMotifs <- unlist(lapply(motifs, function(x) grep(x, names(motifPositions), value = TRUE)))
+  markerMotifs
+
+  # Compute footprints
+  cat(paste0('Computing footprints ... \n'))
+  seFoot <- getFootprints(
+      ArchRProj = archR,
+      positions = motifPositions[markerMotifs],
+      groupBy = "Clusters_broad"
+  )
+
+  # Plot footprint - plot = FALSE required to get grob object
+  cat(paste0('Plotting ... \n'))
+  footprint_grob <-  plotFootprints(
+      seFoot = seFoot,
+      ArchRProj = archR,
+      normMethod = "Subtract",
+      plotName = "Footprints_subtract_bias",
+      addDOC = FALSE,
+      smoothWindow = 5,
+      plot = FALSE
+
+  )
+
+  cat(paste0('\nCreating plots and rds files for footprints ... \n'))
+  for (MOTIF in MOTIFS_recode_all) {
+
+    motifs <- MOTIF
+    markerMotifs <- unlist(lapply(motifs, function(x) grep(x, names(motifPositions), value = TRUE)))
+    markerMotifs
+
+    ## Convert to grob ggplot object
+    cat(paste0('Creating plot footprint plot for ', MOTIF, ' ... \n'))
+    footprint_plot <- ggplotify::as.ggplot(footprint_grob[[MOTIF]])
+    
+    assign(paste0(REGION, '_', MOTIF, '_footprint_plot'), footprint_plot)
+    saveRDS(footprint_plot, paste0(RDS_DIR, REGION, MOTIF, '_footprint_plot.rds'))
+    saveRDS(footprint_grob, paste0(RDS_DIR, REGION, MOTIF, '_footprint_grob.rds'))
+
+    }
+
 }
-
-#  ## Motif Footprinting  -  Chptr 14  ---------------------------------------------------
-#  cat(paste0('\nRunning footprinting ... \n'))
-#  if (REGION == 'FC') {
-
-#   MOTIFS <- c('NEUROD2_73', 'DLX5_412')
-   
-#   } else {
-   
-#   MOTIFS <- c('NEUROD2_73', 'DLX5_412')
-   
-#   }
-   
-  
-#  cat(paste0('\nGenerating motif footprints for ', REGION, ' ... \n'))
-#  motifPositions <- getPositions(archR)
-#  motifPositions
-  
-#  cat(paste0('\nCreating rds files for footprints ... \n'))
-#  for (MOTIF in MOTIFS) {
-      
-#    motifs <- MOTIF
-#    markerMotifs <- unlist(lapply(motifs, function(x) grep(x, names(motifPositions), value = TRUE)))
-#    markerMotifs
-      
-#    # Compute footprints
-#    cat(paste0(MOTIF, ' ... \n'))
-#    seFoot <- getFootprints(
-#        ArchRProj = archR, 
-#        positions = motifPositions[markerMotifs], 
-#        groupBy = "Clusters_broad"
-#    )
-      
-#    # Plot footprint - plot = FALSE required to get grob object
-#    cat(paste0('Plotting ... \n'))
-#    footprint_grob <-  plotFootprints(
-#        seFoot = seFoot,
-#        ArchRProj = archR, 
-#        normMethod = "Subtract",
-#        plotName = "Footprints_subtract_bias",
-#        addDOC = FALSE,
-#        smoothWindow = 5,
-#        plot = FALSE
-          
-#    )
-    
-#    # Convert to ggplot object 
-#    cat(paste0('Converting grob to ggplot object ... \n'))
-#    footprint_plot <- ggplotify::as.ggplot(footprint_grob[[MOTIF]])
-    
-#    saveRDS(footprint_plot, paste0(RDS_DIR, REGION, MOTIF, '_footprint_plot.rds')) 
-#    saveRDS(footprint_grob, paste0(RDS_DIR, REGION, MOTIF, '_footprint_grob.rds'))     
-
-#    }
-    
-#}
-
 
 
 #  ## Peak to gene links  -  Chptr 15.3  -------------------------------------------------
