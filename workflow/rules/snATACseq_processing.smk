@@ -152,7 +152,7 @@ rule snATAC_pseudo_bulk_reps_and_peak_calling:
             report_dir = "../results/archR_data_processing/",
             report_file = "snATACseq_pseudo-bulk-reps_and_peak_calling_{REGION}.html",
             macs2 = config['MACS2_PATH']
-    log:    "../results/logs/archR_data_processsing/snATAC_pseudo-bulk-reps_and_peak_calling_{REGION}.log"
+    log:    "../results/logs/archR_data_processing/snATAC_pseudo-bulk-reps_and_peak_calling_{REGION}.log"
     conda:  '../envs/macs2.yml'
     shell:
             """
@@ -163,6 +163,31 @@ rule snATAC_pseudo_bulk_reps_and_peak_calling:
             /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
             scripts/snATACseq_pseudo-bulk-reps_and_peak_calling.R {wildcards.REGION} {params.data_dir} \
             {params.archR_out_dir} {params.peaks_dir} {input.markdown} {params.report_dir} {params.report_file} {params.macs2} 2> {log}
+
+            """
+
+rule snATACseq_call_peaks_ext_500bp:
+    input:  markdown = "scripts/snATACseq_call_peaks_ext_500bp.Rmd",
+            qc_html = "../results/archR_data_processing/snATACseq_unconstrained_integration_{REGION}.html" # Needed for rule order
+    output: "../results/archR_data_processing/snATACseq_call_peaks_ext_500bp_{REGION}.html"
+    params: data_dir = "/scratch/c.c1477909/snATACseq_CR-atac_1.2.0/",
+            archR_out_dir = "../results/ARCHR/{REGION}",
+            archR_ext_out_dir = "../results/ARCHR/{REGION}_peaks_ext500bp",
+            peaks_dir = "../results/archR_data_processing/peaks/",
+            report_dir = "../results/archR_data_processing/",
+            report_file = "snATACseq_call_peaks_ext_500bp_{REGION}.html",
+            macs2 = config['MACS2_PATH']
+    log:    "../results/logs/archR_data_processing/snATACseq_call_peaks_ext_500bp_{REGION}.log"
+    conda:  '../envs/macs2.yml'
+    shell:
+            """
+
+            export R_LIBS_USER=/scratch/c.c1477909/R/library
+            module load libgit2/1.1.0
+            module load pandoc/2.7.3
+            /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
+             scripts/snATACseq_call_peaks_ext_500bp.R {wildcards.REGION} {params.data_dir} {params.archR_out_dir} \
+            {params.archR_ext_out_dir} {params.peaks_dir} {input.markdown} {params.report_dir} {params.report_file} {params.macs2} 2> {log}
 
             """
 

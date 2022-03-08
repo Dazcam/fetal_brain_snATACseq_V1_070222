@@ -11,6 +11,7 @@ rule all:
         expand("../results/archR_data_processing/snATACseq_unconstrained_integration_{REGION}.html", REGION = config['ATAC_REGIONS']), 
 #        expand("../results/archR_data_processing/snATACseq_pseudo-bulk-reps_and_peak_calling_{REGION}.html", REGION = config['ATAC_REGIONS']),
         expand("../results/archR_data_processing/snATACseq_cluster_ID_geneExpMatrix_{REGION}.html", REGION = config['ATAC_REGIONS']),
+        expand("../results/archR_data_processing/snATACseq_call_peaks_ext_500bp_{REGION}.html", REGION = config['ATAC_REGIONS']),
         "../results/archR_data_processing/snATACseq_additional_analyses.html" 
 
 #        expand("../results/archR_data_processing/snATACseq_remove_batch_effects_{REGION}.html", REGION = config['ATAC_REGIONS']), # Can remove this once testing complete

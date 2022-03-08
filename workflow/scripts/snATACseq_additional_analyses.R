@@ -49,6 +49,18 @@ dir.create(RDS_DIR)
 ## Main loop for analyses
 for (REGION in c("FC", "GE")) {
   
+  if (REGION == 'FC') {
+
+    reducedDim_ID <- 'IterativeLSI_reclust'
+
+  } else {
+
+    reducedDim_ID <- 'IterativeLSI'
+    clust_ID <- 'Clusters'
+    UMAP_ID<- 'UMAP'
+
+  }
+
   ##  Load ArchR project  ---------------------------------------------------------------
   cat(paste0('\nLoading ArchR project for ', REGION, ' ... \n'))
   archR <- loadArchRProject(paste0('../results/ARCHR/', REGION))
@@ -72,6 +84,33 @@ for (REGION in c("FC", "GE")) {
   markerList <- getMarkers(markersPeaks, cutOff = "FDR <= 0.01 & Log2FC >= 1", returnGR = TRUE)
   markerList
   
+  ## Peak coaccessibility  -  Chptr 15.2  ----------------------------------------------
+  cat(paste0("Starting coaccessibility analysis for ", REGION, " ... \n"))
+  cat("Adding coaccessibile links ... \n")
+  archR <- addCoAccessibility(
+    ArchRProj = archR,
+    reducedDims = reducedDim_ID
+  )
+
+  cat("Retrieving coaccesibility df ... \n")
+  cA <- getCoAccessibility(
+    ArchRProj = projHeme5,
+    corCutOff = 0.5,
+    resolution = 1,
+    returnLoops = FALSE
+  )
+
+  cA_df <- cA
+  cA_df
+  cA_metadata <- metadata(cA)[[1]]
+  cA_metadata
+
+  ## Save RDS objects
+  cat(paste0('Writing coaccesibility df and metadata'))
+  saveRDS(cA_df, paste0(RDS_DIR, REGION, 'cA_peaks_df.rds'))
+  saveRDS(cA_metadata, paste0(RDS_DIR, REGION, 'cA_peaks_metadata.rds'))
+
+
   ## Motif enrichment  -  Chptr 12  -----------------------------------------------------
   # Add motif anns to archR project - creates binary matrix for presence/absence of motif in peak
   cat(paste0('\nAdding motif annotations  ... \n'))
@@ -116,7 +155,7 @@ for (REGION in c("FC", "GE")) {
   saveRDS(heatmap_matrix, paste0(RDS_DIR, REGION, '_motif_enrichment_heatmap_matrix.rds'))    
 
 
-  #  ## Motif Footprinting  -  Chptr 14  ---------------------------------------------------
+  ## Motif Footprinting  -  Chptr 14  ---------------------------------------------------
   #  cat(paste0('\nRunning footprinting ... \n'))
   # Loop to pull out cisbp codes for motifs of interest
   REGION_MOTIFS <- get(paste0(REGION, '_motifs'))
@@ -146,7 +185,7 @@ for (REGION in c("FC", "GE")) {
   motifPositions <- getPositions(archR)
   motifPositions
   
-  markerMotifs <- unlist(lapply(motifs, function(x) grep(x, names(motifPositions), value = TRUE)))
+  markerMotifs <- unlist(lapply(MOTIFS_recode_all, function(x) grep(x, names(motifPositions), value = TRUE)))
   markerMotifs
 
   # Compute footprints
@@ -174,21 +213,23 @@ for (REGION in c("FC", "GE")) {
   for (MOTIF in MOTIFS_recode_all) {
 
     motifs <- MOTIF
+    motifs
     markerMotifs <- unlist(lapply(motifs, function(x) grep(x, names(motifPositions), value = TRUE)))
     markerMotifs
 
     ## Convert to grob ggplot object
     cat(paste0('Creating plot footprint plot for ', MOTIF, ' ... \n'))
     footprint_plot <- ggplotify::as.ggplot(footprint_grob[[MOTIF]])
-    
+    exists(footprint_plot)
+
     assign(paste0(REGION, '_', MOTIF, '_footprint_plot'), footprint_plot)
-    saveRDS(footprint_plot, paste0(RDS_DIR, REGION, MOTIF, '_footprint_plot.rds'))
-    saveRDS(footprint_grob, paste0(RDS_DIR, REGION, MOTIF, '_footprint_grob.rds'))
+    exists(get(paste0(REGION, '_', MOTIF, '_footprint_plot')))
+    saveRDS(footprint_plot, paste0(RDS_DIR, REGION, '_', MOTIF, '_footprint_plot.rds'))
+    saveRDS(footprint_grob, paste0(RDS_DIR, REGION, '_', MOTIF, '_footprint_grob.rds'))
 
     }
 
 }
-
 
 #  ## Peak to gene links  -  Chptr 15.3  -------------------------------------------------
 #  cat(paste0("Starting peak to gene linkage analysis for ", REGION, " ... \n"))

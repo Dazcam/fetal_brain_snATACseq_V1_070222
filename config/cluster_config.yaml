@@ -47,6 +47,9 @@ snATAC_constrained_integration:
 snATAC_pseudo_bulk_reps_and_peak_calling:
     num_cores: 12
     total_mem: 96G
+snATACseq_call_peaks_ext_500bp:
+    num_cores: 12
+    total_mem: 96G
 snATAC_additional_analyses:
     num_cores: 12
     total_mem: 96G
