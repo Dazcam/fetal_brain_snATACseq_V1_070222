@@ -94,7 +94,7 @@ for (REGION in c("FC", "GE")) {
 
   cat("Retrieving coaccesibility df ... \n")
   cA <- getCoAccessibility(
-    ArchRProj = projHeme5,
+    ArchRProj = archR,
     corCutOff = 0.5,
     resolution = 1,
     returnLoops = FALSE
@@ -107,8 +107,8 @@ for (REGION in c("FC", "GE")) {
 
   ## Save RDS objects
   cat(paste0('Writing coaccesibility df and metadata'))
-  saveRDS(cA_df, paste0(RDS_DIR, REGION, 'cA_peaks_df.rds'))
-  saveRDS(cA_metadata, paste0(RDS_DIR, REGION, 'cA_peaks_metadata.rds'))
+  saveRDS(cA_df, paste0(RDS_DIR, '_', REGION, 'cA_peaks_df.rds'))
+  saveRDS(cA_metadata, paste0(RDS_DIR, '_', REGION, 'cA_peaks_metadata.rds'))
 
 
   ## Motif enrichment  -  Chptr 12  -----------------------------------------------------
@@ -173,7 +173,7 @@ for (REGION in c("FC", "GE")) {
     MOTIFS_recode <- grep(MOTIF, rownames(motifs), value = TRUE)
     print(MOTIFS_recode)
     MOTIFS_recode_all <- c(MOTIFS_recode_all, MOTIFS_recode)
-  
+    assign(paste0(REGION, '_', 'motifs_recode_all'), MOTIFS_recode_all) # For .Rmd file   
   
   }
   
@@ -220,10 +220,8 @@ for (REGION in c("FC", "GE")) {
     ## Convert to grob ggplot object
     cat(paste0('Creating plot footprint plot for ', MOTIF, ' ... \n'))
     footprint_plot <- ggplotify::as.ggplot(footprint_grob[[MOTIF]])
-    exists(footprint_plot)
 
     assign(paste0(REGION, '_', MOTIF, '_footprint_plot'), footprint_plot)
-    exists(get(paste0(REGION, '_', MOTIF, '_footprint_plot')))
     saveRDS(footprint_plot, paste0(RDS_DIR, REGION, '_', MOTIF, '_footprint_plot.rds'))
     saveRDS(footprint_grob, paste0(RDS_DIR, REGION, '_', MOTIF, '_footprint_grob.rds'))
 

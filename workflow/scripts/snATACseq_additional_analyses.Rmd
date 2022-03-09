@@ -42,9 +42,9 @@ ComplexHeatmap::draw(motif_heatmap_GE, heatmap_legend_side = "bot", annotation_l
 #### FC Footprints {.tabset}
 
 ```{r FC footprints, results='asis', echo=FALSE}
-for(i in 1:length(MOTIFS_recode_all)) {
-  cat('##### ', MOTIFS_recode_all[i], ' \n')
-  plot <- get(paste0('FC_', MOTIFS_recode_all[i], '_footprint_plot'))
+for(i in 1:length(FC_motifs_recode_all)) {
+  cat('##### ', FC_motifs_recode_all[i], ' \n')
+  plot <- get(paste0('FC_', FC_motifs_recode_all[i], '_footprint_plot'))
   print(plot)
   cat('\n \n')
 }
@@ -54,9 +54,9 @@ for(i in 1:length(MOTIFS_recode_all)) {
 #### GE Footprints {.tabset}
 
 ```{r GE footprints, results='asis', echo=FALSE}
-for(i in 1:length(MOTIFS_recode_all)) {
-  cat('##### ', MOTIFS_recode_all[i], ' \n')
-  plot <- get(paste0('GE_', MOTIFS_recode_all[i], '_footprint_plot'))
+for(i in 1:length(GE_motifs_recode_all)) {
+  cat('##### ', GE_motifs_recode_all[i], ' \n')
+  plot <- get(paste0('GE_', GE_motifs_recode_all[i], '_footprint_plot'))
   print(plot)
   cat('\n \n')
 }
