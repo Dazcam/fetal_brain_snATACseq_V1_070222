@@ -185,14 +185,16 @@ snps_no_patches <- SNPs %>%
   dplyr::rename('snpID' = refsnp_id, 'hg38_base_position' = chrom_start)
 cat(paste0(nrow(snps_no_patches), ' SNPs retained. \n'))
 
-# 
-write_tsv(as.data.frame(snps_no_patches), '_PGC3_SCZ_r2_0.8_SNPs_hg38.tsv')
-
+# Write to file
+write_tsv(as.data.frame(snps_no_patches), 'pgc3_scz_index_snps_and_proxies_hg38.tsv')
+snps_no_patches <- read_tsv(paste0(SNP_DIR, 'pgc3_scz_index_snps_and_proxies_hg38.tsv'),
+                            col_types = cols(chr_name = col_character()))
+  
 ## Check for overlap of SNPs in snATACseq peaks of all cell types  --------------------
 for (CELL_TYPE in CELL_TYPES) {
   
   cat(paste0('\nLoading peaks for ', CELL_TYPE, ' ... \n'))
-  peaks_df <- read_tsv(paste0(PEAK_DIR, CELL_TYPE,'.hg38.bed'), col_names = FALSE)
+  peaks_df <- read_tsv(paste0(PEAK_DIR, CELL_TYPE,'.hg38.ext500bp.bed'), col_names = FALSE)
   colnames(peaks_df) <- c('chr', 'start', 'end', 'name', 'score', 'strand')
 
   cell_overlaps <- data.frame()
@@ -222,14 +224,14 @@ for (CELL_TYPE in CELL_TYPES) {
   cat(paste0('\nAll ', nrow(snps_no_patches), ' SNPs checked in ', CELL_TYPE, ' ... \n'))
   
   cat(paste0('\nWriting overlapping SNPs to file ... \n'))
-  write_tsv(cell_overlaps, paste0(PEAK_DIR, CELL_TYPE,'_PGC3_SCZ_r2_0.8_SNP_overlaps.tsv'))
+  write_tsv(cell_overlaps, paste0(PEAK_DIR, CELL_TYPE,'_PGC3_SCZ_r2_0.8_SNP_peak_overlaps_ext500bp.tsv'))
   assign(paste0(CELL_TYPE, '_SNP_overlaps'), cell_overlaps)
   
 }
 
 cat('Done.\n')
 
-## Need to cross reference this with scripts/R/snATACseq_map_PGC3_snps_to_peaks.R on cluster
+
 
 #--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------
