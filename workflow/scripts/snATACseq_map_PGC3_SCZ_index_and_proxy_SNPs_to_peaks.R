@@ -17,7 +17,7 @@
 #    - 9 SNPs failed 
 #    - Not encoded as an rsID in xslx file: 8:4180090_T_A 
 #    - Not in 1000G reference panel: rs2494638, rs12514660, rs2914025, rs55858161
-#    -Not a not a biallelic variant: rs62152282, rs35026989, rs11241041, rs650520
+#    - Not a not a biallelic variant: rs62152282, rs35026989, rs11241041, rs650520
 # 3. Map SNPs to hg38 using BioMart
 # 4. Check for overlap of PGC3 index and proxy SNPs in snATACseq peaks (500 bp ext)
 
@@ -186,7 +186,7 @@ snps_no_patches <- SNPs %>%
 cat(paste0(nrow(snps_no_patches), ' SNPs retained. \n'))
 
 # 
-write_tsv(as.data.frame(snps_no_patches), 'pgc3_scz_index_snps_and_proxies_hg38.tsv')
+write_tsv(as.data.frame(snps_no_patches), '_PGC3_SCZ_r2_0.8_SNPs_hg38.tsv')
 
 ## Check for overlap of SNPs in snATACseq peaks of all cell types  --------------------
 for (CELL_TYPE in CELL_TYPES) {
@@ -222,8 +222,8 @@ for (CELL_TYPE in CELL_TYPES) {
   cat(paste0('\nAll ', nrow(snps_no_patches), ' SNPs checked in ', CELL_TYPE, ' ... \n'))
   
   cat(paste0('\nWriting overlapping SNPs to file ... \n'))
-  write_tsv(cell_overlaps, paste0(PEAK_DIR, 'PeakCalls/', REGION, '/', REGION, '-', CELL_ID,'_PGC3_r2_0.8_SNP_overlaps.tsv'))
-  assign(paste0(REGION, '_', CELL_ID, '_SNP_overlaps'), cell_overlaps)
+  write_tsv(cell_overlaps, paste0(PEAK_DIR, CELL_TYPE,'_PGC3_SCZ_r2_0.8_SNP_overlaps.tsv'))
+  assign(paste0(CELL_TYPE, '_SNP_overlaps'), cell_overlaps)
   
 }
 
