@@ -36,7 +36,7 @@ REPORT_FILE <- args$report_file
 OUT_DIR <- args$out_dir
 
 ## Load Data  -------------------------------------------------------------------------
-for (GWAS in c('SCZ')) {
+for (GWAS in c('SCZ', 'MDD', 'ADHD', 'ASD', 'HEIGHT', 'BPD')) {
   
   # Load LDSC summary
   cat(paste0('\nLoading data for', GWAS, ' ... \n'))
@@ -58,7 +58,7 @@ for (GWAS in c('SCZ')) {
   
 #  cer_enrich_plot <- ggplot(cer_df, aes(x=Category, y=Enrichment)) +
 #    geom_bar(stat = "identity", colour = "Black", fill = "#f8766d", width = 0.85) +
-#    scale_y_continuous(limits = c(-4, 30), expand = c(0.02, 0)) +
+#    scale_y_continuous(limits = c(0, 20), expand = c(0.02, 0)) +
 #    theme_bw() + 
 #    theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"), # Margin around plot
 #          panel.grid.major = element_blank(), 
@@ -74,7 +74,7 @@ for (GWAS in c('SCZ')) {
   
   fc_enrich_plot <- ggplot(fc_df, aes(x=Category, y=Enrichment)) +
     geom_bar(stat = "identity", colour = "Black", fill = "#f8766d", width = 0.85) +
-    scale_y_continuous(limits = c(-4, 30), expand = c(0.02, 0)) +
+    scale_y_continuous(limits = c(-4, 16), expand = c(0.02, 0)) +
     theme_bw() + 
     theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"), # Margin around plot
           panel.grid.major = element_blank(), 
@@ -90,7 +90,7 @@ for (GWAS in c('SCZ')) {
   
   ge_enrich_plot <- ggplot(ge_df, aes(x=Category, y=Enrichment)) +
     geom_bar(stat = "identity", colour = "Black", fill = "#f8766d", width = 0.85) +
-    scale_y_continuous(limits = c(-4, 30), expand = c(0.02, 0)) +
+    scale_y_continuous(limits = c(0, 20), expand = c(0.02, 0)) +
     theme_bw() + 
     theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"), # Margin around plot
           panel.grid.major = element_blank(), 
@@ -120,7 +120,7 @@ for (GWAS in c('SCZ')) {
   
   fc_pVal_plot <- ggplot(fc_df, aes(x=Category, y=neglog10)) +
     geom_bar(stat = "identity", colour = "Black", fill = "#01b0f6", width = 0.85) +
-    scale_y_continuous(limits = c(0, 16), expand = c(0.02, 0)) +
+    scale_y_continuous(limits = c(0, 20), expand = c(0.02, 0)) +
     theme_bw() +
     theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"), 
           panel.grid.major = element_blank(), 
@@ -134,7 +134,7 @@ for (GWAS in c('SCZ')) {
   
   ge_pVal_plot <- ggplot(ge_df, aes(x=Category, y=neglog10)) +
     geom_bar(stat = "identity", colour = "Black", fill = "#01b0f6", width = 0.85, angle = 45) +
-    scale_y_continuous(limits = c(0, 12), expand = c(0.02, 0)) +
+    scale_y_continuous(limits = c(0, 20), expand = c(0.02, 0)) +
     theme_bw() +
     theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"), 
           panel.grid.major = element_blank(), 
