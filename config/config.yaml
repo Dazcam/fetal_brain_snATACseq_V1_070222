@@ -43,10 +43,11 @@ ATAC_CELL_TYPES:
 
 LDSC_GWAS:
     SCZ:
-#    BPD:
-#    ASD:
-#    ADHD:
-#    HEIGHT:
+    BPD:
+    ASD:
+    ADHD:
+    HEIGHT:
+    MDD:
 
 LSI_PARAMS:
     Iteration:

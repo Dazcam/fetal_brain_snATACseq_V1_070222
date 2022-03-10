@@ -87,7 +87,7 @@ rule create_partHerit_summary:
     params:  ph_dir = "../results/LDSR_part_herit/baseline_v1.2/",
              results_dir = "../results/LDSR_part_herit/baseline_v1.2/",
              cell_types = "../resources/sheets/atac_celltypes.tsv"
-    log:     "../resultslogs/LDSR/snATACseq.{GWAS}_baseline_v1.2_partHerit.summary.log"
+    log:     "../results/logs/LDSR/snATACseq.{GWAS}_baseline_v1.2_partHerit.summary.log"
     shell:
              """
 

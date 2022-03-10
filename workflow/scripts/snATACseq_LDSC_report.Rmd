@@ -5,15 +5,13 @@ date: "`r format(Sys.time(), '%d/%m/%y')`"
 output: html_document
 ---
 
-snATACseq sLDSC results. FDR threshold < 0.05. All peaks 501bp. Zp scores are 2-tailed.
+snATACseq sLDSC results. FDR threshold < 0.05. All peaks 1001bp. Zp scores are 2-tailed.
 
 ***
 
 ### **Results** {.tabset}
 
 ***
-
-#### **LDSC** {.tabset}
 
 ##### **SCZ** {.tabset}
 
