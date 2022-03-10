@@ -1,0 +1,51 @@
+---
+title: "sLDSC results - ATAC"
+author: "Darren Cameron"
+date: "`r format(Sys.time(), '%d/%m/%y')`"
+output: html_document
+---
+
+snATACseq sLDSC results. FDR threshold < 0.05. All peaks 501bp. Zp scores are 2-tailed.
+
+***
+
+### **Results** {.tabset}
+
+***
+
+#### **LDSC** {.tabset}
+
+##### **SCZ** {.tabset}
+
+###### **FC**
+
+***
+
+```{R, fc_SCZ_df, echo=FALSE, }
+knitr::kable(fc_SCZ_df)
+```
+
+***
+
+```{R, fc_SCZ_plot, echo=FALSE, fig.dim = c(10, 5), fig.align = 'center'}
+fc_SCZ_plot
+```
+
+***
+
+###### **GE**
+
+***
+
+```{R, ge_SCZ_df, echo=FALSE, }
+knitr::kable(ge_SCZ_df)
+```
+
+***
+
+```{R, ge_SCZ_plot, echo=FALSE, fig.dim = c(10, 5), fig.align = 'center'}
+ge_SCZ_plot
+```
+
+***
+

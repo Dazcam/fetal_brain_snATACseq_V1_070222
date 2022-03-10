@@ -29,6 +29,25 @@ REFERENCE_ATAC: ../resources/refdata-cellranger-atac-GRCh38-1.2.0
 
 MACS2_PATH: '~/.conda/envs/macs2/bin/macs2'
 
+ATAC_CELL_TYPES:
+    FC.ExN:
+    FC.InN:
+    FC.RG:
+    FC.MG:
+    FC.undef:
+    LGE.InN:  
+    MGE.InN:  
+    CGE.InN:  
+    GE.RG:    
+    GE.Proj: 
+
+LDSC_GWAS:
+    SCZ:
+#    BPD:
+#    ASD:
+#    ADHD:
+#    HEIGHT:
+
 LSI_PARAMS:
     Iteration:
     Resolution:
