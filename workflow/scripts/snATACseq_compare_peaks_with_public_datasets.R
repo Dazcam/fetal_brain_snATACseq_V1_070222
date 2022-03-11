@@ -19,13 +19,18 @@
 library(readxl)
 library(tidyverse)
 library(bedr)
+library(openxlsx)
 
 ##  Define global variables  -----------------------------------------------------------
 cat('\nDefining variables ... \n')
 PEAK_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/archR_data_processing/peaks/"
 ZIFFRA_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/resources/public_datasets/ziffra_2021/"
-OUT_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/"
-CELL_TYPES <- c("FC.ExN", "FC.InN", "FC.RG", "FC.MG", "FC.undef", "LGE.InN", "MGE.InN", "CGE.InN", "GE.RG", "GE.Proj")
+OUT_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/peak_similarity/"
+CELL_TYPES <- c("FC.ExN", "FC.InN", "FC.RG", "FC.MG", "FC.undef", 
+                "LGE.InN", "MGE.InN", "CGE.InN", "GE.RG", "GE.Proj")
+ZIFFRA_CELL_TYPES = c("earlyEN", "dlEN", "ulEN", "IN_MGE", "RG",
+           "Microglia", "EndoMural", "IN_MGE", "IN_MGE", "MGE",
+           "IN_CGE", "RG", "Insula")
 TOKEN <- "" # Needed for LDlinkR - saved in email
 
 ##  Load public data  -----------------------------------------------------------------
@@ -91,6 +96,7 @@ for (CELL_TYPE in CELL_TYPES) {
   MY_PEAKS <- get(paste0(CELL_TYPE, "_peaks"))
   MY_PEAKS <- bedr.sort.region(MY_PEAKS) # Sorts the validates
   is.sorted <- is.sorted.region(MY_PEAKS, method = "lexicographical", engine = 'R')
+  MY_PEAKS <- bedr.merge.region(MY_PEAKS)
   assign(paste0(CELL_TYPE, '_peaks_srtd'), MY_PEAKS)
   
 }
@@ -122,31 +128,43 @@ for (i in 1:length(ziffra_peaks_all)) {
 cat('\nRun pairwise tests ... \n')
 jaccard_df <- data.frame()
 
-for (i in 1:nrow(pairwise_df)) {
+for (i in CELL_TYPES) {
   
-  BRAY_cell_type <- pairwise_df[i, 1]
-  ZIFFRA_cell_type <- pairwise_df[i, 2]
-  BRAY_peaks <- get(paste0(BRAY_cell_type, '_peaks_srtd'))
-  ZIFFRA_peaks <- get(paste0(ZIFFRA_cell_type, '_peaks_srtd'))
-  print(length(BRAY_peaks))
-  print(length(ZIFFRA_peaks))
-  
-  cat('\nRunning Jaccard test for ', BRAY_cell_type, ' and ', ZIFFRA_cell_type, '\n')
-  jaccard.stats <- jaccard(BRAY_peaks, ZIFFRA_peaks)
-  jaccard_df <- rbind(jaccard_df, jaccard.stats)
-  cat('\n\n Assigning files ... \n\n')
-  
-  assign(paste0(BRAY_cell_type, '_', ZIFFRA_cell_type, '_jaccard'), jaccard.stats)
-  
+  for (j in ZIFFRA_CELL_TYPES) {
+    
+    BRAY_cell_type <- i
+    ZIFFRA_cell_type <- j
+    BRAY_peaks <- get(paste0(i, '_peaks_srtd'))
+    ZIFFRA_peaks <- get(paste0(j, '_peaks_srtd'))
+    print(length(BRAY_peaks))
+    print(length(ZIFFRA_peaks))
+    
+    cat('\nRunning Jaccard test for ', BRAY_cell_type, ' and ', ZIFFRA_cell_type, '\n')
+    jaccard.stats <- jaccard(BRAY_peaks, ZIFFRA_peaks)
+    rownames(jaccard.stats) <- NULL
+    jaccard.stats <- unlist(unname(as.vector(jaccard.stats)))
+    jaccard.stats <- c(BRAY_cell_type, ZIFFRA_cell_type, jaccard.stats)
+    jaccard_df <- rbind(jaccard_df, jaccard.stats)
+    
+  }
+
 }
 
-pairwise_table <- cbind(pairwise_df, jaccard_df)
-rownames(pairwise_table) <- NULL
+colnames(jaccard_df) <- c('bray_cell', 'ziffra_cell', "intersection", 
+                          "union-intersection", "jaccard", "n_intersections")
+
+
+jaccard_list <- jaccard_df %>%
+  arrange(desc(jaccard)) %>%
+  group_split(bray_cell)
+  
+jaccard_list <- as.list(jaccard_list) # Need this write.xlsx doesn't work otherwise
 
 # Write table 
 cat('\nWriting Jaccard pairwise table\n')
-write.table(pairwise_table, paste0(OUT_DIR, "ziffra_peak_comparison_jaccard_tests.tsv"), 
-            quote = FALSE,sep = '\t', row.names = FALSE, col.names = TRUE)
+dir.create(OUT_DIR)
+write.xlsx(jaccard_list, paste0(OUT_DIR, "ziffra_peak_comparison_jaccard_tests.xlsx"))
+          
 
 cat('\nDone.\n')
 
