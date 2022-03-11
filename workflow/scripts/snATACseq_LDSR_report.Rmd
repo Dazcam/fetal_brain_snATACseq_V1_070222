@@ -5,7 +5,7 @@ date: "`r format(Sys.time(), '%d/%m/%y')`"
 output: html_document
 ---
 
-snATACseq sLDSC results. FDR threshold < 0.05. All peaks 1001bp. Zp scores are 2-tailed.
+snATACseq sLDSC results. FDR threshold < 0.05. All peaks `r PEAK_EXT`. Zp scores are 2-tailed.
 
 ***
 
@@ -13,9 +13,9 @@ snATACseq sLDSC results. FDR threshold < 0.05. All peaks 1001bp. Zp scores are 2
 
 ***
 
-##### **SCZ** {.tabset}
+#### **SCZ** {.tabset}
 
-###### **FC**
+##### **FC**
 
 ***
 
@@ -31,7 +31,7 @@ fc_SCZ_plot
 
 ***
 
-###### **GE**
+##### **GE**
 
 ***
 
@@ -47,9 +47,9 @@ ge_SCZ_plot
 
 ***
 
-##### **BPD** {.tabset}
+#### **BPD** {.tabset}
 
-###### **FC**
+##### **FC**
 
 ***
 
@@ -65,7 +65,7 @@ fc_BPD_plot
 
 ***
 
-###### **GE**
+##### **GE**
 
 ***
 
@@ -81,9 +81,9 @@ ge_BPD_plot
 
 ***
 
-##### **MDD** {.tabset}
+#### **MDD** {.tabset}
 
-###### **FC**
+##### **FC**
 
 ***
 
@@ -99,7 +99,7 @@ fc_MDD_plot
 
 ***
 
-###### **GE**
+##### **GE**
 
 ***
 
@@ -115,9 +115,9 @@ ge_MDD_plot
 
 ***
 
-##### **HEIGHT** {.tabset}
+#### **HEIGHT** {.tabset}
 
-###### **FC**
+##### **FC**
 
 ***
 
@@ -133,7 +133,7 @@ fc_HEIGHT_plot
 
 ***
 
-###### **GE**
+##### **GE**
 
 ***
 
@@ -149,9 +149,9 @@ ge_HEIGHT_plot
 
 ***
 
-##### **ADHD** {.tabset}
+#### **ADHD** {.tabset}
 
-###### **FC**
+##### **FC**
 
 ***
 
@@ -167,7 +167,7 @@ fc_ADHD_plot
 
 ***
 
-###### **GE**
+##### **GE**
 
 ***
 

@@ -1,6 +1,6 @@
 #include: "rules/snATACseq_cellRanger.smk"
 include: "rules/snATACseq_processing.smk"
-include: "rules/snATACseq_LDSC.smk"
+include: "rules/snATACseq_LDSR.smk"
 #include:  "rules/snATACseq_QC_LSI_params.smk" 
 
 rule all:
@@ -14,7 +14,7 @@ rule all:
         expand("../results/archR_data_processing/snATACseq_cluster_ID_geneExpMatrix_{REGION}.html", REGION = config['ATAC_REGIONS']),
         expand("../results/archR_data_processing/snATACseq_call_peaks_ext_500bp_{REGION}.html", REGION = config['ATAC_REGIONS']),
         "../results/archR_data_processing/snATACseq_additional_analyses.html" ,
-        "../results/snATACseq_LDSC_baseline.v1.2_report.html"
+        expand("../results/rmarkdown_reports/snATACseq_LDSR_baseline.v1.2_{EXT}_report.html", EXT = config['PEAK_EXTENSION']),
 #        expand("../results/archR_data_processing/snATACseq_remove_batch_effects_{REGION}.html", REGION = config['ATAC_REGIONS']), # Can remove this once testing complete
 #        expand("../results/snATACseq_unconstrained_integration_{REGION}.html", REGION = config['ATAC_REGIONS']) 
 #         expand("../results/QC_LSI_params/snATACseq_QC_{REGION}_LSI_{LSI_PARAM}.html", REGION = config['ATAC_REGIONS'], LSI_PARAM = config['LSI_PARAMS'])

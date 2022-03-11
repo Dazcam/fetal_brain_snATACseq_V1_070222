@@ -26,6 +26,7 @@ p <- arg_parser("Create sLDSC Rmarkdown report for snATAC-seq data ... \n")
 p <- add_argument(p, "markdown_file", help = "No snATACseq sLDSC Rmarkdown report file specified")
 p <- add_argument(p, "out_dir", help = "No Rmarkdown html output directory specified")
 p <- add_argument(p, "report_file", help = "No report filename specified")
+p <- add_argument(p, "peak_extension", help = "No report filename specified")
 args <- parse_args(p)
 print(args)
 
@@ -34,13 +35,14 @@ SUMMARY_FILE <- args$summary_file
 MARKDOWN_FILE <- args$markdown_file
 REPORT_FILE <- args$report_file
 OUT_DIR <- args$out_dir
+PEAK_EXT <- args$peak_extension
 
 ## Load Data  -------------------------------------------------------------------------
 for (GWAS in c('SCZ', 'MDD', 'ADHD', 'ASD', 'HEIGHT', 'BPD')) {
   
   # Load LDSC summary
   cat(paste0('\nLoading data for', GWAS, ' ... \n'))
-  gwas_df <- read_delim(paste0("../results/LDSR_part_herit/baseline_v1.2/snATACseq_LDSC_baseline.v1.2_summary_", GWAS, ".tsv"), 
+  gwas_df <- read_delim(paste0("../results/LDSR/part_herit/baseline_v1.2/snATACseq_LDSR_baseline.v1.2_", PEAK_EXT, "_summary_", GWAS, ".tsv"), 
                     delim = "\t", escape_double = FALSE, 
                     trim_ws = TRUE)
   

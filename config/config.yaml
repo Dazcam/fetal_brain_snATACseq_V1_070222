@@ -1,5 +1,4 @@
 ATAC_REGIONS:
-#    Cer:
     FC:
     GE:
 
@@ -48,6 +47,10 @@ LDSC_GWAS:
     ADHD:
     HEIGHT:
     MDD:
+
+PEAK_EXTENSION:
+    ext250bp:
+    ext500bp:
 
 LSI_PARAMS:
     Iteration:
