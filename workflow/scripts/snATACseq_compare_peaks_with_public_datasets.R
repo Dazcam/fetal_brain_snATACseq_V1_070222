@@ -1,6 +1,6 @@
 #--------------------------------------------------------------------------------------
 #
-#     Compare peaks 
+#     Compare peaks - Test for similarity between peaks 
 #
 #--------------------------------------------------------------------------------------
 
@@ -12,35 +12,33 @@
 
 ## Info  ------------------------------------------------------------------------------
 
-
+#  Testing for similarity between peaks (ext 250bp) in our cell types and peaks from
+#  celltypes in Ziffra et al (2021)
 
 ##  Load Packages  --------------------------------------------------------------------
 library(readxl)
 library(tidyverse)
 library(bedr)
 
-
 ##  Define global variables  -----------------------------------------------------------
 cat('\nDefining variables ... \n')
 PEAK_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/archR_data_processing/peaks/"
 ZIFFRA_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/resources/public_datasets/ziffra_2021/"
 OUT_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/"
-REGIONS <- c("FC", "GE")
 CELL_TYPES <- c("FC.ExN", "FC.InN", "FC.RG", "FC.MG", "FC.undef", "LGE.InN", "MGE.InN", "CGE.InN", "GE.RG", "GE.Proj")
-ZIFFRA_CELL_TYPES <- c("AstroOligo", "dlEN", "earlyEN", "EndoMural", "IN_CGE", 
-                       "IN_MGE", "IPC", "Microglia", "RG", "ulEN", 
-                       "MGE", "Insula")
 TOKEN <- "" # Needed for LDlinkR - saved in email
 
 ##  Load public data  -----------------------------------------------------------------
 # peak list = all peaks key; mac2 all peaks per cell type; specific; specific peaks per cell type
+cat('\nLoading public data ... \n')
 peak_list <- read_excel(paste0(ZIFFRA_DIR, 'Ziffra_2021_supp_tables_2_13.xlsx'), sheet = 'ST2 AllPrimaryPeaks') %>%
   dplyr::select(seqnames, start, end, peak_name) 
 macs2_peak_list <- read_excel(paste0(ZIFFRA_DIR, 'Ziffra_2021_supp_tables_2_13.xlsx'), sheet = 'ST3 MACSpeaks_byCelltype') 
 specific_peak_list <- read_excel(paste0(ZIFFRA_DIR, 'Ziffra_2021_supp_tables_2_13.xlsx'), sheet = 'ST4 Specificpeaks_byCelltype') 
 
-## Load snATACseq peaks - format for bedr chr:start-end
-options(scipen = 999) # required to prevent number being abbr. in scientific notation
+## Load snATACseq peaks - format for bedr chr:start-end  ------------------------------
+options(scipen = 999) # required to prevent peak coords. being abbr. in sci' notation
+cat('\nLoading snATACseq data and munging into bedr format ... \n')
 for (CELL_TYPE in CELL_TYPES) {
   
   PEAKS <- read_delim(paste0(PEAK_DIR, CELL_TYPE, ".hg38.bed"), 
@@ -54,8 +52,20 @@ for (CELL_TYPE in CELL_TYPES) {
   
 }
 
-## Munge public data into list of peaks per cell-type
+## Set up pairwise comparison df  -----------------------------------------------------
+# Create df for pairwise tests
+cat('\nCreating pairwise df ... \n')
+pairwise_df <- data.frame(bray  = c("FC.ExN", "FC.ExN", "FC.ExN", "FC.InN", "FC.RG", 
+                                    "FC.MG", "FC.undef", "LGE.InN", "MGE.InN", "MGE.InN",
+                                    "CGE.InN", "GE.RG", "GE.Proj"),
+                          ziffra = c("earlyEN", "dlEN", "ulEN", "IN_MGE", "RG",
+                                     "Microglia", "EndoMural", "IN_MGE", "IN_MGE", "MGE",
+                                     "IN_CGE", "RG", "Insula")
+)
+
+## Munge public data into list of peaks per cell-type  --------------------------------
 ## Join key and cell type lists
+cat('\nMunging Ziffra peaks into bedr format ... \n')
 ziffra_peaks_all <- macs2_peak_list %>% 
   inner_join(peak_list) %>%
   relocate(seqnames, start, end, peak_name) %>%
@@ -73,7 +83,8 @@ ziffra_peaks_specific <- specific_peak_list %>%
   filter(val == 1) %>%
   group_split(cell_type)
 
-# Sort my bed files for Jaccard testing
+##  Sort snATACseq bed files for Jaccard testing  -------------------------------------
+cat('\nSort snATACseq peaks ... \n')
 for (CELL_TYPE in CELL_TYPES) {
   
   cat('\n\n Checking if ', CELL_TYPE, ' is valid and sorted\n\n')
@@ -85,7 +96,8 @@ for (CELL_TYPE in CELL_TYPES) {
 }
 
 
-# Note efficient - pull my cell type out of loop as it's running the checks for those multiple times
+##  Sort Ziffra bed files for Jaccard testing  -----------------------------------------
+cat('\nSort and merge (where necessary) Ziffra peaks ... \n')
 for (i in 1:length(ziffra_peaks_all)) {
   
   ZIFFRA_PEAKS <- ziffra_peaks_all[[i]]
@@ -105,16 +117,9 @@ for (i in 1:length(ziffra_peaks_all)) {
   
 }
 
-# Create df for pairwise tests
-pairwise_df <- data.frame(bray  = c("FC.ExN", "FC.ExN", "FC.ExN", "FC.InN", "FC.RG", 
-                                     "FC.MG", "FC.undef", "LGE.InN", "MGE.InN", "MGE.InN",
-                                      "CGE.InN", "GE.RG", "GE.Proj"),
-                          ziffra = c("earlyEN", "dlEN", "ulEN", "IN_MGE", "RG",
-                                    "Microglia", "EndoMural", "IN_MGE", "IN_MGE", "MGE",
-                                    "IN_CGE", "RG", "Insula")
-                  
-)
 
+## Run pairwise tests listed in pairwise df  ------------------------------------------
+cat('\nRun pairwise tests ... \n')
 jaccard_df <- data.frame()
 
 for (i in 1:nrow(pairwise_df)) {
@@ -138,10 +143,15 @@ for (i in 1:nrow(pairwise_df)) {
 pairwise_table <- cbind(pairwise_df, jaccard_df)
 rownames(pairwise_table) <- NULL
 
+# Write table 
+cat('\nWriting Jaccard pairwise table\n')
 write.table(pairwise_table, paste0(OUT_DIR, "ziffra_peak_comparison_jaccard_tests.tsv"), 
             quote = FALSE,sep = '\t', row.names = FALSE, col.names = TRUE)
 
+cat('\nDone.\n')
 
+#--------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------
 
 
 
