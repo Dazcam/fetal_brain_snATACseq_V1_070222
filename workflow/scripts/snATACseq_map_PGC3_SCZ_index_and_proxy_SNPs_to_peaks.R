@@ -20,6 +20,7 @@
 #    - Not a not a biallelic variant: rs62152282, rs35026989, rs11241041, rs650520
 # 3. Map SNPs to hg38 using BioMart
 # 4. Check for overlap of PGC3 index and proxy SNPs in snATACseq peaks (500 bp ext)
+# 5. Create binary df for whether SNP is in/not in peak for all cell types
 
 ##  Load Packages  --------------------------------------------------------------------
 library(LDlinkR)  
@@ -31,7 +32,7 @@ library(Repitools)
 cat('\nDefining variables ... \n')
 IN_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/resources/sheets/"
 SNP_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/PGC3_snps/"
-PEAK_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/archR_data_processing/peaks/"
+PEAK_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/peaks/"
 REGIONS <- c("FC", "GE")
 CELL_TYPES <- c("FC.ExN", "FC.InN", "FC.RG", "FC.MG", "FC.undef", "LGE.InN", "MGE.InN", "CGE.InN", "GE.RG", "GE.Proj")
 TOKEN <- "" # Needed for LDlinkR - saved in email
@@ -190,7 +191,7 @@ write_tsv(as.data.frame(snps_no_patches), 'pgc3_scz_index_snps_and_proxies_hg38.
 snps_no_patches <- read_tsv(paste0(SNP_DIR, 'pgc3_scz_index_snps_and_proxies_hg38.tsv'),
                             col_types = cols(chr_name = col_character()))
   
-## Check for overlap of SNPs in snATACseq peaks of all cell types  --------------------
+## Check for overlap of SNPs in snATACseq peaks of individual cell types  -------------
 for (CELL_TYPE in CELL_TYPES) {
   
   cat(paste0('\nLoading peaks for ', CELL_TYPE, ' ... \n'))
@@ -229,43 +230,62 @@ for (CELL_TYPE in CELL_TYPES) {
   
 }
 
+# Can be ommited used for testing
+# CELL_TYPES <- c("FC.ExN", "FC.InN", "FC.RG", "FC.MG", "FC.undef", "LGE.InN", "MGE.InN", "CGE.InN", "GE.RG", "GE.Proj")
+# for (CELL_TYPE in CELL_TYPES) {
+#   
+#   cell_overlaps <- read_tsv(paste0(PEAK_DIR, CELL_TYPE,'_PGC3_SCZ_r2_0.8_SNP_peak_overlaps_ext500bp.tsv')) %>%
+#     select(!one_of("chr", "start", "end", "name", "score", "strand"))
+#   
+#   assign(paste0(CELL_TYPE, '_SNP_overlaps'), cell_overlaps)
+# 
+# }
+## Create binary count table to have all SNP/peak overlaps in one df  -----------------
+# Create key of all SNPs overlapping peaks
+cat('\nCreating key dataframe for all SNP/peak overlapping ... \n')
+all_SNPs_key <- rbind(FC.ExN_SNP_overlaps, FC.InN_SNP_overlaps, FC.RG_SNP_overlaps, 
+                      FC.MG_SNP_overlaps, FC.undef_SNP_overlaps, LGE.InN_SNP_overlaps, 
+                      MGE.InN_SNP_overlaps, CGE.InN_SNP_overlaps, GE.RG_SNP_overlaps, 
+                      GE.Proj_SNP_overlaps)
+all_SNPs_key_df <- all_SNPs_key %>%
+  arrange(snpID) %>%
+  distinct()
+
+# Create binary df - SNP in/not in peak for each cell
+cat('\nCreating binary df for whether SNP is in/not in peak ... \n')
+for (CELL_TYPE in CELL_TYPES) {
+  
+  cat(paste0('\nObtaining binary counts for: ', CELL_TYPE, ' ... \n'))
+  # Test vector of rsIDs for cell type
+  snp_test <- get(paste0(CELL_TYPE, '_SNP_overlaps')) %>%
+    pull(snpID)
+  
+  if (exists('all_SNPs_binary_df')) {
+    
+    all_SNPs_binary_df <- all_SNPs_binary_df %>%
+      rowwise() %>%
+      mutate(!!CELL_TYPE := ifelse(snpID %in% snp_test, 1, 0)) %>%
+      ungroup()
+  
+  } else {
+    
+    all_SNPs_binary_df <- all_SNPs_key_df %>%
+      rowwise() %>%
+      mutate(!!CELL_TYPE := ifelse(snpID %in% snp_test, 1, 0)) %>%
+      ungroup()
+    
+  }
+  
+  
+}
+
+# Write table
+cat('\nWriting binary count table ... \n')
+write_tsv(all_SNPs_binary_df , paste0(PEAK_DIR, 'all_cells_PGC3_SCZ_r2_0.8_SNP_peak_overlaps_ext500bp.tsv'))
+
 cat('Done.\n')
 
 
-CELL_TYPES <- c("FC.ExN", "FC.InN", "FC.RG", "FC.MG", "FC.undef", "LGE.InN", "MGE.InN", "CGE.InN", "GE.RG", "GE.Proj")
-for (CELL_TYPE in CELL_TYPES) {
-  
-  cell_overlaps <- read_tsv(paste0(PEAK_DIR, CELL_TYPE,'_PGC3_SCZ_r2_0.8_SNP_peak_overlaps_ext500bp.tsv')) %>%
-    select(!one_of("chr", "start", "end", "name", "score", "strand"))
-  
-  assign(paste0(CELL_TYPE, '_SNP_overlaps'), cell_overlaps)
 
-}
-
-# Create key of all SNPs overlapping peaks
-all_SNPs_key <- rbind(FC.ExN_SNP_overlaps, FC.InN_SNP_overlaps, FC.RG_SNP_overlaps, FC.MG_SNP_overlaps, FC.undef_SNP_overlaps, 
-      LGE.InN_SNP_overlaps, MGE.InN_SNP_overlaps, CGE.InN_SNP_overlaps, GE.RG_SNP_overlaps, GE.Proj_SNP_overlaps)
-all_SNPs_key <- unique(all_SNPs_key)
-
-all_SNPs_key$FC.ExN <- ifelse(all_SNPs_key$snpID == FC.ExN_SNP_overlaps$snpID, 1, 0)
-
-for (CELL_TYPE in CELL_TYPES) {
-  
-  SNPS <- get(paste0(CELL_TYPE, '_SNP_overlaps'))
-  
-  assign(paste0(CELL_TYPE, '_SNP_overlaps'), cell_overlaps)
-  
-}
-
-snp_test <- FC.ExN_SNP_overlaps %>%
-  pull(snpID)
-
-test2 <- all_SNPs_key %>%
-  rowwise() %>%
-  mutate(test = snpID %in% snp_test)
-
-sum(unique(test2$test))
-
-order SNPs
 #--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------
