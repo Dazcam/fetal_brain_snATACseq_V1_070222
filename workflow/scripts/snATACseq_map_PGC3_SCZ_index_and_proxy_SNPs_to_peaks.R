@@ -232,6 +232,40 @@ for (CELL_TYPE in CELL_TYPES) {
 cat('Done.\n')
 
 
+CELL_TYPES <- c("FC.ExN", "FC.InN", "FC.RG", "FC.MG", "FC.undef", "LGE.InN", "MGE.InN", "CGE.InN", "GE.RG", "GE.Proj")
+for (CELL_TYPE in CELL_TYPES) {
+  
+  cell_overlaps <- read_tsv(paste0(PEAK_DIR, CELL_TYPE,'_PGC3_SCZ_r2_0.8_SNP_peak_overlaps_ext500bp.tsv')) %>%
+    select(!one_of("chr", "start", "end", "name", "score", "strand"))
+  
+  assign(paste0(CELL_TYPE, '_SNP_overlaps'), cell_overlaps)
 
+}
+
+# Create key of all SNPs overlapping peaks
+all_SNPs_key <- rbind(FC.ExN_SNP_overlaps, FC.InN_SNP_overlaps, FC.RG_SNP_overlaps, FC.MG_SNP_overlaps, FC.undef_SNP_overlaps, 
+      LGE.InN_SNP_overlaps, MGE.InN_SNP_overlaps, CGE.InN_SNP_overlaps, GE.RG_SNP_overlaps, GE.Proj_SNP_overlaps)
+all_SNPs_key <- unique(all_SNPs_key)
+
+all_SNPs_key$FC.ExN <- ifelse(all_SNPs_key$snpID == FC.ExN_SNP_overlaps$snpID, 1, 0)
+
+for (CELL_TYPE in CELL_TYPES) {
+  
+  SNPS <- get(paste0(CELL_TYPE, '_SNP_overlaps'))
+  
+  assign(paste0(CELL_TYPE, '_SNP_overlaps'), cell_overlaps)
+  
+}
+
+snp_test <- FC.ExN_SNP_overlaps %>%
+  pull(snpID)
+
+test2 <- all_SNPs_key %>%
+  rowwise() %>%
+  mutate(test = snpID %in% snp_test)
+
+sum(unique(test2$test))
+
+order SNPs
 #--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------
