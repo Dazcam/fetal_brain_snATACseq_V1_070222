@@ -14,11 +14,11 @@ configfile: "../config/config.yaml"
 
 rule snATAC_seq_QC_LSI_params:
     input:  markdown = "scripts/snATACseq_QC_LSI_params.Rmd",
-            qc_html = "../results/snATACseq_QC_{REGION}.html" # For rule order  
-    output: "../results/QC_LSI_params/snATACseq_QC_{REGION}_LSI_{LSI_PARAM}.html"
+            qc_html = "../results/rmarkdown_reports/snATACseq_QC_{REGION}.html" # For rule order  
+    output: "../results/rmarkdown_reports/QC_LSI_params/snATACseq_QC_{REGION}_LSI_{LSI_PARAM}.html"
     params: data_dir = "../resources/snATACseq_CR-atac_1.2.0/",
             archR_out_dir = "../results/ARCHR/{REGION}",
-            report_dir = "../results/QC_LSI_params/",
+            report_dir = "../results/rmarkdown_reports/QC_LSI_params/",
             report_file = "snATACseq_QC_{REGION}_LSI_{LSI_PARAM}.html"
     log:    "../results/logs/QC_LSI_params/snATAC_QC_{REGION}_LSI_{LSI_PARAM}.log"
     shell:
