@@ -8,6 +8,7 @@
 
 # AnnotationDbi - https://bioconductor.org/packages/release/bioc/vignettes/AnnotationDbi/inst/doc/IntroToAnnotationPackages.pdf
 # Granges - https://bioconductor.org/packages/devel/bioc/vignettes/GenomicRanges/inst/doc/GenomicRangesIntroduction.html
+# ChIPseeker - https://bioconductor.org/packages/release/bioc/vignettes/ChIPseeker/inst/doc/ChIPseeker.html
 
 ## Info  ------------------------------------------------------------------------------
 
@@ -144,3 +145,6 @@ upsetplot(FC_cA_metadata_chr_rm_ann, vennpie = TRUE)
 diffloop::addchr(FC_cA_metadata)
 
 addGeneIDs(annotatedPeak[1:6], orgAnn="org.Hs.eg.db", IDs2Add=c("symbol"))
+
+#--------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------
