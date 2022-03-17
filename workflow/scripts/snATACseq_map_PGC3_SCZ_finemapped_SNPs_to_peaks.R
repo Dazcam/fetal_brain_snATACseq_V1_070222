@@ -13,17 +13,12 @@
 ## Info  ------------------------------------------------------------------------------
 
 # 1. Download PGC3 SCZ GWAS fine mapped SNPs
-# 2. Extract proxy SNPs of PGC3 index SNPs with r2 > 0.8 using LDlinkR - hg19
-#    - 9 SNPs failed 
-#    - Not encoded as an rsID in xslx file: 8:4180090_T_A 
-#    - Not in 1000G reference panel: rs2494638, rs12514660, rs2914025, rs55858161
-#    - Not a not a biallelic variant: rs62152282, rs35026989, rs11241041, rs650520
-# 3. Map SNPs to hg38 using BioMart
-# 4. Check for overlap of PGC3 index and proxy SNPs in snATACseq peaks (500 bp ext)
+#    23 SNPs with 1:28690628_T_C encoding removed for now
+# 2. Map SNPs to hg38 using BioMart
+# 4. Check for overlap of PGC3 SCZ finemapped SNPs in snATACseq peaks (500 bp ext)
 # 5. Create binary df for whether SNP is in/not in peak for all cell types
 
 ##  Load Packages  --------------------------------------------------------------------
-library(LDlinkR)  
 library(readxl)
 library(tidyverse)
 library(Repitools)
@@ -34,6 +29,7 @@ cat('\nDefining variables ... \n')
 IN_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/resources/sheets/"
 SNP_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/PGC3_snps/fine_mapped/"
 PEAK_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/peaks/"
+PEAK_EXTENSION <- c("ext250bp", "ext500bp")
 REGIONS <- c("FC", "GE")
 CELL_TYPES <- c("FC.ExN", "FC.InN", "FC.RG", "FC.MG", "FC.undef", "LGE.InN", "MGE.InN", "CGE.InN", "GE.RG", "GE.Proj")
 TOKEN <- "" # Needed for LDlinkR - saved in email
@@ -45,7 +41,7 @@ dir.create(paste0(PEAK_DIR, 'fine_mapped_SNPs/'))
 ##  Read in PGC3 index SNPs one is not an rsID just removed it  ------------------------
 snps <- read_excel(paste0(IN_DIR, 'PGC3_SCZ_Supplementary_Table_11_FINEMAP_UPDATED.xlsx'), sheet = 'ST11a 95% Credible Sets') %>%
   dplyr::select(rsid) %>%
-  filter(!grepl(':|_', rsid)) %>% # 23 SNPs with 1:28690628_T_C  encoding removed for now
+  filter(!grepl(':|_', rsid)) %>% # 23 SNPs with 1:28690628_T_C encoding removed for now
   base::as.data.frame(snps) %>%
   distinct(rsid, .keep_all = TRUE) %>%
   arrange(rsid) %>%
@@ -79,112 +75,201 @@ cat(paste0(nrow(snps_no_patches), ' SNPs retained. \n'))
 
 # Add posterior probability and index SNPs columns 
 SNPs_join <- snps_no_patches %>% 
-  left_join(snps <- read_excel(paste0(IN_DIR, 'PGC3_SCZ_Supplementary_Table_11_FINEMAP_UPDATED.xlsx'), 
+  left_join(read_excel(paste0(IN_DIR, 'PGC3_SCZ_Supplementary_Table_11_FINEMAP_UPDATED.xlsx'), 
                                sheet = 'ST11a 95% Credible Sets')) %>%
   dplyr::select(rsid, chr_name, hg38_base_position, index_snp, finemap_posterior_probability)
 
 # Write to file
-write_tsv(as.data.frame(SNPs_join), 'pgc3_scz_finemapped_SNPs_hg38.tsv')
-# snps_no_patches <- read_tsv(paste0(SNP_DIR, 'pgc3_scz_index_snps_and_proxies_hg38.tsv'),
-#                             col_types = cols(chr_name = col_character()))
+write_tsv(as.data.frame(SNPs_join), paste0(PEAK_DIR, 'fine_mapped_SNPs/', 
+                                           'pgc3_scz_finemapped_SNPs_hg38.tsv'))
+
   
 ## Check for overlap of SNPs in snATACseq peaks of individual cell types  -------------
-for (CELL_TYPE in CELL_TYPES[10]) {
+for (CELL_TYPE in CELL_TYPES) {
   
-  cat(paste0('\nLoading peaks for ', CELL_TYPE, ' ... \n'))
-  peaks_df <- read_tsv(paste0(PEAK_DIR, CELL_TYPE,'.hg38.ext500bp.bed'), col_names = FALSE)
-  colnames(peaks_df) <- c('chr', 'start', 'end', 'name', 'score', 'strand')
-
-  cell_overlaps <- data.frame()
-  
-  cat(paste0('\nChecking for SNP overlaps in ', CELL_TYPE, ' ... \n'))
-  for (i in 1:nrow(snps_no_patches)) {
+    for (EXT in PEAK_EXTENSION) {
     
-    BASE_POSITION <- snps_no_patches$hg38_base_position[i]
-    CHR <- snps_no_patches$chr_name[i]
-    cat(paste0('\nSNP: ', 
-               snps_no_patches$rsid[i], ', position: ',
-               BASE_POSITION, ' ... \n'))
+      cat(paste0('\nLoading peaks for ', CELL_TYPE, ' ... \n'))
+      peaks_df <- read_tsv(paste0(PEAK_DIR, CELL_TYPE,'.hg38.', EXT, '.bed'), col_names = FALSE)
+      colnames(peaks_df) <- c('chr', 'start', 'end', 'name', 'score', 'strand')
     
-    overlaps <- filter(peaks_df, start <= BASE_POSITION, end >= BASE_POSITION, chr == paste0('chr', CHR))
-    
-    if (nrow(overlaps) > 0) { 
+      cell_overlaps <- data.frame()
       
-      overlaps <- cbind(overlaps, snps_no_patches[i,])
-      print(overlaps) 
+      cat(paste0('\nChecking for SNP overlaps in ', CELL_TYPE, ' ... \n'))
+      for (i in 1:nrow(snps_no_patches)) {
+        
+        BASE_POSITION <- snps_no_patches$hg38_base_position[i]
+        CHR <- snps_no_patches$chr_name[i]
+        cat(paste0('\nSNP: ', 
+                   snps_no_patches$rsid[i], ', position: ',
+                   BASE_POSITION, ' ... \n'))
+        
+        overlaps <- filter(peaks_df, start <= BASE_POSITION, end >= BASE_POSITION, chr == paste0('chr', CHR))
+        
+        if (nrow(overlaps) > 0) { 
+          
+          overlaps <- cbind(overlaps, snps_no_patches[i,])
+          print(overlaps) 
+          
+        }
+        
+        cell_overlaps <- rbind(cell_overlaps, overlaps)
+        
+      } 
       
+      cat(paste0('\nAll ', nrow(snps_no_patches), ' SNPs checked in ', CELL_TYPE, ' with peak ', EXT, '... \n'))
+      
+      # Add posterior probability and index SNP info too ouput
+      cell_overlaps <- cell_overlaps %>% 
+        left_join(snps <- read_excel(paste0(IN_DIR, 'PGC3_SCZ_Supplementary_Table_11_FINEMAP_UPDATED.xlsx'), 
+                                     sheet = 'ST11a 95% Credible Sets')) %>%
+        dplyr::select(rsid, chr, start, end, hg38_base_position, index_snp, finemap_posterior_probability)
+      
+      cat(paste0('\nWriting overlapping SNPs to file ... \n'))
+      write_tsv(cell_overlaps, paste0(PEAK_DIR, 'fine_mapped_SNPs/', CELL_TYPE,'_PGC3_SCZ_finemapped_SNP_peak_overlaps_', EXT , '.tsv'))
+      assign(paste0(CELL_TYPE, '_', EXT, '_SNP_overlaps'), cell_overlaps)
+    
     }
-    
-    cell_overlaps <- rbind(cell_overlaps, overlaps)
-    
-  } 
-  
-  cat(paste0('\nAll ', nrow(snps_no_patches), ' SNPs checked in ', CELL_TYPE, ' ... \n'))
-  
-  cat(paste0('\nWriting overlapping SNPs to file ... \n'))
-  write_tsv(cell_overlaps, paste0(PEAK_DIR, 'fine_mapped_SNPs/', CELL_TYPE,'_PGC3_SCZ_finemapped_SNP_peak_overlaps_ext500bp.tsv'))
-  assign(paste0(CELL_TYPE, '_SNP_overlaps'), cell_overlaps)
   
 }
 
+for (CELL_TYPE in CELL_TYPES) {
+
+  for (EXT in PEAK_EXTENSION) {
+
+    SNP_OVERLAPS <- get(paste0(CELL_TYPE, '_', EXT, '_SNP_overlaps'))
+
+    SNP_OVERLAPS <- SNP_OVERLAPS %>%
+      left_join(snps <- read_excel(paste0(IN_DIR, 'PGC3_SCZ_Supplementary_Table_11_FINEMAP_UPDATED.xlsx'),
+                                   sheet = 'ST11a 95% Credible Sets')) %>%
+      dplyr::select(rsid, chr, start, end, hg38_base_position, index_snp, finemap_posterior_probability)
+
+    write_tsv(SNP_OVERLAPS, paste0(PEAK_DIR, 'fine_mapped_SNPs/', CELL_TYPE,'_PGC3_SCZ_finemapped_SNP_peak_overlaps_', EXT , '.tsv'))
+    assign(paste0(CELL_TYPE, '_', EXT, '_SNP_overlaps'), SNP_OVERLAPS)
+  }
+
+}
 
 ## Create binary count table to have all SNP/peak overlaps in one df  -----------------
 # Create key of all SNPs overlapping peaks
-cat('\nCreating key dataframe for all SNP/peak overlapping ... \n')
-all_SNPs_key <- rbind(FC.ExN_SNP_overlaps, FC.InN_SNP_overlaps, FC.RG_SNP_overlaps, 
-                      FC.MG_SNP_overlaps, FC.undef_SNP_overlaps, LGE.InN_SNP_overlaps, 
-                      MGE.InN_SNP_overlaps, CGE.InN_SNP_overlaps, GE.RG_SNP_overlaps, 
-                      GE.Proj_SNP_overlaps)
-all_SNPs_key_df <- all_SNPs_key %>%
-  arrange(rsid) %>%
-  distinct(rsid)
 
-# Create binary df - SNP in/not in peak for each cell
-cat('\nCreating binary df for whether SNP is in/not in peak ... \n')
-for (CELL_TYPE in CELL_TYPES) {
+
+for (EXT in PEAK_EXTENSION) {
   
-  cat(paste0('\nObtaining binary counts for: ', CELL_TYPE, ' ... \n'))
-  # Test vector of rsIDs for cell type
-  snp_test <- get(paste0(CELL_TYPE, '_SNP_overlaps')) %>%
-    pull(rsid)
-  
-  if (exists('all_SNPs_binary_df')) {
+  if (EXT == 'ext250bp') {
     
-    all_SNPs_binary_df <- all_SNPs_binary_df %>%
-      rowwise() %>%
-      mutate(!!CELL_TYPE := ifelse(rsid %in% snp_test, 1, 0)) %>%
-      ungroup()
+    cat('\nCreating key dataframe for all overlapping SNPs/peaks', EXT ,'... \n')
+    all_SNPs_key_250_df <- rbind(FC.ExN_ext250bp_SNP_overlaps, FC.InN_ext250bp_SNP_overlaps, FC.RG_ext250bp_SNP_overlaps, 
+                          FC.MG_ext250bp_SNP_overlaps, FC.undef_ext250bp_SNP_overlaps, LGE.InN_ext250bp_SNP_overlaps, 
+                          MGE.InN_ext250bp_SNP_overlaps, CGE.InN_ext250bp_SNP_overlaps, GE.RG_ext250bp_SNP_overlaps, 
+                          GE.Proj_ext250bp_SNP_overlaps)
+    all_SNPs_key_250 <- all_SNPs_key_250 %>%
+      arrange(rsid) %>%
+      distinct(rsid)
   
   } else {
     
-    all_SNPs_binary_df <- all_SNPs_key_df %>%
-      rowwise() %>%
-      mutate(!!CELL_TYPE := ifelse(rsid %in% snp_test, 1, 0)) %>%
-      ungroup()
+    cat('\nCreating key dataframe for all overlapping SNPs/peaks', EXT ,'... \n')
+    all_SNPs_key_500_df <- rbind(FC.ExN_ext500bp_SNP_overlaps, FC.InN_ext500bp_SNP_overlaps, FC.RG_ext500bp_SNP_overlaps, 
+                          FC.MG_ext500bp_SNP_overlaps, FC.undef_ext500bp_SNP_overlaps, LGE.InN_ext500bp_SNP_overlaps, 
+                          MGE.InN_ext500bp_SNP_overlaps, CGE.InN_ext500bp_SNP_overlaps, GE.RG_ext500bp_SNP_overlaps, 
+                          GE.Proj_ext500bp_SNP_overlaps)
+    all_SNPs_key_500 <- all_SNPs_key_500 %>%
+      arrange(rsid) %>%
+      distinct(rsid)
     
   }
   
+}
+
+
+# Create binary df - SNP in/not in peak for each cell
+cat('\nCreating binary df for whether SNP is in/not in peak ... \n')
+for (EXT in c('250', '500')) {
+  
+  # Get key def for extension
+  SNPS_KEY_DF <- get(paste0('all_SNPs_key_', EXT))
+  
+  # Needed to reset df for each extension
+  if (exists('all_SNPs_binary_df')) { rm(all_SNPs_binary_df) }
+  
+  for (CELL_TYPE in CELL_TYPES) {
+  
+  cat('\nObtaining binary counts for:', CELL_TYPE, 'peak', EXT, '... \n')
+  # Test vector of rsIDs for cell type
+  snp_test <- get(paste0(CELL_TYPE, '_ext', EXT, 'bp_SNP_overlaps')) %>%
+    pull(rsid)
+  
+    if (exists('all_SNPs_binary_df')) {
+      
+      all_SNPs_binary_df <- all_SNPs_binary_df %>%
+        rowwise() %>%
+        mutate(!!CELL_TYPE := ifelse(rsid %in% snp_test, 1, 0)) %>%
+        ungroup()
+    
+    } else {
+      
+      all_SNPs_binary_df <- SNPS_KEY_DF %>%
+        rowwise() %>%
+        mutate(!!CELL_TYPE := ifelse(rsid %in% snp_test, 1, 0)) %>%
+        ungroup()
+      
+    }
+  
+  }
+  
+  cat('\nAssigning binary counts df for peak ext', EXT, '... \n')
+  assign(paste0('all_SNPs_binary_ext', EXT, 'bp_df'), all_SNPs_binary_df)
   
 }
 
-all_SNPs_binary_unique_rsids_df <- all_SNPs_binary_df %>%
-  dplyr::select(-start, -end, -name, -score, -chr_name, -strand) %>%
-  relocate(rsid) %>%
-  distinct()
+# Create binary dfs and run wilcoxon tests comparing differences in 
+# posterior probabilities of SNPs in peaks compared to SNPs not in peaks
+for (EXT in c('250', '500')) {
+  
+  SNPS_BINARY_DF <- get(paste0('all_SNPs_binary_ext', EXT, 'bp_df'))
+  SNPS_KEY_DF <- get(paste0('all_SNPs_key_', EXT))
+  
+  SNPS_FINAL_DF <- SNPS_BINARY_DF %>%
+    left_join(SNPS_KEY_DF) %>%
+    dplyr::select(-chr, -start, -end) %>%
+    relocate(rsid, hg38_base_position, index_snp, finemap_posterior_probability) %>%
+    distinct()
+  
+  # Write binary dfs
+  cat('\nWriting binary count tables ... \n')
+  write_tsv(SNPS_FINAL_DF, 
+            paste0(PEAK_DIR, 
+                   'fine_mapped_SNPs/', 
+                   'all_cells_PGC3_SCZ_finemapped_SNP_peak_overlaps_ext', EXT, 'bp.tsv'))
+  
+  ## Run Wicoxon tests
+  SNPS_FINAL_DF_rsIDs <- SNPS_FINAL_DF %>%
+    pull(rsid)
+  
+  SNPS_FINAL_DF_PPs <- SNPS_FINAL_DF %>%
+    pull(finemap_posterior_probability)
+  
+  PGC3_SNPS_PPs <- read_excel(paste0(IN_DIR, 'PGC3_SCZ_Supplementary_Table_11_FINEMAP_UPDATED.xlsx'), sheet = 'ST11a 95% Credible Sets') %>%
+    dplyr::select(rsid, finemap_posterior_probability) %>%
+    filter(!grepl(':|_', rsid)) %>% # 23 SNPs with 1:28690628_T_C encoding removed for now
+    base::as.data.frame(snps) %>%
+    distinct(rsid, .keep_all = TRUE) %>%
+    arrange(rsid) %>%
+    filter(!rsid %in% SNPS_FINAL_DF_rsIDs) %>%
+    pull(finemap_posterior_probability)
+  
+  cat('\n\nWilcox test for SNPs ext:', EXT, '\n\n')
+  
+  print(wilcox.test(SNPS_FINAL_DF_PPs, PGC3_SNPS_PPs, alternative = 't'))
+  
+  cat('\n\n')
+  
+}
 
-# Write table
-cat('\nWriting binary count tables ... \n')
-write_tsv(all_SNPs_binary_df, 
-          paste0(PEAK_DIR, 
-                 'fine_mapped_SNPs/', 
-                 'all_cells_PGC3_SCZ_finemapped_SNP_peak_overlaps_ext500bp.tsv'))
 
-write_tsv(all_SNPs_binary_unique_rsids_df, 
-          paste0(PEAK_DIR, 
-                 'fine_mapped_SNPs/', 
-                 'all_cells_PGC3_SCZ_finemapped_SNP_peak_overlaps_ext500bp_unique_rsIDs.tsv'))
 
-cat('Done.\n')
+
 
 
 

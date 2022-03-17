@@ -128,7 +128,7 @@ for (REGION in REGIONS) {
   names(CA_METADATA) <- NULL
 
   # Annotate peaks
-  CA_METADATA_ANN <- annotatePeak(CA_METADATA, tssRegion=c(-1000, 1000),
+  CA_METADATA_ANN <- annotatePeak(CA_METADATA, tssRegion=c(-1000, 100),
                                             TxDb=edb, annoDb="org.Hs.eg.db")
   
   CA_METADATA_ANN_DF  <- as.data.frame(CA_METADATA_ANN@anno)
