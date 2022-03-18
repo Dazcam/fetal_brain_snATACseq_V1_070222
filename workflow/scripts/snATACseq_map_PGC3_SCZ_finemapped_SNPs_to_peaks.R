@@ -4,19 +4,15 @@
 #
 #--------------------------------------------------------------------------------------
 
-##  Resources  ------------------------------------------------------------------------
-
-# LDlinkR - requires a personal access token
-# Github - https://github.com/CBIIT/LDlinkR
-# Vingette: https://cran.r-project.org/web/packages/LDlinkR/vignettes/LDlinkR.html
-
 ## Info  ------------------------------------------------------------------------------
 
 # 1. Download PGC3 SCZ GWAS fine mapped SNPs
 #    23 SNPs with 1:28690628_T_C encoding removed for now
 # 2. Map SNPs to hg38 using BioMart
-# 4. Check for overlap of PGC3 SCZ finemapped SNPs in snATACseq peaks (500 bp ext)
-# 5. Create binary df for whether SNP is in/not in peak for all cell types
+# 3. Check for overlap of PGC3 SCZ finemapped SNPs in snATACseq peaks (500 bp ext)
+# 4. Create binary df for whether SNP is in/not in peak for all cell types
+# 5. Run Wilcoxon rank sum test to test for difference in posterior probability means
+#    between PGC3 SCZ SNPs in peaks v.s. rest of PGC3 SNPs not in peaks 
 
 ##  Load Packages  --------------------------------------------------------------------
 library(readxl)
@@ -31,15 +27,14 @@ SNP_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/PGC3_snps/fine_mapped
 PEAK_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/peaks/"
 PEAK_EXTENSION <- c("ext250bp", "ext500bp")
 REGIONS <- c("FC", "GE")
-CELL_TYPES <- c("FC.ExN", "FC.InN", "FC.RG", "FC.MG", "FC.undef", "LGE.InN", "MGE.InN", "CGE.InN", "GE.RG", "GE.Proj")
-TOKEN <- "" # Needed for LDlinkR - saved in email
 
 ##  Create directories  ----------------------------------------------------------------
 dir.create(SNP_DIR)
 dir.create(paste0(PEAK_DIR, 'fine_mapped_SNPs/'))
 
 ##  Read in PGC3 index SNPs one is not an rsID just removed it  ------------------------
-snps <- read_excel(paste0(IN_DIR, 'PGC3_SCZ_Supplementary_Table_11_FINEMAP_UPDATED.xlsx'), sheet = 'ST11a 95% Credible Sets') %>%
+snps <- read_excel(paste0(IN_DIR, 'PGC3_SCZ_Supplementary_Table_11_FINEMAP_UPDATED.xlsx'), 
+                   sheet = 'ST11a 95% Credible Sets') %>%
   dplyr::select(rsid) %>%
   filter(!grepl(':|_', rsid)) %>% # 23 SNPs with 1:28690628_T_C encoding removed for now
   base::as.data.frame(snps) %>%
@@ -75,9 +70,11 @@ cat(paste0(nrow(snps_no_patches), ' SNPs retained. \n'))
 
 # Add posterior probability and index SNPs columns 
 SNPs_join <- snps_no_patches %>% 
-  left_join(read_excel(paste0(IN_DIR, 'PGC3_SCZ_Supplementary_Table_11_FINEMAP_UPDATED.xlsx'), 
+  left_join(read_excel(paste0(IN_DIR, 
+                              'PGC3_SCZ_Supplementary_Table_11_FINEMAP_UPDATED.xlsx'), 
                                sheet = 'ST11a 95% Credible Sets')) %>%
-  dplyr::select(rsid, chr_name, hg38_base_position, index_snp, finemap_posterior_probability)
+  dplyr::select(rsid, chr_name, hg38_base_position, index_snp, 
+                finemap_posterior_probability)
 
 # Write to file
 write_tsv(as.data.frame(SNPs_join), paste0(PEAK_DIR, 'fine_mapped_SNPs/', 
@@ -126,43 +123,26 @@ for (CELL_TYPE in CELL_TYPES) {
         dplyr::select(rsid, chr, start, end, hg38_base_position, index_snp, finemap_posterior_probability)
       
       cat(paste0('\nWriting overlapping SNPs to file ... \n'))
-      write_tsv(cell_overlaps, paste0(PEAK_DIR, 'fine_mapped_SNPs/', CELL_TYPE,'_PGC3_SCZ_finemapped_SNP_peak_overlaps_', EXT , '.tsv'))
+      write_tsv(cell_overlaps, paste0(PEAK_DIR, 'fine_mapped_SNPs/', CELL_TYPE, 
+                                      '_PGC3_SCZ_finemapped_SNP_peak_overlaps_', EXT , '.tsv'))
       assign(paste0(CELL_TYPE, '_', EXT, '_SNP_overlaps'), cell_overlaps)
     
     }
   
 }
 
-for (CELL_TYPE in CELL_TYPES) {
-
-  for (EXT in PEAK_EXTENSION) {
-
-    SNP_OVERLAPS <- get(paste0(CELL_TYPE, '_', EXT, '_SNP_overlaps'))
-
-    SNP_OVERLAPS <- SNP_OVERLAPS %>%
-      left_join(snps <- read_excel(paste0(IN_DIR, 'PGC3_SCZ_Supplementary_Table_11_FINEMAP_UPDATED.xlsx'),
-                                   sheet = 'ST11a 95% Credible Sets')) %>%
-      dplyr::select(rsid, chr, start, end, hg38_base_position, index_snp, finemap_posterior_probability)
-
-    write_tsv(SNP_OVERLAPS, paste0(PEAK_DIR, 'fine_mapped_SNPs/', CELL_TYPE,'_PGC3_SCZ_finemapped_SNP_peak_overlaps_', EXT , '.tsv'))
-    assign(paste0(CELL_TYPE, '_', EXT, '_SNP_overlaps'), SNP_OVERLAPS)
-  }
-
-}
-
 ## Create binary count table to have all SNP/peak overlaps in one df  -----------------
 # Create key of all SNPs overlapping peaks
-
-
 for (EXT in PEAK_EXTENSION) {
   
   if (EXT == 'ext250bp') {
     
     cat('\nCreating key dataframe for all overlapping SNPs/peaks', EXT ,'... \n')
-    all_SNPs_key_250_df <- rbind(FC.ExN_ext250bp_SNP_overlaps, FC.InN_ext250bp_SNP_overlaps, FC.RG_ext250bp_SNP_overlaps, 
-                          FC.MG_ext250bp_SNP_overlaps, FC.undef_ext250bp_SNP_overlaps, LGE.InN_ext250bp_SNP_overlaps, 
-                          MGE.InN_ext250bp_SNP_overlaps, CGE.InN_ext250bp_SNP_overlaps, GE.RG_ext250bp_SNP_overlaps, 
-                          GE.Proj_ext250bp_SNP_overlaps)
+    all_SNPs_key_250_df <- rbind(FC.ExN_ext250bp_SNP_overlaps, FC.InN_ext250bp_SNP_overlaps, 
+                                 FC.RG_ext250bp_SNP_overlaps, FC.MG_ext250bp_SNP_overlaps, 
+                                 FC.undef_ext250bp_SNP_overlaps, LGE.InN_ext250bp_SNP_overlaps, 
+                                 MGE.InN_ext250bp_SNP_overlaps, CGE.InN_ext250bp_SNP_overlaps, 
+                                 GE.RG_ext250bp_SNP_overlaps,  GE.Proj_ext250bp_SNP_overlaps)
     all_SNPs_key_250 <- all_SNPs_key_250 %>%
       arrange(rsid) %>%
       distinct(rsid)
@@ -170,10 +150,11 @@ for (EXT in PEAK_EXTENSION) {
   } else {
     
     cat('\nCreating key dataframe for all overlapping SNPs/peaks', EXT ,'... \n')
-    all_SNPs_key_500_df <- rbind(FC.ExN_ext500bp_SNP_overlaps, FC.InN_ext500bp_SNP_overlaps, FC.RG_ext500bp_SNP_overlaps, 
-                          FC.MG_ext500bp_SNP_overlaps, FC.undef_ext500bp_SNP_overlaps, LGE.InN_ext500bp_SNP_overlaps, 
-                          MGE.InN_ext500bp_SNP_overlaps, CGE.InN_ext500bp_SNP_overlaps, GE.RG_ext500bp_SNP_overlaps, 
-                          GE.Proj_ext500bp_SNP_overlaps)
+    all_SNPs_key_500_df <- rbind(FC.ExN_ext500bp_SNP_overlaps, FC.InN_ext500bp_SNP_overlaps, 
+                                 FC.RG_ext500bp_SNP_overlaps, FC.MG_ext500bp_SNP_overlaps, 
+                                 FC.undef_ext500bp_SNP_overlaps, LGE.InN_ext500bp_SNP_overlaps, 
+                                 MGE.InN_ext500bp_SNP_overlaps, CGE.InN_ext500bp_SNP_overlaps, 
+                                 GE.RG_ext500bp_SNP_overlaps, GE.Proj_ext500bp_SNP_overlaps)
     all_SNPs_key_500 <- all_SNPs_key_500 %>%
       arrange(rsid) %>%
       distinct(rsid)
@@ -223,13 +204,15 @@ for (EXT in c('250', '500')) {
   
 }
 
-# Create binary dfs and run wilcoxon tests comparing differences in 
-# posterior probabilities of SNPs in peaks compared to SNPs not in peaks
+# Add index SNP and posterior probability (PP) data to binary dfs and run 
+# wilcoxon tests comparing differences in PPs of SNPs in peaks compared
+# to SNPs not in peaks
 for (EXT in c('250', '500')) {
   
   SNPS_BINARY_DF <- get(paste0('all_SNPs_binary_ext', EXT, 'bp_df'))
   SNPS_KEY_DF <- get(paste0('all_SNPs_key_', EXT))
   
+  # Add index SNP and posterior probability (PP) data to binary dfs
   SNPS_FINAL_DF <- SNPS_BINARY_DF %>%
     left_join(SNPS_KEY_DF) %>%
     dplyr::select(-chr, -start, -end) %>%
@@ -243,14 +226,15 @@ for (EXT in c('250', '500')) {
                    'fine_mapped_SNPs/', 
                    'all_cells_PGC3_SCZ_finemapped_SNP_peak_overlaps_ext', EXT, 'bp.tsv'))
   
-  ## Run Wicoxon tests
+  ## Run 2-sided Wilcoxon tests
   SNPS_FINAL_DF_rsIDs <- SNPS_FINAL_DF %>%
     pull(rsid)
   
   SNPS_FINAL_DF_PPs <- SNPS_FINAL_DF %>%
     pull(finemap_posterior_probability)
   
-  PGC3_SNPS_PPs <- read_excel(paste0(IN_DIR, 'PGC3_SCZ_Supplementary_Table_11_FINEMAP_UPDATED.xlsx'), sheet = 'ST11a 95% Credible Sets') %>%
+  PGC3_SNPS_PPs <- read_excel(paste0(IN_DIR, 'PGC3_SCZ_Supplementary_Table_11_FINEMAP_UPDATED.xlsx'), 
+                              sheet = 'ST11a 95% Credible Sets') %>%
     dplyr::select(rsid, finemap_posterior_probability) %>%
     filter(!grepl(':|_', rsid)) %>% # 23 SNPs with 1:28690628_T_C encoding removed for now
     base::as.data.frame(snps) %>%
@@ -267,10 +251,7 @@ for (EXT in c('250', '500')) {
   
 }
 
-
-
-
-
+cat('Done.')
 
 
 #--------------------------------------------------------------------------------------
