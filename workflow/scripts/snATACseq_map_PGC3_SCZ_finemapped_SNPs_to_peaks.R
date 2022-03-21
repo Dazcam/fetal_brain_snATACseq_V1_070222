@@ -1,6 +1,6 @@
 #--------------------------------------------------------------------------------------
 #
-#     Map PGC3 SCZ finemapped SNPs to snATACseq peaks
+#     Map PGC3 SCZ fine mapped SNPs to snATACseq peaks
 #
 #--------------------------------------------------------------------------------------
 
@@ -14,7 +14,7 @@
 # 5. Run Wilcoxon rank sum test to test for difference in posterior probability means
 #    between PGC3 SCZ SNPs in peaks v.s. rest of PGC3 SNPs not in peaks 
 
-# Need to reannotate and add the 23 SNPs with wrong encoding in PGC3
+# Need to re-annotate and add the 23 SNPs with wrong encoding in PGC3
 
 ##  Load Packages  --------------------------------------------------------------------
 library(readxl)

@@ -12,10 +12,11 @@
 
 ## Info  ------------------------------------------------------------------------------
 
-# 1. Coaccessibility - prioritisd SNPs - 250kp around each SNP any gene promoters 
-# 2.  that are coaccessible we want to know what they are either side (i.e. within 500kb)
+# 1. Combine peak information for cA correlated peak pairs in cA peak metaadata
+# 2. Find cA correlated peak pairs where one peak contains PGC3 SCZ fine mapped SNP
+# 3. Annotate SNP containing cA peak pairs with genomic regulatory info
 
-# cA_df - queryHits and subjectHits cols denote index of the two corrolated peaks
+# cA_df - queryHits and subjectHits cols denote index of the two correlated peaks
 # metadata_df - indexes of queryHits and subjectHits mentioned above apply to this
 
 
@@ -36,13 +37,12 @@ library(diffloop) # Add/rm chr to granges seqlevels
 cat('\nDefining variables ... \n')
 PEAK_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/archR_data_processing/rds_files/"
 CA_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/coaccessibile_peaks/"
+SNP_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/peaks/fine_mapped_SNPs/"
 REGIONS <- c("FC", "GE")
 dir.create(CA_DIR)
-IN_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/resources/sheets/"
-SNP_DIR <- "~/Desktop/fetal_brain_snATACseq_070222/results/peaks/fine_mapped_SNPs/"
 
-CELL_TYPES <- c("FC.ExN", "FC.InN", "FC.RG", "FC.MG", "FC.undef", "LGE.InN", "MGE.InN", "CGE.InN", "GE.RG", "GE.Proj")
-TOKEN <- "" # Needed for LDlinkR - saved in email
+
+#CELL_TYPES <- c("FC.ExN", "FC.InN", "FC.RG", "FC.MG", "FC.undef", "LGE.InN", "MGE.InN", "CGE.InN", "GE.RG", "GE.Proj")
 
 ##  Load data  ----------------------------------------------------------------
 cat('\nLoading peak and SNP data ... \n')
@@ -105,7 +105,6 @@ for (REGION in REGIONS) {
   CA_PEAKS <- CA_PEAKS %>%
     select(-chr_ext)
   
-  
   CA_PEAKS_WITH_CORR <- cbind(query_peaks_info_no_chr, subject_peaks_info_no_chr, CA_PEAKS) 
   
   cat('Total cA peak pairs in ', REGION, ' after conversion: ', nrow(CA_PEAKS), '\n')
@@ -122,6 +121,10 @@ for (REGION in REGIONS) {
 ##  Find cA peak pairs where one peak contains PGC3 SCZ finemapped SNP  ---------------
 cat('\n\nFind cA peak pairs where one peak contains PGC3 SCZ finemapped SNP ... \n')
 for (REGION in REGIONS) {
+  
+  # Note there may be a fair bit of redundancy here
+  # sum(sort(subject_peaks_idx) == sort(query_peaks_idx)) = 153886
+  # length(query_peaks_idx) = 153894
   
   # Pull out ranges from the ArchR cA metadata dataframe
   ALL_CA_PEAKS <- get(paste0(REGION, '_cA_metadata'))
@@ -152,12 +155,18 @@ for (REGION in REGIONS) {
   
   # Do chr columns match between SNPs and peaks?
   identical(as.vector(OVERLAPS_DF$chr), as.vector(OVERLAPS_DF$seqnames))
-  
-  # Add maual check for overlap here
-  
+
   # Rm duplicate column
   OVERLAPS_DF <- OVERLAPS_DF %>%
     select(-seqnames)
+  
+  # Double check overlaps
+  for (SNP in 1:nrow(OVERLAPS_DF)) {
+    
+    test <- ifelse(OVERLAPS_DF$hg38_base_position[SNP] >= OVERLAPS_DF$start[SNP] & OVERLAPS_DF$hg38_base_position[SNP] <= OVERLAPS_DF$end[SNP], TRUE, FALSE) 
+    print(test)
+    
+  }
   
   
   # Join with rsIDs - increase in entries here as mulitiple SNPs in single peaks
@@ -182,7 +191,7 @@ for (REGION in REGIONS) {
 
 }
 
-##  Annotate cA peak pairs conatining SNPs  -------------------------------------------
+##  Annotate cA peak pairs containing SNPs  -------------------------------------------
 edb <- EnsDb.Hsapiens.v86
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 
@@ -225,7 +234,13 @@ for (REGION in REGIONS) {
   print(head(cA_PEAKS_with_SNP_ANN@anno))
   print(head(cA_PEAKS_no_SNP_ANN@anno))
   
-  cA_PEAKS_with_SNP_ANN_DF  <- as.data.frame(cA_PEAKS_with_SNP_ANN@anno)
+  cA_PEAKS_with_SNP_ANN_DF  <- as.data.frame(cA_PEAKS_with_SNP_ANN@anno) %>%
+    mutate(rsid = cA_PEAKS$rsid,
+           hg38_base_position = cA_PEAKS$hg38_base_position) %>%
+    relocate(seqnames, start, end, hg38_base_position, rsid) %>%
+    select(-strand, -width)
+  
+    
   cA_PEAKS_no_SNP_ANN_DF  <- as.data.frame(cA_PEAKS_no_SNP_ANN@anno)
   
   # Add SNPs info back into df
