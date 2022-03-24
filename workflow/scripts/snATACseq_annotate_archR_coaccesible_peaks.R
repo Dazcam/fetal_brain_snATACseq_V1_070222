@@ -1,6 +1,6 @@
 #--------------------------------------------------------------------------------------
 #
-#     Coaccessibility - 
+#     Annotate ArchR corrrolated coaccesible peaks
 #
 #--------------------------------------------------------------------------------------
 
@@ -12,16 +12,18 @@
 
 ## Info  ------------------------------------------------------------------------------
 
-# 1. Combine peak information for cA correlated peak pairs in cA peak metaadata
-# 2. Find cA correlated peak pairs where one peak contains PGC3 SCZ fine mapped SNP
-# 3. Annotate SNP containing cA peak pairs with genomic regulatory info
+# 1. Read in snATACseq cA peaks and metadata
+# 2. Combine all peak information for cA correlated peaks in single df
+# 3. Find cA peak pairs where one peak contains PGC3 SCZ finemapped SNP
+# 4. Annotate cA peak pairs containing SNPs
+# 5. Extract correlated peaks where peak NOT containing SNP are annotated as promoter
+# 6. Pull out correlation information for specific peak pairs where one contains a SNP
 
 # cA_df - queryHits and subjectHits cols denote index of the two correlated peaks
 # metadata_df - indexes of queryHits and subjectHits mentioned above apply to this
 
 
 ##  Load Packages  --------------------------------------------------------------------
-biocLite('FunciSNP')
 library(tidyverse)
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 library(EnsDb.Hsapiens.v86) #hg38
@@ -96,20 +98,20 @@ for (REGION in REGIONS) {
   
   # Convert peaks S4 df to S3
   CA_PEAKS <- as.data.frame(CA_PEAKS)
-  CA_PEAKS <- cbind(query_peaks_info_with_chr, subject_peaks_info_with_chr)
+  CA_PEAKS_NO_CORR <- cbind(query_peaks_info_with_chr, subject_peaks_info_with_chr)
   
   # Check if chr cols identical
-  identical(CA_PEAKS[,1], CA_PEAKS[,4])
-  colnames(CA_PEAKS) <- c("chr", "query_start", "query_end", "chr_ext", 
+  identical(CA_PEAKS_NO_CORR [,1], CA_PEAKS_NO_CORR [,4])
+  colnames(CA_PEAKS_NO_CORR ) <- c("chr", "query_start", "query_end", "chr_ext", 
                           "subject_start", "subject_end")
-  CA_PEAKS <- CA_PEAKS %>%
+  CA_PEAKS_NO_CORR  <- CA_PEAKS_NO_CORR  %>%
     select(-chr_ext)
   
   CA_PEAKS_WITH_CORR <- cbind(query_peaks_info_no_chr, subject_peaks_info_no_chr, CA_PEAKS) 
   
   cat('Total cA peak pairs in ', REGION, ' after conversion: ', nrow(CA_PEAKS), '\n')
   
-  assign(paste0(REGION, '_cA_peaks_combined'), CA_PEAKS)
+  assign(paste0(REGION, '_cA_peaks_combined'), CA_PEAKS_NO_CORR)
   assign(paste0(REGION, '_cA_peaks_combined_with_corr_results'), CA_PEAKS_WITH_CORR)
   assign(paste0(REGION, '_cA_query_peaks_combined'), query_peaks_info_with_chr)
   assign(paste0(REGION, '_cA_subject_peaks_combined'), subject_peaks_info_with_chr)
@@ -144,7 +146,7 @@ for (REGION in REGIONS) {
   # Find overlaps using IRanges
   OVERLAPS <- findOverlaps(ALL_CA_PEAKS, SNPS_granges)
   
-  # Combine peak and SNP info in single df
+  # Combine overlapping peak and SNP info in single df - only base position at this stage 
   METADATA_OVERLAPS <- as.data.frame(ALL_CA_PEAKS[queryHits(OVERLAPS)]) %>%
     select(seqnames, start, end)
   SNP_OVERLAPS <- as.data.frame(SNPS_granges[subjectHits(OVERLAPS)]) %>%
@@ -156,7 +158,7 @@ for (REGION in REGIONS) {
   # Do chr columns match between SNPs and peaks?
   identical(as.vector(OVERLAPS_DF$chr), as.vector(OVERLAPS_DF$seqnames))
 
-  # Rm duplicate column
+  # Rm duplicate chr column
   OVERLAPS_DF <- OVERLAPS_DF %>%
     select(-seqnames)
   
@@ -168,8 +170,7 @@ for (REGION in REGIONS) {
     
   }
   
-  
-  # Join with rsIDs - increase in entries here as mulitiple SNPs in single peaks
+  # Join with rsIDs - increase in entries here as multiple SNPs in single peaks
   OVERLAPS_DF_JOIN <- OVERLAPS_DF %>% left_join(SNPS) %>%
     select(chr, start, end, hg38_base_position, rsid)
   
@@ -177,22 +178,26 @@ for (REGION in REGIONS) {
   cat('\nNumber of unique rsIDs after overlap of SNPs with cA metadata:',
       length(unique(OVERLAPS_DF_JOIN$rsid)), '\n')
  
+  # Pull out peaks from query and subject in combined metadata peaks
   QUERY_JOIN <- OVERLAPS_DF_JOIN %>% 
     inner_join(PEAKS_COMBINED, by = c('chr' = 'chr', 'start' = 'query_start', 'end' = 'query_end'))
   
   SUBJECT_JOIN <- OVERLAPS_DF_JOIN %>% 
     inner_join(PEAKS_COMBINED, by = c('chr' = 'chr', 'start' = 'subject_start', 'end' = 'subject_end'))
   
+  # Note that the QUERY_JOIN and SUBJECT_JOIN objects are the same - the metadata object must contain
+  # the peak information both ways
+  identical(QUERY_JOIN, SUBJECT_JOIN %>% rename(subject_start = query_start, subject_end = query_end))
+
   # Unique SNPs after joining with cA peaks
   cat('\nNumber of unique rsIDs after overlap of SNPs with cA metadata query:',
       length(unique(QUERY_JOIN$rsid)), '\n')
   
-  assign(paste0(REGION, 'cA_peak_pairs_with_SNP'), QUERY_JOIN)
+  assign(paste0(REGION, '_cA_peak_pairs_with_SNP'), QUERY_JOIN)
 
 }
 
 ##  Annotate cA peak pairs containing SNPs  -------------------------------------------
-edb <- EnsDb.Hsapiens.v86
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 
 cat('\n\nRunning regulatory peak annotation for cA peaks pairs containing SNPs ... \n')
@@ -201,7 +206,7 @@ for (REGION in REGIONS) {
   cat('\nRunning ', REGION, ' ...\n')
   
   # Load peaks - need to remove chr to match edb encoding for annotatePeaks
-  cA_PEAKS <- get(paste0(REGION, 'cA_peak_pairs_with_SNP')) #%>%
+  cA_PEAKS <- get(paste0(REGION, '_cA_peak_pairs_with_SNP')) #%>%
    # mutate(chr = gsub("chr", "", chr))
   
   # Split df to run each set of cA peaks separately
@@ -245,39 +250,49 @@ for (REGION in REGIONS) {
   
   # Add SNPs info back into df
   
-  
-  
   assign(paste0(REGION, 'cA_peak_pairs_with_SNP_ann'), cA_PEAKS_with_SNP_ANN_DF)
-  assign(paste0(REGION, 'cA_peak_pairs_with_SNP_ann'), cA_PEAKS_no_SNP_ANN_DF)
+  assign(paste0(REGION, 'cA_peak_pairs_no_SNP_ann'), cA_PEAKS_no_SNP_ANN_DF)
   
-  write_tsv(cA_PEAKS_with_SNP_ANN_DF, paste0(CA_DIR, REGION, '_cA_regulatory_anns_with_SNP.tsv'))
-  write_tsv(cA_PEAKS_no_SNP_ANN_DF, paste0(CA_DIR, REGION, '_cA_regulatory_anns_no_SNP.tsv'))
+  #write_tsv(cA_PEAKS_with_SNP_ANN_DF, paste0(CA_DIR, REGION, '_cA_regulatory_anns_with_SNP.tsv'))
+  #write_tsv(cA_PEAKS_no_SNP_ANN_DF, paste0(CA_DIR, REGION, '_cA_regulatory_anns_no_SNP.tsv'))
   
 }
 
-##  Annotate peaks in metadata with regulatory info  ----------------------------------
-# cat('\n\nRunning regulatory peak annotation of metadata ... \n')
-# for (REGION in REGIONS) {
-#   
-#   cat('\nRunning ', REGION, ' ...\n')
-#   
-#   CA_METADATA <- get(paste0(REGION, '_cA_metadata'))
-#   
-#   # Need to remove chr from granges to match edb encoding
-#   CA_METADATA <- diffloop::rmchr(CA_METADATA)
-#   
-#   # annotatePeak() doesn't like identical rownames
-#   mcols(CA_METADATA)$cell_type <- names(CA_METADATA)
-#   names(CA_METADATA) <- NULL
-#   
-#   # Annotate peaks
-#   CA_METADATA_ANN <- annotatePeak(CA_METADATA, tssRegion=c(-1000, 100),
-#                                   TxDb=edb, annoDb="org.Hs.eg.db", level = 'gene')
-#   
-#   CA_METADATA_ANN_DF  <- as.data.frame(CA_METADATA_ANN@anno)
-#   #  write_tsv(CA_METADATA_ANN_DF, paste0(CA_DIR, REGION, '_cA_metadata_regulatory_anns.tsv'))
-#   
-# }
+
+# Extract corr peaks where peak NOT containing SNP are annotated as promoter ----------
+for (REGION in REGIONS) {
+  
+  cA_with_SNPs <- get(paste0(REGION, 'cA_peak_pairs_with_SNP_ann'))
+  cA_no_SNPs <- get(paste0(REGION, 'cA_peak_pairs_no_SNP_ann'))
+  
+  # Extract indices for peaks with no SNP annotated as promoter
+  cA_no_SNPs_promoter_idx <- which(cA_no_SNPs$annotation == 'Promoter')
+  
+  # Pull indices out of correlated peak tables
+  cA_with_SNPs_promoter_in_correlated_peak <-  cA_with_SNPs[cA_no_SNPs_promoter_idx,]
+  cA_no_SNPs_promoter_in_this_peak <- cA_no_SNPs[cA_no_SNPs_promoter_idx,]
+  
+  write_tsv(cA_with_SNPs_promoter_in_correlated_peak, 
+            paste0(CA_DIR, REGION, '_cA_regulatory_anns_with_SNP_promoters_only_in_corrolated_peak.tsv'))
+  write_tsv(cA_no_SNPs_promoter_in_this_peak, 
+            paste0(CA_DIR, REGION, '_cA_regulatory_anns_no_SNP_promoters_only.tsv'))
+  
+  # Check the indices are the same
+  identical(rownames(cA_no_SNPs_promoter_in_this_peak), rownames(cA_with_SNPs_promoter_in_correlated_peak))
+  
+}
+
+##  Extract correlation information for specific peak pairs where one contains a SNP --
+
+test <- FC_cA_peak_pairs_with_SNP %>% inner_join(
+  FC_cA_peaks_combined_with_corr_results %>%
+    rename(chr = seqnames)) %>%
+  filter(grepl('rs62183854|rs13388257|rs13390848', rsid))
+
+FC_cA_peaks_combined_with_corr_results %>%
+  rename(chr = seqnames)
+
+
 
 #--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------
