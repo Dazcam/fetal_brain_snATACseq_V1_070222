@@ -250,8 +250,8 @@ for (REGION in REGIONS) {
   
   # Add SNPs info back into df
   
-  assign(paste0(REGION, 'cA_peak_pairs_with_SNP_ann'), cA_PEAKS_with_SNP_ANN_DF)
-  assign(paste0(REGION, 'cA_peak_pairs_no_SNP_ann'), cA_PEAKS_no_SNP_ANN_DF)
+  assign(paste0(REGION, '_cA_peak_pairs_with_SNP_ann'), cA_PEAKS_with_SNP_ANN_DF)
+  assign(paste0(REGION, '_cA_peak_pairs_no_SNP_ann'), cA_PEAKS_no_SNP_ANN_DF)
   
   #write_tsv(cA_PEAKS_with_SNP_ANN_DF, paste0(CA_DIR, REGION, '_cA_regulatory_anns_with_SNP.tsv'))
   #write_tsv(cA_PEAKS_no_SNP_ANN_DF, paste0(CA_DIR, REGION, '_cA_regulatory_anns_no_SNP.tsv'))
@@ -262,8 +262,8 @@ for (REGION in REGIONS) {
 # Extract corr peaks where peak NOT containing SNP are annotated as promoter ----------
 for (REGION in REGIONS) {
   
-  cA_with_SNPs <- get(paste0(REGION, 'cA_peak_pairs_with_SNP_ann'))
-  cA_no_SNPs <- get(paste0(REGION, 'cA_peak_pairs_no_SNP_ann'))
+  cA_with_SNPs <- get(paste0(REGION, '_cA_peak_pairs_with_SNP_ann'))
+  cA_no_SNPs <- get(paste0(REGION, '_cA_peak_pairs_no_SNP_ann'))
   
   # Extract indices for peaks with no SNP annotated as promoter
   cA_no_SNPs_promoter_idx <- which(cA_no_SNPs$annotation == 'Promoter')
@@ -272,11 +272,11 @@ for (REGION in REGIONS) {
   cA_with_SNPs_promoter_in_correlated_peak <-  cA_with_SNPs[cA_no_SNPs_promoter_idx,]
   cA_no_SNPs_promoter_in_this_peak <- cA_no_SNPs[cA_no_SNPs_promoter_idx,]
   
-  write_tsv(cA_with_SNPs_promoter_in_correlated_peak, 
-            paste0(CA_DIR, REGION, '_cA_regulatory_anns_with_SNP_promoters_only_in_corrolated_peak.tsv'))
-  write_tsv(cA_no_SNPs_promoter_in_this_peak, 
-            paste0(CA_DIR, REGION, '_cA_regulatory_anns_no_SNP_promoters_only.tsv'))
-  
+  # write_tsv(cA_with_SNPs_promoter_in_correlated_peak, 
+  #           paste0(CA_DIR, REGION, '_cA_regulatory_anns_with_SNP_promoters_only_in_corrolated_peak.tsv'))
+  # write_tsv(cA_no_SNPs_promoter_in_this_peak, 
+  #           paste0(CA_DIR, REGION, '_cA_regulatory_anns_no_SNP_promoters_only.tsv'))
+  # 
   # Check the indices are the same
   identical(rownames(cA_no_SNPs_promoter_in_this_peak), rownames(cA_with_SNPs_promoter_in_correlated_peak))
   
@@ -284,15 +284,37 @@ for (REGION in REGIONS) {
 
 ##  Extract correlation information for specific peak pairs where one contains a SNP --
 
-test <- FC_cA_peak_pairs_with_SNP %>% inner_join(
-  FC_cA_peaks_combined_with_corr_results %>%
-    rename(chr = seqnames)) %>%
-  filter(grepl('rs62183854|rs13388257|rs13390848', rsid))
 
-FC_cA_peaks_combined_with_corr_results %>%
+
+FC_cA_PEAKS_COR <- FC_cA_peaks_combined_with_corr_results %>%
+  rename(chr = seqnames)
+GE_cA_PEAKS_COR <- GE_cA_peaks_combined_with_corr_results %>%
   rename(chr = seqnames)
 
+fc_SNPs <- data.frame(
+  chr = c('chr2', 'chr2', 'chr2'),
+  query_start = c(172090681, 172092453, 172092453),
+  query_end = c(172091181, 172092953,172092953),
+  hg38_base_position = c(172090705, 172092806,172092915),
+  rsid = c('rs62183854', 'rs13388257', 'rs13390848'))
 
+ge_SNPs <- data.frame(
+  chr = c('chr2'),
+  start = c(172091234, 172085000),
+  end = c(172091734, 172086100),
+  hg38_base_position = c(172091721),
+  rsid = c('rs62183855', 'rs62183855'))
+
+rs62183855 against the DLX1 peaks 172085000 – 172086100
+
+FC_cA_PEAKS_COR_OVERLAPS <- fc_SNPs %>% inner_join(FC_cA_PEAKS_COR)
+FC_cA_PEAKS_COR_OVERLAPS <- ge_SNPs %>% inner_join(GE_cA_PEAKS_COR)
+
+write_tsv(FC_cA_PEAKS_COR_OVERLAPS, paste0(CA_DIR, 'FC_cA_DLX1_SNP_overlaps.tsv'))
+write_tsv(GE_cA_PEAKS_COR_OVERLAPS, paste0(CA_DIR, 'GE_cA_DLX1_SNP_overlaps.tsv'))
+
+GE_cA_peak_pairs_with_SNP_ann %>%
+  filter(grepl('rs62183855', rsid))
 
 #--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------
