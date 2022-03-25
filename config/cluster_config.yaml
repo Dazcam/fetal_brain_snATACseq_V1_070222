@@ -67,16 +67,24 @@ ldsr:
 partitioned_heritability:
     num_cores: 1
     maxvmem: 20G
-partitioned_heritability_conditional_fc_ExN:
+partitioned_heritability_conditional_FC_ExN_vs_FC_InN:
     num_cores: 1
     maxvmem: 20G
-partitioned_heritability_conditional_fc_RG:
+partitioned_heritability_conditional_FC_ExN_vs_FC_RG:
     num_cores: 1
-    maxvmem: 20G 
-partitioned_heritability_conditional_ge_RG:
+    maxvmem: 20G
+partitioned_heritability_conditional_FC_InN_vs_FC_RG:
     num_cores: 1
-    maxvmem: 20G 
-
+    maxvmem: 20G
+partitioned_heritability_conditional_FC_InN_vs_FC_ExN:
+    num_cores: 1
+    maxvmem: 20G
+partitioned_heritability_conditional_FC_RG_vs_FC_ExN:
+    num_cores: 1
+    maxvmem: 20G
+partitioned_heritability_conditional_FC_RG_vs_FC_InN:
+    num_cores: 1
+    maxvmem: 20G
 
 # -------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------

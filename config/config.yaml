@@ -42,15 +42,28 @@ ATAC_CELL_TYPES:
 
 LDSC_GWAS:
     SCZ:
-    BPD:
-    ASD:
-    ADHD:
-    HEIGHT:
-    MDD:
+#    BPD:
+#    ASD:
+#    ADHD:
+#    HEIGHT:
+#    MDD:
+
+LDSR_CONDITIONAL:
+    FC.ExN:
+        - FC.InN
+        - FC.RG
+    FC.InN:
+        - FC.ExN
+        - FC.RG
+    FC.RG:
+        - FC.ExN
+        - FC.InN
 
 PEAK_EXTENSION:
     ext250bp:
     ext500bp:
+
+
 
 LSI_PARAMS:
     Iteration:
