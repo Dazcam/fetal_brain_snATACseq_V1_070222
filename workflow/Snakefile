@@ -3,6 +3,16 @@ include: "rules/snATACseq_processing.smk"
 include: "rules/snATACseq_LDSR.smk"
 #include:  "rules/snATACseq_QC_LSI_params.smk" 
 include: "rules/snATACseq_LDSR_conditional.smk"	
+#include: "rules/snATACseq_test.smk"
+
+LDSR_CONDITIONAL = {'FC.ExN': ["FC.InN", "FC.RG"],
+                    'FC.InN': ["FC.ExN", "FC.RG"],
+                    'FC.RG': ["FC.ExN", "FC.InN"]}
+
+all_input = []
+for key, values in LDSR_CONDITIONAL.items():
+    for value in values:
+        all_input.append(f"../results/LDSR/part_herit/baseline_v1.2/conditional/snATACseq_LDSR_{key}_vs_{value}_ext250bp_SCZ_baseline.v1.2.results")
 
 rule all:
     input:
@@ -19,10 +29,6 @@ rule all:
 #        expand("../results/rmarkdown_reports/snATACseq_remove_batch_effects_{REGION}.html", REGION = config['ATAC_REGIONS']), # Can remove this once testing complete
 #        expand("../results/rmarkdown_reports/snATACseq_unconstrained_integration_{REGION}.html", REGION = config['ATAC_REGIONS']) 
 #         expand("../results/rmarkdown_reports/QC_LSI_params/snATACseq_QC_{REGION}_LSI_{LSI_PARAM}.html", REGION = config['ATAC_REGIONS'], LSI_PARAM = config['LSI_PARAMS'])
-        expand("../results/LDSR/part_herit/baseline_v1.2/conditional/snATACseq_LDSR_FC.ExN_vs_FC.InN_{EXT}_{GWAS}_baseline.v1.2.results",  EXT = config['PEAK_EXTENSION'], GWAS = config['LDSC_GWAS']),
-        expand("../results/LDSR/part_herit/baseline_v1.2/conditional/snATACseq_LDSR_FC.ExN_vs_FC.RG_{EXT}_{GWAS}_baseline.v1.2.results",  EXT = config['PEAK_EXTENSION'], GWAS = config['LDSC_GWAS']),
-        expand("../results/LDSR/part_herit/baseline_v1.2/conditional/snATACseq_LDSR_FC.InN_vs_FC.ExN_{EXT}_{GWAS}_baseline.v1.2.results",  EXT = config['PEAK_EXTENSION'], GWAS = config['LDSC_GWAS']),
-        expand("../results/LDSR/part_herit/baseline_v1.2/conditional/snATACseq_LDSR_FC.InN_vs_FC.RG_{EXT}_{GWAS}_baseline.v1.2.results",  EXT = config['PEAK_EXTENSION'], GWAS = config['LDSC_GWAS']),
-        expand("../results/LDSR/part_herit/baseline_v1.2/conditional/snATACseq_LDSR_FC.RG_vs_FC.ExN_{EXT}_{GWAS}_baseline.v1.2.results",  EXT = config['PEAK_EXTENSION'], GWAS = config['LDSC_GWAS']),
-        expand("../results/LDSR/part_herit/baseline_v1.2/conditional/snATACseq_LDSR_FC.RG_vs_FC.InN_{EXT}_{GWAS}_baseline.v1.2.results",  EXT = config['PEAK_EXTENSION'], GWAS = config['LDSC_GWAS']),
-        expand("../results/LDSR/part_herit/baseline_v1.2/conditional/snATACseq_LDSR_baseline.v1.2_{EXT}_summary_{GWAS}.tsv", EXT = config['PEAK_EXTENSION'], GWAS = config['LDSC_GWAS'])
+        all_input,
+        "../results/LDSR/part_herit/baseline_v1.2/conditional/snATACseq_LDSR_baseline.v1.2_ext250bp_summary_SCZ.tsv"
+
