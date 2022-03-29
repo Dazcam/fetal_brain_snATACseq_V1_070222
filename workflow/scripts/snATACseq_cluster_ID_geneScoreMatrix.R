@@ -39,6 +39,7 @@ p <- add_argument(p, "archR_out_dir", help = "No ArchR output directory specifie
 p <- add_argument(p, "markdown_file", help = "No markdown file path specified")
 p <- add_argument(p, "report_dir", help = "No report output directory specified")
 p <- add_argument(p, "report_file", help = "No report filename specified")
+p <- add_argument(p, "clustID_dir", help = "No cluster ID output directory specified")
 args <- parse_args(p)
 print(args)
 
@@ -48,6 +49,7 @@ cat('\nDefining variables ... \n')
 REGION <- args$region
 DATA_DIR <- args$data_dir
 OUT_DIR <- args$archR_out_dir
+CLUSTID_DIR <- args$clustID_dir 
 MARKDOWN_FILE <- args$markdown_file
 REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
@@ -57,7 +59,7 @@ MARKER_LOG2FC <- c(0.585) # Default 1.25 / 0.585 = 1.5x FC
 
 addArchRThreads(threads = 8) # Set Hawk to 32 cores so 0.75 of total
 addArchRGenome("hg38")
-
+dir.create(CLUSTID_DIR)
 
 ##  Load ArchR project  -------------------------------------------------------------------
 cat(paste0('\nLoading ArchR project for ', REGION, ' ... \n'))
@@ -89,7 +91,7 @@ cat('Extracting marker genes for each cluster ... \n')
 markersGS <- getMarkerFeatures(
   ArchRProj = archR, 
   useMatrix = "GeneScoreMatrix", 
-  groupBy = clust_ID,
+  groupBy = 'Clusters_broad',
   bias = c("TSSEnrichment", "log10(nFrags)"),
   testMethod = "wilcoxon"
 )
@@ -124,7 +126,7 @@ for (LOG2FC_THRESH in c(MARKER_LOG2FC)) {
     assign(paste0('geneExp_plot_FDR_', FDR_THRESH, '_Log2FC_', LOG2FC_THRESH), geneExp_plot)
   
     # Create gene exp tables
-    write.xlsx(as.list(markerList), paste0(REPORT_DIR, REGION, "_FDR_", 
+    write.xlsx(as.list(markerList), paste0(CLUSTID_DIR, REGION, "_FDR_", 
                                            FDR_THRESH, "_Log2FC_", 
                                            LOG2FC_THRESH, ".xlsx"))
 
@@ -245,7 +247,7 @@ av_exp_plot_2 <- ggplot(data = mean_scores, mapping = aes_string(x = 'GENE', y =
 
 
 # Create gene exp tables
-write_tsv(mean_scores, paste0(REPORT_DIR, REGION, "_geneScore_matrix_avg_exp_and_pct_exp.tsv"))
+write_tsv(mean_scores, paste0(CLUSTID_DIR, REGION, "_geneScore_matrix_avg_exp_and_pct_exp.tsv"))
 
 
 ################################################################################################

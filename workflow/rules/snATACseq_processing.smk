@@ -8,12 +8,6 @@
 
 configfile: "../config/config.yaml"
 
-# ----------  SET VARIABLES  ----------
-
-#ROBJ_DIR = SCRATCH + "results/R_objects/"
-#RESULTS_DIR = SCRATCH + "results/reports/ATAC/"
-#PEAKS_DIR = SCRATCH + "results/bed_files_for_LDSC_ATAC/"
-
 # -------------  RULES  ---------------
 
 rule snATAC_seq_QC:
@@ -58,14 +52,15 @@ rule snATAC_seq_cluster_QC:
             """
 
 rule snATAC_seq_cluster_ID:
-    input:  markdown = "scripts/snATACseq_cluster_ID_geneExpMatrix.Rmd",
+    input:  markdown = "scripts/snATACseq_cluster_ID_geneScoreMatrix.Rmd",
             html = "../results/rmarkdown_reports/snATACseq_cluster_QC_FC.html"
-    output: "../results/rmarkdown_reports/snATACseq_cluster_ID_geneExpMatrix_{REGION}.html"
+    output: "../results/rmarkdown_reports/snATACseq_cluster_ID_geneScoreMatrix_{REGION}.html"
     params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
             archR_out_dir = "../results/ARCHR/{REGION}",
             report_dir = "../results/rmarkdown_reports/",
-            report_file = "snATACseq_cluster_ID_geneExpMatrix_{REGION}.html"
-    log:    "../results/logs/archR_data_processsing/snATACseq_cluster_ID_geneExpMatrix_{REGION}.log"
+            report_file = "snATACseq_cluster_ID_geneScoreMatrix_{REGION}.html",
+            clustID_dir = "../results/archR_data_processing/cluster_ID"
+    log:    "../results/logs/archR_data_processsing/snATACseq_cluster_ID_geneScoreMatrix_{REGION}.log"
     shell:
             """
 
@@ -73,8 +68,8 @@ rule snATAC_seq_cluster_ID:
             module load libgit2/1.1.0
             module load pandoc/2.7.3
             /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
-            scripts/snATACseq_cluster_ID_geneExpMatrix.R {wildcards.REGION} {params.data_dir} \
-            {params.archR_out_dir} {input.markdown} {params.report_dir} {params.report_file} 2> {log}
+            scripts/snATACseq_cluster_ID_geneScoreMatrix.R {wildcards.REGION} {params.data_dir} \
+            {params.archR_out_dir} {input.markdown} {params.report_dir} {params.report_file} {params.clustID_dir} 2> {log}
 
             
             """

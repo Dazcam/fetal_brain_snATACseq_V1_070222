@@ -22,7 +22,7 @@ rule all:
 #        expand("../results/rmarkdown_reports/snATACseq_cluster_QC_FC.html"),
 #        expand("../results/rmarkdown_reports/snATACseq_unconstrained_integration_{REGION}.html", REGION = config['ATAC_REGIONS']), 
 #        expand("../results/rmarkdown_reports/snATACseq_pseudo-bulk-reps_and_peak_calling_{REGION}.html", REGION = config['ATAC_REGIONS']),
-#        expand("../results/rmarkdown_reports/snATACseq_cluster_ID_geneExpMatrix_{REGION}.html", REGION = config['ATAC_REGIONS']),
+        expand("../results/rmarkdown_reports/snATACseq_cluster_ID_geneScoreMatrix_{REGION}.html", REGION = config['ATAC_REGIONS']),
 #        expand("../results/rmarkdown_reports/snATACseq_call_peaks_ext_500bp_{REGION}.html", REGION = config['ATAC_REGIONS']),
 #        "../results/rmarkdown_reports/snATACseq_additional_analyses.html" ,
 #        expand("../results/rmarkdown_reports/snATACseq_LDSR_baseline.v1.2_{EXT}_report.html", EXT = config['PEAK_EXTENSION']),
