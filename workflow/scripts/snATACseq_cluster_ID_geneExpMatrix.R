@@ -15,6 +15,7 @@
 ## Info  ------------------------------------------------------------------------------
 
 #   Use this script instead of integration scripts 
+
 ##  Load Packages  --------------------------------------------------------------------
 library(ArchR)
 library(pheatmap)
@@ -27,6 +28,7 @@ library(cowplot)
 library(argparser)
 library(ggplot2)
 library(openxlsx)
+library(scales)
 
 ## Parse region / set region variable -------------------------------------------------
 cat('\nParsing args ... \n')
@@ -51,7 +53,7 @@ REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
 MARKER_DIR <- "../resources/sheets/"
 MARKER_FDR <- c(0.05) # Default 0.01
-MARKER_LOG2FC <- c(0.585, 1) # Default 1.25
+MARKER_LOG2FC <- c(0.585) # Default 1.25 / 0.585 = 1.5x FC
 
 addArchRThreads(threads = 8) # Set Hawk to 32 cores so 0.75 of total
 addArchRGenome("hg38")
@@ -77,9 +79,9 @@ if (REGION == 'FC') {
 }
 
 # Collate marker genes for Heatmap
-MARKER_GENES <- readxl::read_excel(paste0(MARKER_DIR, "snATACseq_cluster_ID_markers.xlsx")) %>%
-  unlist(use.names=FALSE) 
-MARKER_GENES <- unique(MARKER_GENES[!is.na(MARKER_GENES)])
+MARKER_GENES <-  c('SLC17A7', 'GAD1', 'GAD2', 'SLC32A1', 'GLI3',
+                   'TNC', 'PROX1', 'SCGN', 'LHX6', 'NXPH1', 
+                   'MEIS2','ZFHX3','C3')
 
 
 ##  Gene Scores and Marker Genes  -----------------------------------------------------
@@ -92,8 +94,7 @@ markersGS <- getMarkerFeatures(
   testMethod = "wilcoxon"
 )
 
-# Loop to extract top makrer genes at different FDR and Log2FC thresholds
-
+# Loop to extract top marker genes at different FDR and Log2FC thresholds
 for (LOG2FC_THRESH in c(MARKER_LOG2FC)) {
 
   for (FDR_THRESH in c(MARKER_FDR)) {
@@ -144,11 +145,104 @@ cat('Creating group plot ... \n')
 group_plot <- plot_grid(clusters_reclust_UMAP, clusters_reclust_UMAP_BySample, 
                         ncol = 2, align = 'hv', axis = 'rl')
 
+#####  New section for calcuating average expression and pct expression  ################
+
+# Extract gene score matrix and convert to df
+gs_mat <- getMatrixFromProject(ArchRProj = archR,
+                               useMatrix = 'GeneScoreMatrix')
+gs_mat_df <- as.data.frame(as.matrix(assay(gs_mat)))
+
+# Extract gene data and combine with gene score data
+gene_data <- rowData(gs_mat)
+gene_scores_df <- cbind(gene_data, gs_mat_df)
+
+# Remove gene location info and transpose so genes are cols and cells are rows
+gene_scores_df2 <- as.data.frame(t(as.data.frame(gene_scores_df[,7:length(colnames(gene_scores_df))])))
+colnames(gene_scores_df2) <- gene_data$name
+rownames(gene_scores_df2) <- colnames(gene_scores_df)[7:length(colnames(gene_scores_df))]
+
+# Add cell IDs for cluster and sample data to gene score df
+for (i in rownames(gene_scores_df2)) {
+  
+  gene_scores_df2[i, "Clusters"] <- archR$Clusters_broad[which(archR$cellNames == i)]
+  gene_scores_df2[i, "Samples"] <- archR$Sample[which(archR$cellNames == i)]
+  
+}
+
+##  Generate data for plot  -----------------------------------------------------------
+# Calculate percentage of cells expressing genes of interest per cluster
+cat('\nCalculating percentage of cells expressing genes of interest per cluster ... ')
+for (GENE in all_of(MARKER_GENES)) {
+  
+  cat('\n\nRunning gene:', GENE, '\n')
+  
+  for (CLUSTER in unique(gene_scores_df2$Clusters)) {
+    
+    cat('\nRunning Cluster:', CLUSTER)
+    
+    # Number of cells (rows) labelled with cluster ID X with a gene score value > 0 for gene Y
+    pct_numerator <- length(gene_scores_df2[(gene_scores_df2[GENE] > 0 & gene_scores_df2$Clusters == CLUSTER), GENE])
+    
+    # Number of rows containing specified cluster ID
+    pct_divisor <- nrow(gene_scores_df2[gene_scores_df2$Clusters == CLUSTER,])
+    
+    # Percentage
+    percentage <- pct_numerator / pct_divisor * 100
+    
+    if (exists('pct_scores')) {
+      
+      ENTRY <- as.data.frame(cbind(GENE, CLUSTER, percentage))
+      pct_scores <- rbind(pct_scores, ENTRY)
+      
+    } else {
+      
+      pct_scores <- as.data.frame(cbind(GENE, CLUSTER, percentage))
+      
+    }
+    
+  }
+  
+}
+
+
+# Calculate average expression expresssing genes of interest per cluster
+mean_scores <- gene_scores_df2 %>% 
+  select(all_of(MARKER_GENES), Clusters) %>%
+  group_by(Clusters) %>%
+  summarize(across(everything(), ~mean(.[. > 0]))) %>%
+  tidyr::gather(GENE, AVG_EXP, all_of(MARKER_GENES)) %>%
+  rename(CLUSTER = Clusters) %>%
+  inner_join(pct_scores) %>%
+  mutate(PERCENTAGE = as.double(percentage)) %>%
+  select(-percentage)
+
+## Generate dot plot
+mid <- mean(mean_scores$AVG_EXP)
+av_exp_plot <- ggplot(data = mean_scores, mapping = aes_string(x = 'GENE', y = 'CLUSTER')) +
+  geom_point(mapping = aes_string(size = 'PERCENTAGE', color = 'AVG_EXP')) +
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank()) +
+  guides(size = guide_legend(title = 'Percent Expressed')) +
+  scale_size_area(limits = c(0, 100), max_size = 7) +
+  scale_color_gradient2(midpoint = mid, low = "blue", mid = "white",
+                        high = "red") +
+  labs(x = 'gene_name', y = 'Clusters') +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"))+
+  theme(axis.text.x=element_text(angle = 90, vjust = 0.5, hjust = 0)) +
+  coord_flip()
+
+# Create gene exp tables
+write_tsv(mean_scores, paste0(REPORT_DIR, REGION, "_geneScore_matrix_avg_exp_and_pct_exp.tsv"))
+
+
+################################################################################################
+
 ## Create markdown doc  ---------------------------------------------------------------
 cat('\nCreating markdown report ... \n')
 render(MARKDOWN_FILE, output_file = REPORT_FILE, output_dir = REPORT_DIR)
 
 cat('\nDONE.\n')
+
 
 #--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------

@@ -44,3 +44,11 @@ print(group_plot)
 ```
 
 ***
+
+#### Dotplot
+
+```{R, Avg_expr, echo=FALSE, fig.height = 10, fig.width = 10}
+print(av_exp_plot)
+```
+
+***

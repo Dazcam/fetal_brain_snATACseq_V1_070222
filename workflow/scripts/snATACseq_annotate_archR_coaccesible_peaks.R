@@ -300,21 +300,21 @@ fc_SNPs <- data.frame(
 
 ge_SNPs <- data.frame(
   chr = c('chr2'),
-  start = c(172091234, 172085000),
-  end = c(172091734, 172086100),
+  start = c(172091234),
+  end = c(172091734),
   hg38_base_position = c(172091721),
-  rsid = c('rs62183855', 'rs62183855'))
-
-rs62183855 against the DLX1 peaks 172085000 – 172086100
+  rsid = c('rs62183855'))
 
 FC_cA_PEAKS_COR_OVERLAPS <- fc_SNPs %>% inner_join(FC_cA_PEAKS_COR)
-FC_cA_PEAKS_COR_OVERLAPS <- ge_SNPs %>% inner_join(GE_cA_PEAKS_COR)
+GE_cA_PEAKS_COR_OVERLAPS <- ge_SNPs %>% inner_join(GE_cA_PEAKS_COR)
 
 write_tsv(FC_cA_PEAKS_COR_OVERLAPS, paste0(CA_DIR, 'FC_cA_DLX1_SNP_overlaps.tsv'))
 write_tsv(GE_cA_PEAKS_COR_OVERLAPS, paste0(CA_DIR, 'GE_cA_DLX1_SNP_overlaps.tsv'))
 
-GE_cA_peak_pairs_with_SNP_ann %>%
+GEcA_peak_pairs_with_SNP_ann %>%
   filter(grepl('rs62183855', rsid))
+
+unique(GE_cA_PEAKS_COR_OVERLAPS$rsid)
 
 #--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------
