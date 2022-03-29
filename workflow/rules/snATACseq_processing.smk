@@ -59,8 +59,8 @@ rule snATAC_seq_cluster_ID:
             archR_out_dir = "../results/ARCHR/{REGION}",
             report_dir = "../results/rmarkdown_reports/",
             report_file = "snATACseq_cluster_ID_geneScoreMatrix_{REGION}.html",
-            clustID_dir = "../results/archR_data_processing/cluster_ID"
-    log:    "../results/logs/archR_data_processsing/snATACseq_cluster_ID_geneScoreMatrix_{REGION}.log"
+            clustID_dir = "../results/archR_data_processing/cluster_ID/"
+    log:    "../results/logs/archR_data_processing/snATACseq_cluster_ID_geneScoreMatrix_{REGION}.log"
     shell:
             """
 
