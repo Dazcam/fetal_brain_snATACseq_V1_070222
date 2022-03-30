@@ -242,7 +242,7 @@ genes_UMAP <- plotEmbedding(
   ArchRProj = archR.2, 
   colorBy = "GeneScoreMatrix", 
   name = MARKER_GENES, 
-  embedding = "UMAP_",
+  embedding = UMAP_ID,
   imputeWeights = getImputeWeights(archR.2)
 )
 

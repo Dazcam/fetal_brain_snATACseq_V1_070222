@@ -56,14 +56,14 @@ print(av_exp_plot)
 #### UMAPs
 
 ```{R, UMAP_per_gene, echo=FALSE, fig.height = 10, fig.width = 10}
-do.call(cowplot::plot_grid, c(list(ncol = 3), all_genes_UMAP))
+print(do.call(cowplot::plot_grid, c(list(ncol = 3), all_genes_UMAP)))
 ```
 
 ***
 
 ##### Bar plots
 
-```{R, UMAP_per_gene, echo=FALSE, fig.height = 10, fig.width = 10}
+```{R, bar_plots, echo=FALSE, fig.height = 10, fig.width = 10}
 print(bar_plots)
 ```
 
