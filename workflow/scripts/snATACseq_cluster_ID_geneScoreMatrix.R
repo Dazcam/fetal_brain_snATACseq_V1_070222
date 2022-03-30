@@ -79,9 +79,9 @@ if (REGION == 'FC') {
   
   clust_ID <- 'Clusters'
   UMAP_ID<- 'UMAP'
-  MARKER_GENES <-  c('GAD1', 'GAD2', 'SLC32A1', 'GLI3',
+  MARKER_GENES <-  c('GAD1', 'GAD2', 'SLC32A1', 'GLI3', 'SLC17A7',
                      'TNC', 'PROX1', 'SCGN', 'LHX6', 'NXPH1', 
-                     'MEIS2','ZFHX3','C3')
+                     'MEIS2','ZFHX3', 'SPI1', 'LHX8', 'ISL1', 'GBX2')
   
 }
 
