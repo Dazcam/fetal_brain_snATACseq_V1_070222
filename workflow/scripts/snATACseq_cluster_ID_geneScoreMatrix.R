@@ -219,21 +219,7 @@ mean_scores <- gene_scores_df2 %>%
   select(-percentage)
 
 ## Generate dot plot
-mid <- mean(mean_scores$AVG_EXP)
 av_exp_plot <- ggplot(data = mean_scores, mapping = aes_string(x = 'GENE', y = 'CLUSTER')) +
-  geom_point(mapping = aes_string(size = 'PERCENTAGE', color = 'AVG_EXP')) +
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank()) +
-  guides(size = guide_legend(title = 'Percent Expressed')) +
-  scale_size_area(limits = c(0, 100), max_size = 7) +
-  scale_color_gradient2(midpoint = mid, low = "blue", mid = "white",
-                        high = "red") +
-  labs(x = 'gene_name', y = 'Clusters') +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        panel.background = element_blank(), axis.line = element_line(colour = "black"))+
-  theme(axis.text.x=element_text(angle = 90, vjust = 0.5, hjust = 0)) +
-  coord_flip()
-
-av_exp_plot_2 <- ggplot(data = mean_scores, mapping = aes_string(x = 'GENE', y = 'CLUSTER')) +
   geom_point(mapping = aes_string(size = 'PERCENTAGE', color = 'AVG_EXP')) +
   theme(axis.title.x = element_blank(), axis.title.y = element_blank()) +
   guides(size = guide_legend(title = 'Percent Expressed')) +
@@ -273,8 +259,40 @@ all_genes_UMAP <- lapply(genes_UMAP, function(x){
     )
 })
 
-do.call(cowplot::plot_grid, c(list(ncol = 3),p2))
+do.call(cowplot::plot_grid, c(list(ncol = 3), all_genes_UMAP))
 
+##  Bar charts
+avg_exp_bar_plot <- ggplot(mean_scores, aes(fill = CLUSTER, y = AVG_EXP, x = GENE)) + 
+  geom_bar(stat="identity", width = 0.7, position = position_dodge(width = 0.8)) + 
+  coord_flip() +
+  theme(legend.text=element_text(size = 16),
+        legend.title = element_blank(),
+        plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", size = 1, fill = NA),
+        plot.title = element_text(hjust = 0.5, size = 16, face = 'bold'),
+        axis.title.x = element_text(colour = "#000000", size = 14),
+        axis.title.y = element_text(colour = "#000000", size = 14),
+        axis.text.x  = element_text(colour = "#000000", size = 12, vjust = 0.5),
+        axis.text.y  = element_text(colour = "#000000", size = 12)) 
+
+pct_exp_bar_plot <- ggplot(mean_scores, aes(fill = CLUSTER, y = PERCENTAGE, x = GENE)) + 
+  geom_bar(stat="identity", width = 0.7, position = position_dodge(width = 0.8)) + 
+  coord_flip() +
+  theme(legend.text=element_text(size = 16),
+        legend.title = element_blank(),
+        plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", size = 1, fill = NA),
+        plot.title = element_text(hjust = 0.5, size = 16, face = 'bold'),
+        axis.title.x = element_text(colour = "#000000", size = 14),
+        axis.title.y = element_text(colour = "#000000", size = 14),
+        axis.text.x  = element_text(colour = "#000000", size = 12, vjust = 0.5),
+        axis.text.y  = element_text(colour = "#000000", size = 12)) 
+
+bar_plots <- plot_grid(avg_exp_bar_plot, pct_exp_bar_plot)
 
 ################################################################################################
 
