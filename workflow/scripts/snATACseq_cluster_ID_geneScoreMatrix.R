@@ -72,18 +72,18 @@ if (REGION == 'FC') {
   
   clust_ID <- 'Clusters_reclust' # Due to cluster QC being run on FC
   UMAP_ID<- 'UMAP_reclust'
+  MARKER_GENES <-  c('SLC17A7', 'GAD1', 'GAD2', 'SLC32A1', 'GLI3',
+                     'TNC', 'C3', 'SPI1', 'MEF2C')
   
 } else {
   
   clust_ID <- 'Clusters'
   UMAP_ID<- 'UMAP'
+  MARKER_GENES <-  c('GAD1', 'GAD2', 'SLC32A1', 'GLI3',
+                     'TNC', 'PROX1', 'SCGN', 'LHX6', 'NXPH1', 
+                     'MEIS2','ZFHX3','C3')
   
 }
-
-# Collate marker genes for Heatmap
-MARKER_GENES <-  c('SLC17A7', 'GAD1', 'GAD2', 'SLC32A1', 'GLI3',
-                   'TNC', 'PROX1', 'SCGN', 'LHX6', 'NXPH1', 
-                   'MEIS2','ZFHX3','C3')
 
 
 ##  Gene Scores and Marker Genes  -----------------------------------------------------
@@ -248,6 +248,32 @@ av_exp_plot_2 <- ggplot(data = mean_scores, mapping = aes_string(x = 'GENE', y =
 
 # Create gene exp tables
 write_tsv(mean_scores, paste0(CLUSTID_DIR, REGION, "_geneScore_matrix_avg_exp_and_pct_exp.tsv"))
+
+# Gene specific UMAPs using imputation
+archR.2 <- addImputeWeights(archR)
+
+genes_UMAP <- plotEmbedding(
+  ArchRProj = archR.2, 
+  colorBy = "GeneScoreMatrix", 
+  name = MARKER_GENES, 
+  embedding = "UMAP_",
+  imputeWeights = getImputeWeights(archR.2)
+)
+
+all_genes_UMAP <- lapply(genes_UMAP, function(x){
+  
+  x + guides(color = FALSE, fill = FALSE) + 
+    theme_ArchR(baseSize = 6.5) +
+    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
+    theme(
+      axis.text.x=element_blank(), 
+      axis.ticks.x=element_blank(), 
+      axis.text.y=element_blank(), 
+      axis.ticks.y=element_blank()
+    )
+})
+
+do.call(cowplot::plot_grid, c(list(ncol = 3),p2))
 
 
 ################################################################################################
