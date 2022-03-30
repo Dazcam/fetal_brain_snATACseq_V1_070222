@@ -71,7 +71,7 @@ archR <- loadArchRProject(path = OUT_DIR)
 if (REGION == 'FC') {
   
   clust_ID <- 'Clusters_reclust' # Due to cluster QC being run on FC
-  UMAP_ID<- 'UMAP_reclust'
+  UMAP_ID <- 'UMAP_reclust'
   MARKER_GENES <-  c('SLC17A7', 'GAD1', 'GAD2', 'SLC32A1', 'GLI3',
                      'TNC', 'C3', 'SPI1', 'MEF2C')
   
@@ -137,8 +137,8 @@ for (LOG2FC_THRESH in c(MARKER_LOG2FC)) {
 # Plot UMAP - for Integrated LSI clusters
 cat('Create UMAPs ... \n')
 clusters_reclust_UMAP <- plotEmbedding(ArchRProj = archR, colorBy = "cellColData", 
-                                       name = clust_ID, embedding = UMAP_ID) +
-  Seurat::NoLegend() + ggtitle('Clusters')
+                                       name = 'Clusters_broad', embedding = UMAP_ID) +
+  ggtitle('Clusters')
 clusters_reclust_UMAP_BySample <- plotEmbedding(ArchRProj = archR, colorBy = "cellColData", 
                                                 name = "Sample", embedding = UMAP_ID) +
   Seurat::NoLegend() + ggtitle('By Donor. R: 510, B: 611, G: 993')

@@ -61,7 +61,7 @@ print(do.call(cowplot::plot_grid, c(list(ncol = 3), all_genes_UMAP)))
 
 ***
 
-##### Bar plots
+#### Bar plots
 
 ```{R, bar_plots, echo=FALSE, fig.height = 10, fig.width = 10}
 print(bar_plots)
