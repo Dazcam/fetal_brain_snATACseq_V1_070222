@@ -300,7 +300,7 @@ markerGenes  <- c("DLX1", "ZEB2")
 
 browser_track <- plotBrowserTrack(
     ArchRProj = archR, 
-    groupBy = clust_ID, 
+    groupBy = 'Clusters_broad', 
     geneSymbol = markerGenes, 
     upstream = 50000,
     downstream = 50000
