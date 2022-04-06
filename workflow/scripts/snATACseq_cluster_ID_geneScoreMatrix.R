@@ -294,6 +294,20 @@ pct_exp_bar_plot <- ggplot(mean_scores, aes(fill = CLUSTER, y = PERCENTAGE, x = 
 
 bar_plots <- plot_grid(avg_exp_bar_plot, pct_exp_bar_plot)
 
+
+## Create browser tracks  -------------------------------------------------------------
+markerGenes  <- c("DLX1", "ZEB2")
+
+browser_track <- plotBrowserTrack(
+    ArchRProj = archR, 
+    groupBy = clust_ID, 
+    geneSymbol = markerGenes, 
+    upstream = 50000,
+    downstream = 50000
+) 
+
+saveRDS(browser_track, paste0(CLUSTID_DIR, REGION, "_browser_tracks.rds"))
+
 ################################################################################################
 
 ## Create markdown doc  ---------------------------------------------------------------

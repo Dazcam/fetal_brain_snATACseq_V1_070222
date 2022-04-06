@@ -69,5 +69,24 @@ print(bar_plots)
 
 ***
 
+#### Browser tracks {.tabset}
 
+***
 
+##### DLX1
+
+```{R, browser_DLX1, echo=FALSE, fig.height = 10, fig.width = 10}
+grid::grid.newpage()
+grid::grid.draw(browser_track$DLX1)
+```
+
+##### ZEB2
+
+***
+
+```{R, browser_ZEB2, echo=FALSE, fig.height = 10, fig.width = 10}
+grid::grid.newpage()
+grid::grid.draw(browser_track$ZEB2)
+```
+
+***
