@@ -33,6 +33,5 @@ rule all:
         all_input,
         "../results/LDSR/part_herit/baseline_v1.2/conditional/snATACseq_LDSR_baseline.v1.2_ext250bp_summary_SCZ.tsv",
         "../results/garfield/QTL_for_Garfield/Hannon_mQTL/chr22",
-         expand("../results/garfield/anns/{CELL_TYPE}/chr22", CELL_TYPE = config['GARFIELD_CELL_TYPES']),
+         expand("../results/garfield/output/{CELL_TYPE}/garfield.test.Hannon_mQTL.out", CELL_TYPE = config['GARFIELD_CELL_TYPES']),
         "../results/garfield/uk10_SNPs/chr22"
-
