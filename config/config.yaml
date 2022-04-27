@@ -40,6 +40,11 @@ ATAC_CELL_TYPES:
     GE.RG:    
     GE.Proj: 
 
+GARFIELD_CELL_TYPES:
+    FC.ExN:
+    FC.InN:
+    FC.RG:
+
 LDSC_GWAS:
     SCZ:
 #    BPD:

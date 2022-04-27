@@ -2,7 +2,7 @@
 
 BED_FILE=$1
 OUTPUT_DIR=$2
-VARIANTS_DIR=../resources/garfield-data/maftssd 
+VARIANTS_DIR=../resources/garfield/garfield-data/maftssd 
 
 ## loop over chromosomes
 for chr in {1..22}
@@ -40,7 +40,7 @@ LINK_FILE=$OUTPUT_DIR/link_file.txt
 echo "Index Annotation Celltype Tissue Type Category" > $LINK_FILE
 i=-1
 for f in $BED_FILES;do i=$[$i+1]; echo $i $f "NA" "NA" "NA" "NA"  >> $LINK_FILE ; done
-fi
+#fi
 
 ## reformat data for GARFIELD usage
 f=$OUTPUT_DIR/chr${chr}
