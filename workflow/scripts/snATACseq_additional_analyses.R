@@ -27,6 +27,7 @@ p <- add_argument(p, "markdown_file", help = "No markdown file path specified")
 p <- add_argument(p, "rds_dir", help = "No RDS output directory specified")
 p <- add_argument(p, "report_dir", help = "No report output directory specified")
 p <- add_argument(p, "report_file", help = "No report filename specified")
+p <- add_argument(p, "hars_bed", help = "No human accelerated region bed file specified")
 args <- parse_args(p)
 print(args)
 
@@ -37,6 +38,7 @@ MARKDOWN_FILE <- args$markdown_file
 RDS_DIR <- args$rds_dir
 REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
+HARS_FILE <- args$hars_bed
 addArchRThreads(threads = 12) # Set Hawk to 32 cores so 0.75 of total
 addArchRGenome("hg38")
 FC_motifs <- c('NEUROD2', 'NEUROD4', 'NEUROD6', 'ASCL1', 'SPI1', 'PAX6')
@@ -153,6 +155,46 @@ for (REGION in c("FC", "GE")) {
   # Save motif heatmap RDS files
   saveRDS(motif_heatmap_plot, paste0(RDS_DIR, REGION, '_motif_enrichment_heatmap_plot.rds')) 
   saveRDS(heatmap_matrix, paste0(RDS_DIR, REGION, '_motif_enrichment_heatmap_matrix.rds'))    
+  
+  ## HARs enrichment  -  Chptr 12.4  -----------------------------------------------------
+  # Add human accelerated regions anns to archR project 
+  archR <- addPeakAnnotations(ArchRProj = archR, regions = HAR_regions, name = "Hars")
+  
+  ##   --------  HARs enrichment in marker peaks  ----------------- 
+  enrichHarRegions <- peakAnnoEnrichment(
+    seMarker = markersPeaks,
+    ArchRProj = archR,
+    peakAnnotation = "Hars",
+    cutOff = "FDR <= 0.1 & Log2FC >= 0.5"
+  )
+    
+  # Export enrichMotifs and motif p-val table used for plotting
+  saveRDS(enrichHarRegions, paste0(RDS_DIR, REGION, '_HARs.rds'))
+  saveRDS(assays(enrichHarRegions)[["mlog10Padj"]], paste0(RDS_DIR, REGION, '_HARs_mlogPs.rds'))
+  
+  heatmapEM <- plotEnrichHeatmap(enrichHarRegions, transpose = TRUE)
+  assign(paste0("HARs_heatmap_", REGION), heatmapEM)
+  
+  ## Create motif heatmap RDS files  ----------------------------------------------------
+  cat(paste0('\nCreating rds files  ... \n'))
+  # Return heatmap matrix
+  heatmap_HARs_matrix <- plotEnrichHeatmap(enrichHarRegions, transpose = TRUE,
+                                           returnMatrix = TRUE)
+  
+  # Remove all extra info from motif names
+  # new_cols <- as.data.frame(str_split(colnames(heatmap_HARs_matrix), 
+  #                                     fixed("_"), simplify = TRUE)) %>%
+  #   pull(V1)
+  # colnames(heatmap_HARs_matrix) <- new_cols
+  
+  # Note that Complex heatmap also has a function called heatmap for object conversion!!
+  heatmap_HARs_plot <- as.ggplot(pheatmap::pheatmap(heatmap_HARs_matrix, cluster_rows = FALSE, cluster_cols = FALSE,
+                                                    cellwidth = 12, cellheight = 15, fontsize_row = 12,
+                                                    fontsize_col = 12)) 
+  
+  # Save motif heatmap RDS files
+  saveRDS(heatmap_HARs_plot, paste0(RDS_DIR, REGION, '_HARs_enrichment_heatmap_plot.rds')) 
+  saveRDS(heatmap_HARs_matrix, paste0(RDS_DIR, REGION, '_HARs_enrichment_heatmap_matrix.rds'))   
 
 
   ## Motif Footprinting  -  Chptr 14  ---------------------------------------------------
