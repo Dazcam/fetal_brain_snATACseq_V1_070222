@@ -88,8 +88,6 @@ LEVELS
 cat(paste0('\nLoading ArchR project for ', REGION, ' ... \n'))
 archR <- loadArchRProject(path = OUT_DIR)
 
-
-
 ## Clusters QC ------------------------------------------------------------------------
 # Retain clusters that have >= 30 cells in at least 2 donors 
 # As matrix needed to convert sparse matrix to dense matrix

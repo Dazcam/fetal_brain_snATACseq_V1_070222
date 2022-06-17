@@ -191,9 +191,10 @@ rule snATAC_additional_analyses:
             html1 = "../results/rmarkdown_reports/snATACseq_pseudo-bulk-reps_and_peak_calling_FC.html", # Needed for rule order
             html2 = "../results/rmarkdown_reports/snATACseq_pseudo-bulk-reps_and_peak_calling_GE.html",
     output: "../results/rmarkdown_reports/snATACseq_additional_analyses.html"
-    params:  rds_dir = "../results/archR_data_processing/rds_files/",
+    params: rds_dir = "../results/archR_data_processing/rds_files/",
             report_dir = "../results/rmarkdown_reports/",
             report_file = "snATACseq_additional_analyses.html",
+            hars_bed_file = config['HARs']
     log:    "../results/logs/archR_data_processing/snATAC_additional_analyses.log"
     shell:
             """
@@ -203,7 +204,7 @@ rule snATAC_additional_analyses:
             module load pandoc/2.7.3
             /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
             scripts/snATACseq_additional_analyses.R {input.markdown} {params.rds_dir} \
-            {params.report_dir} {params.report_file} 2> {log}             
+            {params.report_dir} {params.report_file} {params.hars_bed_file} 2> {log}             
 
             """
 

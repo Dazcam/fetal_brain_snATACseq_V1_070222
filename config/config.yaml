@@ -28,6 +28,8 @@ REFERENCE_ATAC: ../resources/refdata-cellranger-atac-GRCh38-1.2.0
 
 MACS2_PATH: '~/.conda/envs/macs2/bin/macs2'
 
+HARs: '../resources/sheets/HARs_capra_2019_supp_table_5.csv'
+
 ATAC_CELL_TYPES:
     FC.ExN:
     FC.InN:
@@ -46,12 +48,18 @@ GARFIELD_CELL_TYPES:
     FC.RG:
 
 LDSC_GWAS:
-    SCZ:
+#    SCZ:
 #    BPD:
 #    ASD:
 #    ADHD:
 #    HEIGHT:
 #    MDD:
+     INSOMNIA: '../resources/gwas_sumstats/Insomnia_sumstats_Jansenetal.txt.gz'               
+     NEUROTICISM: '../resources/gwas_sumstats/neuroticism.gwas.full_fixHeader.txt.gz'
+     BRAIN_VOLUME: '../resources/gwas_sumstats/meta_analysis_BV_Jansenetal_2020.sumstats.txt.gz'  
+     AD: '../resources/gwas_sumstats/PGCALZ2sumstatsExcluding23andMe_fixHeader.txt.gz'
+     INTELLENGENCE: '../resources/gwas_sumstats/SavageJansen_2018_intelligence_metaanalysis.txt.gz'
+
 
 LDSR_CONDITIONAL:
     FC.ExN:
@@ -68,8 +76,6 @@ PEAK_EXTENSION:
     ext250bp:
     ext500bp:
 
-
-
 LSI_PARAMS:
     Iteration:
     Resolution:
@@ -78,3 +84,4 @@ LSI_PARAMS:
     N_starts:
     Dimensions:
     Sample_cells:
+

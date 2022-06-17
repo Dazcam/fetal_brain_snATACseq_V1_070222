@@ -39,6 +39,32 @@ ComplexHeatmap::draw(motif_heatmap_GE, heatmap_legend_side = "bot", annotation_l
 
 ***
 
+#### **HARs Enrichment** {.tabset}
+
+##### **FC**
+
+HARs enriched cell-specific peaks
+
+***
+
+```{R, HARs_cell_specifc_FC, fig.dim = c(10,5), echo=FALSE}
+ComplexHeatmap::draw(HARs_heatmap_FC, heatmap_legend_side = "bot", annotation_legend_side = "bot")
+```
+
+***
+
+##### **GE**
+
+HARs enriched cell-specific peaks
+
+***
+
+```{R, HARs_cell_specifc_GE, fig.dim = c(10,5), echo=FALSE}
+ComplexHeatmap::draw(HARs_heatmap_GE, heatmap_legend_side = "bot", annotation_legend_side = "bot")
+```
+
+***
+
 #### FC Footprints {.tabset}
 
 ```{r FC footprints, results='asis', echo=FALSE}

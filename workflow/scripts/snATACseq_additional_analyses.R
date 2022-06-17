@@ -38,7 +38,7 @@ MARKDOWN_FILE <- args$markdown_file
 RDS_DIR <- args$rds_dir
 REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
-HARS_FILE <- args$hars_bed
+HARS_BED_FILE <- args$hars_bed
 addArchRThreads(threads = 12) # Set Hawk to 32 cores so 0.75 of total
 addArchRGenome("hg38")
 FC_motifs <- c('NEUROD2', 'NEUROD4', 'NEUROD6', 'ASCL1', 'SPI1', 'PAX6')
@@ -158,13 +158,19 @@ for (REGION in c("FC", "GE")) {
   
   ## HARs enrichment  -  Chptr 12.4  -----------------------------------------------------
   # Add human accelerated regions anns to archR project 
-  archR <- addPeakAnnotations(ArchRProj = archR, regions = HAR_regions, name = "Hars")
+  
+  # Load HARs bed file and convert to GRanges object
+  HARs_df <- read_csv(HARS_BED_FILE)
+  HAR_regions <- makeGRangesFromDataFrame(HARs_df, seqnames.field = 'name')
+  HAR_regions <- c(HAR_REGIONS = HAR_regions) # Needs to be a named list
+ 
+  archR <- addPeakAnnotations(ArchRProj = archR, regions = HAR_regions, name = "HARs")
   
   ##   --------  HARs enrichment in marker peaks  ----------------- 
   enrichHarRegions <- peakAnnoEnrichment(
     seMarker = markersPeaks,
     ArchRProj = archR,
-    peakAnnotation = "Hars",
+    peakAnnotation = "HARs",
     cutOff = "FDR <= 0.1 & Log2FC >= 0.5"
   )
     
@@ -172,8 +178,8 @@ for (REGION in c("FC", "GE")) {
   saveRDS(enrichHarRegions, paste0(RDS_DIR, REGION, '_HARs.rds'))
   saveRDS(assays(enrichHarRegions)[["mlog10Padj"]], paste0(RDS_DIR, REGION, '_HARs_mlogPs.rds'))
   
-  heatmapEM <- plotEnrichHeatmap(enrichHarRegions, transpose = TRUE)
-  assign(paste0("HARs_heatmap_", REGION), heatmapEM)
+  heatmapHARs <- plotEnrichHeatmap(enrichHarRegions, transpose = TRUE)
+  assign(paste0("HARs_heatmap_", REGION), heatmapHARs)
   
   ## Create motif heatmap RDS files  ----------------------------------------------------
   cat(paste0('\nCreating rds files  ... \n'))
