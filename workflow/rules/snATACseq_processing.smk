@@ -31,14 +31,14 @@ rule snATAC_seq_QC:
             """
 
 rule snATAC_seq_cluster_QC:
-    input:  markdown = "scripts/snATACseq_cluster_QC.Rmd",
-            html = "../results/rmarkdown_reports//snATACseq_QC_FC.html"
-    output: "../results/rmarkdown_reports/snATACseq_cluster_QC_FC.html"
+    input:  markdown = "scripts/snATACseq_cluster_QC_{REGION}.Rmd",
+            html = "../results/rmarkdown_reports/snATACseq_QC_{REGION}.html"
+    output: "../results/rmarkdown_reports/snATACseq_cluster_QC_{REGION}.html"
     params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
-            archR_out_dir = "../results/ARCHR/FC",
+            archR_out_dir = "../results/ARCHR/{REGION}",
             report_dir = "../results/rmarkdown_reports/",
-            report_file = "snATACseq_cluster_QC_FC.html"
-    log:    "../results/logs/archR_data_processsing/snATAC_cluster_QC_FC.log"
+            report_file = "snATACseq_cluster_QC_{REGION}.html"
+    log:    "../results/logs/archR_data_processsing/snATAC_cluster_QC_{REGION}.log"
     shell:
             """
 
@@ -46,7 +46,7 @@ rule snATAC_seq_cluster_QC:
             module load libgit2/1.1.0
             module load pandoc/2.7.3
             /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
-            scripts/snATACseq_cluster_QC.R FC {params.data_dir} \
+            scripts/snATACseq_cluster_QC.R {wildcards.REGION} {params.data_dir} \
             {params.archR_out_dir} {input.markdown} {params.report_dir} {params.report_file} 2> {log}
 
             """

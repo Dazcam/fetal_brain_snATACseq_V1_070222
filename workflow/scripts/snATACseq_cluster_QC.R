@@ -88,48 +88,63 @@ LEVELS
 cat(paste0('\nLoading ArchR project for ', REGION, ' ... \n'))
 archR <- loadArchRProject(path = OUT_DIR)
 
-## Clusters QC ------------------------------------------------------------------------
-# Retain clusters that have >= 30 cells in at least 2 donors 
-# As matrix needed to convert sparse matrix to dense matrix
-cat('\nCheck for clusters that do not have >= 30 cells in at least 2 donors ... \n')
-donor_cell_cnts <- as.data.frame(as.matrix(confusionMatrix(paste0(archR$Clusters), paste0(archR$Sample)))) %>%
+if (REGION == "FC") {
+
+  ## Clusters QC ------------------------------------------------------------------------
+  # Retain clusters that have >= 30 cells in at least 2 donors 
+  # As matrix needed to convert sparse matrix to dense matrix
+  cat('\nCheck for clusters that do not have >= 30 cells in at least 2 donors ... \n')
+  donor_cell_cnts <- as.data.frame(as.matrix(confusionMatrix(paste0(archR$Clusters), paste0(archR$Sample)))) %>%
   rownames_to_column(var = 'Cluster')
-donor_cell_cnts
+  donor_cell_cnts
 
-cluster_list <- vector()
+  cluster_list <- vector()
 
-# Loop to extract cluster IDs for clusters that have >= 30 cells in at least 2 donors 
-cat('Do the following clusters have >= 30 cells in at least 2 donors?')
-for (line in 1:dim(donor_cell_cnts)[1]) {
+  # Loop to extract cluster IDs for clusters that have >= 30 cells in at least 2 donors 
+  cat('Do the following clusters have >= 30 cells in at least 2 donors?')
+  for (line in 1:dim(donor_cell_cnts)[1]) {
   
-  donor_A <- donor_cell_cnts[line, 2] >= 30
-  donor_B <- donor_cell_cnts[line, 3] >= 30
-  donor_C <- donor_cell_cnts[line, 4] >= 30
+    donor_A <- donor_cell_cnts[line, 2] >= 30
+    donor_B <- donor_cell_cnts[line, 3] >= 30
+    donor_C <- donor_cell_cnts[line, 4] >= 30
   
-  # If statement for clusters to retain
-  if (donor_A + donor_B + donor_C >= 2) {cluster_list <- c(cluster_list, donor_cell_cnts[line, 1])}
+    # If statement for clusters to retain
+    if (donor_A + donor_B + donor_C >= 2) {cluster_list <- c(cluster_list, donor_cell_cnts[line, 1])}
    
-  cat(paste0('Cluster ', donor_cell_cnts[line, 1], ': ', donor_A + donor_B + donor_C >= 2), '\n')
+    cat(paste0('Cluster ', donor_cell_cnts[line, 1], ': ', donor_A + donor_B + donor_C >= 2), '\n')
+
+  }
+
+  cat('The clusters to be retained are: ', cluster_list, '\n')
+
+  cell_list <- as.data.frame(getCellColData(archR, select = c("donor", "Clusters")))
+  cells_to_keep <- rownames(cell_list %>% filter(Clusters %in% cluster_list))
+  cells_num_deleted <- length(archR$cellNames) - length(cells_to_keep)
+
+  # Remove cells
+  archR
+  cat(paste0('\nRetaining the following clusters for FC:', cluster_list))
+  cat(paste0('\nCells deleted: ', cells_num_deleted, '\n'))
+  archR.2 <- archR[cells_to_keep, ]
+  archR.2
+  
+} else {
+  
+  ## Removal of cells expressing SPI1 and SLC17A from GE  -------------------------------
+  
+  archR
+  cat('\nRemoving cluster C2 from the GE ...\n')
+  SPI1_SLC17_cells  <- BiocGenerics::which(archR$Clusters != "C2")
+  cells_to_keep <- archR$cellNames[SPI1_SLC17_cells]
+  archR.2 <- archR[cells_to_keep, ]
+  archR.2
 
 }
 
-cat('The clusters to be retained are: ', cluster_list, '\n')
-
-cell_list <- as.data.frame(getCellColData(archR, select = c("donor", "Clusters")))
-cells_to_keep <- rownames(cell_list %>% filter(Clusters %in% cluster_list))
-cells_num_deleted <- length(archR$cellNames) - length(cells_to_keep)
-
-# Remove cells
-archR
-cat(paste0('\nRetaining the following clusters:', cluster_list))
-cat(paste0('\nCells deleted: ', cells_num_deleted, '\n'))
-archR.2 <- archR[cells_to_keep, ]
-archR.2
-
-## Re-cluster after cluster removal 1 -------------------------------------------------
-cat('\nRe-clustering cells ... \n')
-#  Dimensionality reduction  
-archR.2<- addIterativeLSI(
+  ## Re-cluster after cluster removal 1 -------------------------------------------------
+  cat('\nRe-clustering cells ... \n')
+  #  Dimensionality reduction  
+  archR.2 <- addIterativeLSI(
   ArchRProj = archR.2,
   useMatrix = "TileMatrix", 
   name = "IterativeLSI_reclust", 
@@ -141,9 +156,9 @@ archR.2<- addIterativeLSI(
   ), 
   varFeatures = 25000, 
   dimsToUse = 1:30
-)
+  )
 
-##  Clustering  
+## Clustering  
 archR.2<- addClusters(
   input = archR.2,
   reducedDims = "IterativeLSI_reclust",

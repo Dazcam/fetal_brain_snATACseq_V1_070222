@@ -28,12 +28,11 @@ snATACseq analysis with ArchR - cluster QC 1.
 
 #### Cluster QC {.tabset}
 
-Remove clusters that do not have >= 30 cells in at least 2 donors
+Remove cluster labelled as expressing SPI1 and SLC17A7
 
-+ Cell count at this stage = `r length(archR$cellNames)`
-+ Clusters to be retained from initial QC pass  = `r cluster_list`
++ Cell count before filtering  = `r length(archR$cellNames)`
 + No. of cells to be removed = `r length(archR$cellNames) - length(cells_to_keep)`
-+ Cell count after QC = `r length(archR.2$cellNames)`
++ Cell count after filtering = `r length(archR.2$cellNames)`
 
 ***
 

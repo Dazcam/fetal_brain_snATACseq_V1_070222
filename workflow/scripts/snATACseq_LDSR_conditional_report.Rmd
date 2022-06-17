@@ -1,0 +1,244 @@
+---
+title: "sLDSC conditional results - ATAC"
+author: "Darren Cameron"
+date: "`r format(Sys.time(), '%d/%m/%y')`"
+output: html_document
+---
+
+snATACseq sLDSC conditinal analyses results. FDR threshold < 0.01. All peaks 501bp. Zp scores are 2-tailed.
+
+***
+
+### **Results** {.tabset}
+
+***
+
+#### **SLDSC** {.tabset}
+
+##### **SCZ** {.tabset}
+
+###### **FC-ExN**
+
+FC-ExN added to baseline.
+
+***
+
+```{R, ldsc_SCZvs.fc.ExN_df, echo=FALSE, }
+knitr::kable(ldsc_SCZ_vs.fc.ExN_df)
+```
+
+***
+
+```{R, ldsc_SCZvs.fc.ExN_plot, echo=FALSE, fig.dim = c(10, 5), fig.align = 'center'}
+ldsc_SCZ_vs.fc.ExN_plot
+```
+
+***
+
+###### **FC-RG**
+
+FC-RG added to baseline.
+
+***
+
+```{R, ldsc_SCZvs.fc.RG_df, echo=FALSE, }
+knitr::kable(ldsc_SCZ_vs.fc.RG_df)
+```
+
+***
+
+```{R, ldsc_SCZvs.fc.RG_plot, echo=FALSE, fig.dim = c(10, 5), fig.align = 'center'}
+ldsc_SCZ_vs.fc.RG_plot
+```
+
+***
+
+###### **GE-RG**
+
+GE-RG added to baseline.
+
+***
+
+```{R, ldsc_SCZvs.ge.RG_df, echo=FALSE, }
+knitr::kable(ldsc_SCZ_vs.ge.RG_df)
+```
+
+***
+
+```{R, ldsc_SCZvs.ge.RG_plot, echo=FALSE, fig.dim = c(10, 5), fig.align = 'center'}
+ldsc_SCZ_vs.ge.RG_plot
+```
+
+***
+
+##### **BPD** {.tabset}
+
+###### **FC-ExN**
+
+FC-ExN added to baseline.
+
+***
+
+```{R, ldsc_BPDvs.fc.ExN_df, echo=FALSE, }
+knitr::kable(ldsc_BPD_vs.fc.ExN_df)
+```
+
+***
+
+```{R, ldsc_BPDvs.fc.ExN_plot, echo=FALSE, fig.dim = c(10, 5), fig.align = 'center'}
+ldsc_BPD_vs.fc.ExN_plot
+```
+
+***
+
+###### **FC-RG**
+
+FC-RG added to baseline.
+
+***
+
+```{R, ldsc_BPDvs.fc.RG_df, echo=FALSE, }
+knitr::kable(ldsc_BPD_vs.fc.RG_df)
+```
+
+***
+
+```{R, ldsc_BPDvs.fc.RG_plot, echo=FALSE, fig.dim = c(10, 5), fig.align = 'center'}
+ldsc_BPD_vs.fc.RG_plot
+```
+
+***
+
+###### **GE-RG**
+
+GE-RG added to baseline.
+
+***
+
+```{R, ldsc_BPDvs.ge.RG_df, echo=FALSE, }
+knitr::kable(ldsc_BPD_vs.ge.RG_df)
+```
+
+***
+
+```{R, ldsc_BPDvs.ge.RG_plot, echo=FALSE, fig.dim = c(10, 5), fig.align = 'center'}
+ldsc_BPD_vs.ge.RG_plot
+```
+
+***
+
+
+##### **MDD** {.tabset}
+
+###### **FC-ExN**
+
+FC-ExN added to baseline.
+
+***
+
+```{R, ldsc_MDDvs.fc.ExN_df, echo=FALSE, }
+knitr::kable(ldsc_MDD_vs.fc.ExN_df)
+```
+
+***
+
+```{R, ldsc_MDDvs.fc.ExN_plot, echo=FALSE, fig.dim = c(10, 5), fig.align = 'center'}
+ldsc_MDD_vs.fc.ExN_plot
+```
+
+***
+
+###### **FC-RG**
+
+FC-RG added to baseline.
+
+***
+
+```{R, ldsc_MDDvs.fc.RG_df, echo=FALSE, }
+knitr::kable(ldsc_MDD_vs.fc.RG_df)
+```
+
+***
+
+```{R, ldsc_MDDvs.fc.RG_plot, echo=FALSE, fig.dim = c(10, 5), fig.align = 'center'}
+ldsc_MDD_vs.fc.RG_plot
+```
+
+***
+
+###### **GE-RG**
+
+GE-RG added to baseline.
+
+***
+
+```{R, ldsc_MDDvs.ge.RG_df, echo=FALSE, }
+knitr::kable(ldsc_MDD_vs.ge.RG_df)
+```
+
+***
+
+```{R, ldsc_MDDvs.ge.RG_plot, echo=FALSE, fig.dim = c(10, 5), fig.align = 'center'}
+ldsc_MDD_vs.ge.RG_plot
+```
+
+***
+
+
+##### **HEIGHT** {.tabset}
+
+###### **FC-ExN**
+
+FC-ExN added to baseline.
+
+***
+
+```{R, ldsc_HEIGHTvs.fc.ExN_df, echo=FALSE, }
+knitr::kable(ldsc_HEIGHT_vs.fc.ExN_df)
+```
+
+***
+
+```{R, ldsc_HEIGHTvs.fc.ExN_plot, echo=FALSE, fig.dim = c(10, 5), fig.align = 'center'}
+ldsc_HEIGHT_vs.fc.ExN_plot
+```
+
+***
+
+###### **FC-RG**
+
+FC-RG added to baseline.
+
+***
+
+```{R, ldsc_HEIGHT_vs.fc.RG_df, echo=FALSE, }
+knitr::kable(ldsc_HEIGHT_vs.fc.RG_df)
+```
+
+***
+
+```{R, ldsc_HEIGHTvs.fc.RG_plot, echo=FALSE, fig.dim = c(10, 5), fig.align = 'center'}
+ldsc_HEIGHT_vs.fc.RG_plot
+```
+
+***
+
+###### **GE-RG**
+
+GE-RG added to baseline.
+
+***
+
+```{R, ldsc_HEIGHTvs.ge.RG_df, echo=FALSE, }
+knitr::kable(ldsc_HEIGHT_vs.ge.RG_df)
+```
+
+***
+
+```{R, ldsc_HEIGHTvs.ge.RG_plot, echo=FALSE, fig.dim = c(10, 5), fig.align = 'center'}
+ldsc_HEIGHT_vs.ge.RG_plot
+```
+
+***
+
+
