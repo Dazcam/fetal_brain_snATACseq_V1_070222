@@ -134,7 +134,7 @@ if (REGION == "FC") {
   
   archR
   cat('\nRemoving cluster C2 from the GE ...\n')
-  SPI1_SLC17_cells  <- BiocGenerics::which(archR$Clusters != "C2")
+  SPI1_SLC17_cells  <- BiocGenerics::which(archR$Clusters != "C5")
   cells_to_keep <- archR$cellNames[SPI1_SLC17_cells]
   archR.2 <- archR[cells_to_keep, ]
   archR.2

@@ -18,7 +18,7 @@ for key, values in LDSR_CONDITIONAL.items():
 
 rule all:
     input:
-        expand("../results/rmarkdown_reports/snATACseq_remove_batch_effects_{REGION}.html", REGION = config['ATAC_REGIONS'])
+        expand("../results/rmarkdown_reports/snATACseq_cluster_QC_{REGION}.html", REGION = config['ATAC_REGIONS'])
 
 #  MUNGE_SUMSTATS
 #         expand("../results/GWAS_for_ldsc/{GWAS}_hg19_ldsc_ready.sumstats.gz", GWAS = config['LDSC_GWAS'])
