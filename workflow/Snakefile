@@ -5,7 +5,7 @@ include: "rules/snATACseq_LDSR.smk"
 #include:  "rules/snATACseq_QC_LSI_params.smk" 
 include: "rules/snATACseq_LDSR_conditional.smk"	
 #include: "rules/snATACseq_test.smk"
-include : "rules/snATACseq_garfield.smk"
+include: "rules/snATACseq_garfield.smk"
 
 LDSR_CONDITIONAL = {'FC.ExN': ["FC.InN", "FC.RG"],
                     'FC.InN': ["FC.ExN", "FC.RG"],
@@ -18,22 +18,33 @@ for key, values in LDSR_CONDITIONAL.items():
 
 rule all:
     input:
+        expand("../results/rmarkdown_reports/snATACseq_remove_batch_effects_{REGION}.html", REGION = config['ATAC_REGIONS'])
+
+#  MUNGE_SUMSTATS
 #         expand("../results/GWAS_for_ldsc/{GWAS}_hg19_ldsc_ready.sumstats.gz", GWAS = config['LDSC_GWAS'])
+
+#  CELL_RANGER
 #        expand("../results/snATACseq_CR-atac_1.2.0/{SAMPLE}.stamp", SAMPLE=config["SAMPLES_ATAC"]),
 #        expand("../results/snATACseq_CR-atac_1.2.0/{SAMPLE_AGGR}.aggr", SAMPLE_AGGR=config["SAMPLES_ATAC_AGGR"]),
-        expand("../results/rmarkdown_reports/snATACseq_QC_{REGION}.html", REGION = config['ATAC_REGIONS']), # Can remove this once testing complete
-#        expand("../results/rmarkdown_reports/snATACseq_cluster_QC_{REGION}.html", REGION = config['ATAC_REGIONS']),
-#        expand("../results/rmarkdown_reports/snATACseq_unconstrained_integration_{REGION}.html", REGION = config['ATAC_REGIONS']), 
-#        expand("../results/rmarkdown_reports/snATACseq_pseudo-bulk-reps_and_peak_calling_{REGION}.html", REGION = config['ATAC_REGIONS']),
+
+#  ARCHR_PROCESSING
+#        expand("../results/rmarkdown_reports/snATACseq_QC_{REGION}.html", REGION = config['ATAC_REGIONS']), # Can remove this once testing complete
+#        expand("../results/rmarkdown_reports/snATACseq_unconstrained_integration_{REGION}.html", REGION = config['ATAC_REGIONS']),
 #        expand("../results/rmarkdown_reports/snATACseq_cluster_ID_geneScoreMatrix_{REGION}.html", REGION = config['ATAC_REGIONS']),
+#        expand("../results/rmarkdown_reports/snATACseq_remove_batch_effects_{REGION}.html", REGION = config['ATAC_REGIONS']), # Can remove this once testing complete
+#        expand("../results/rmarkdown_reports/snATACseq_cluster_QC_{REGION}.html", REGION = config['ATAC_REGIONS']),
+#        expand("../results/rmarkdown_reports/snATACseq_pseudo-bulk-reps_and_peak_calling_{REGION}.html", REGION = config['ATAC_REGIONS']),
 #        expand("../results/rmarkdown_reports/snATACseq_call_peaks_ext_500bp_{REGION}.html", REGION = config['ATAC_REGIONS']),
 #        "../results/rmarkdown_reports/snATACseq_additional_analyses.html" ,
-#        expand("../results/rmarkdown_reports/snATACseq_LDSR_baseline.v1.2_{EXT}_report.html", EXT = config['PEAK_EXTENSION']),
-#        expand("../results/rmarkdown_reports/snATACseq_remove_batch_effects_{REGION}.html", REGION = config['ATAC_REGIONS']), # Can remove this once testing complete
-#        expand("../results/rmarkdown_reports/snATACseq_unconstrained_integration_{REGION}.html", REGION = config['ATAC_REGIONS']) 
 #         expand("../results/rmarkdown_reports/QC_LSI_params/snATACseq_QC_{REGION}_LSI_{LSI_PARAM}.html", REGION = config['ATAC_REGIONS'], LSI_PARAM = config['LSI_PARAMS'])
+
+#  LDSR
+#        expand("../results/rmarkdown_reports/snATACseq_LDSR_baseline.v1.2_{EXT}_report.html", EXT = config['PEAK_EXTENSION']),
 #        all_input,
 #        "../results/LDSR/part_herit/baseline_v1.2/conditional/snATACseq_LDSR_baseline.v1.2_ext250bp_summary_SCZ.tsv",
+
+
+#  GARFIELD
 #        "../results/garfield/QTL_for_Garfield/Hannon_mQTL/chr22",
 #         expand("../results/garfield/output/{CELL_TYPE}/garfield.test.Hannon_mQTL.out", CELL_TYPE = config['GARFIELD_CELL_TYPES']),
 #        "../results/garfield/uk10_SNPs/chr22"

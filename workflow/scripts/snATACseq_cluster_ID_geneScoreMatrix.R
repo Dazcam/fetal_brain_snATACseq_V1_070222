@@ -70,15 +70,17 @@ archR <- loadArchRProject(path = OUT_DIR)
 # Load Seurat RNA data
 if (REGION == 'FC') {
   
-  clust_ID <- 'Clusters_reclust' # Due to cluster QC being run on FC
-  UMAP_ID <- 'UMAP_reclust'
+  clust_ID <- 'Clusters' # Due to cluster QC being run for FC
+  CLUST_TYPE <- 'Clusters'     # Can be run before or after reclustering and broad cluster assignments
+  UMAP_ID <- 'UMAP'
   MARKER_GENES <-  c('SLC17A7', 'GAD1', 'GAD2', 'SLC32A1', 'GLI3',
                      'TNC', 'C3', 'SPI1', 'MEF2C')
   
 } else {
   
-  clust_ID <- 'Clusters'
-  UMAP_ID<- 'UMAP'
+  clust_ID <- 'Clusters' # Cluster QC now added for GE
+  CLUST_TYPE <-	'Clusters' 
+  UMAP_ID <- 'UMAP'
   MARKER_GENES <-  c('GAD1', 'GAD2', 'SLC32A1', 'GLI3', 'SLC17A7',
                      'TNC', 'PROX1', 'SCGN', 'LHX6', 'NXPH1', 
                      'MEIS2','ZFHX3', 'SPI1', 'LHX8', 'ISL1', 'GBX2')
@@ -91,7 +93,7 @@ cat('Extracting marker genes for each cluster ... \n')
 markersGS <- getMarkerFeatures(
   ArchRProj = archR, 
   useMatrix = "GeneScoreMatrix", 
-  groupBy = 'Clusters_broad',
+  groupBy = CLUST_TYPE,
   bias = c("TSSEnrichment", "log10(nFrags)"),
   testMethod = "wilcoxon"
 )
@@ -128,7 +130,7 @@ for (LOG2FC_THRESH in c(MARKER_LOG2FC)) {
     # Create gene exp tables
     write.xlsx(as.list(markerList), paste0(CLUSTID_DIR, REGION, "_FDR_", 
                                            FDR_THRESH, "_Log2FC_", 
-                                           LOG2FC_THRESH, ".xlsx"))
+                                           LOG2FC_THRESH, "_", CLUST_TYPE, ".xlsx"))
 
   }
 
@@ -137,7 +139,7 @@ for (LOG2FC_THRESH in c(MARKER_LOG2FC)) {
 # Plot UMAP - for Integrated LSI clusters
 cat('Create UMAPs ... \n')
 clusters_reclust_UMAP <- plotEmbedding(ArchRProj = archR, colorBy = "cellColData", 
-                                       name = 'Clusters_broad', embedding = UMAP_ID) +
+                                       name = CLUST_TYPE, embedding = UMAP_ID) +
   ggtitle('Clusters')
 clusters_reclust_UMAP_BySample <- plotEmbedding(ArchRProj = archR, colorBy = "cellColData", 
                                                 name = "Sample", embedding = UMAP_ID) +
@@ -166,7 +168,9 @@ rownames(gene_scores_df2) <- colnames(gene_scores_df)[7:length(colnames(gene_sco
 # Add cell IDs for cluster and sample data to gene score df
 for (i in rownames(gene_scores_df2)) {
   
-  gene_scores_df2[i, "Clusters"] <- archR$Clusters_broad[which(archR$cellNames == i)]
+## NOTE: Need a solution for line below to handle 'Clusters' and 'Clusters_broad' ###
+
+  gene_scores_df2[i, "Clusters"] <- archR$Clusters[which(archR$cellNames == i)]
   gene_scores_df2[i, "Samples"] <- archR$Sample[which(archR$cellNames == i)]
   
 }
@@ -233,7 +237,7 @@ av_exp_plot <- ggplot(data = mean_scores, mapping = aes_string(x = 'GENE', y = '
 
 
 # Create gene exp tables
-write_tsv(mean_scores, paste0(CLUSTID_DIR, REGION, "_geneScore_matrix_avg_exp_and_pct_exp.tsv"))
+write_tsv(mean_scores, paste0(CLUSTID_DIR, REGION, "_geneScore_matrix_avg_exp_and_pct_exp_", CLUST_TYPE, ".tsv"))
 
 # Gene specific UMAPs using imputation
 archR.2 <- addImputeWeights(archR)
@@ -300,13 +304,13 @@ markerGenes  <- c("DLX1", "ZEB2")
 
 browser_track <- plotBrowserTrack(
     ArchRProj = archR, 
-    groupBy = 'Clusters_broad', 
+    groupBy = CLUST_TYPE, 
     geneSymbol = markerGenes, 
     upstream = 50000,
     downstream = 50000
 ) 
 
-saveRDS(browser_track, paste0(CLUSTID_DIR, REGION, "_browser_tracks.rds"))
+saveRDS(browser_track, paste0(CLUSTID_DIR, REGION, "_browser_tracks_",  CLUST_TYPE, ".rds"))
 
 ################################################################################################
 
