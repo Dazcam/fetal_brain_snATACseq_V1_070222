@@ -52,6 +52,9 @@ rule snATAC_seq_cluster_QC:
             """
 
 rule snATAC_seq_cluster_ID:
+    # Note that this can be run prior to assigning broad cluster categories or after
+    # Broad categories are assigned to archR object at start of snATAC_pseudo_bulk_reps_and_peak_calling
+    # Before is good for assiting with cluster assignment / after is good for sanity check  
     input:  markdown = "scripts/snATACseq_cluster_ID_geneScoreMatrix.Rmd",
             html = "../results/rmarkdown_reports/snATACseq_cluster_QC_FC.html"
     output: "../results/rmarkdown_reports/snATACseq_cluster_ID_geneScoreMatrix_{REGION}.html"

@@ -21,8 +21,8 @@ rule all:
 #         expand("../results/GWAS_for_ldsc/{GWAS}_hg19_ldsc_ready.sumstats.gz", GWAS = config['LDSC_GWAS'])
 #        expand("../results/snATACseq_CR-atac_1.2.0/{SAMPLE}.stamp", SAMPLE=config["SAMPLES_ATAC"]),
 #        expand("../results/snATACseq_CR-atac_1.2.0/{SAMPLE_AGGR}.aggr", SAMPLE_AGGR=config["SAMPLES_ATAC_AGGR"]),
-#        expand("../results/rmarkdown_reports/snATACseq_QC_{REGION}.html", REGION = config['ATAC_REGIONS']), # Can remove this once testing complete
-        expand("../results/rmarkdown_reports/snATACseq_cluster_QC_{REGION}.html", REGION = config['ATAC_REGIONS']),
+        expand("../results/rmarkdown_reports/snATACseq_QC_{REGION}.html", REGION = config['ATAC_REGIONS']), # Can remove this once testing complete
+#        expand("../results/rmarkdown_reports/snATACseq_cluster_QC_{REGION}.html", REGION = config['ATAC_REGIONS']),
 #        expand("../results/rmarkdown_reports/snATACseq_unconstrained_integration_{REGION}.html", REGION = config['ATAC_REGIONS']), 
 #        expand("../results/rmarkdown_reports/snATACseq_pseudo-bulk-reps_and_peak_calling_{REGION}.html", REGION = config['ATAC_REGIONS']),
 #        expand("../results/rmarkdown_reports/snATACseq_cluster_ID_geneScoreMatrix_{REGION}.html", REGION = config['ATAC_REGIONS']),

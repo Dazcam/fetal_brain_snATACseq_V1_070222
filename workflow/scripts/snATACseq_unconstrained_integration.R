@@ -74,7 +74,7 @@ if (REGION == 'FC') {
   seurat.obj <- readRDS("../resources/R_objects/seurat.pfc.final.rds")
   seurat.obj$cellIDs <- gsub('FC-', '', seurat.obj$cellIDs)
   reducedDim_ID <- 'IterativeLSI_reclust'
-  clust_ID <- 'Clusters_reclust' # Due to cluster QC being run on FC
+  clust_ID <- 'Clusters_reclust' # Due to cluster QC being run for FC
   UMAP_ID<- 'UMAP_reclust'
 
 } else {
@@ -82,9 +82,9 @@ if (REGION == 'FC') {
   cat(paste0('\nLoading Seurat object for and region specific variables for', REGION, ' ... \n'))
   seurat.obj <- readRDS("../resources/R_objects/seurat.wge.final.rds")
   seurat.obj$cellIDs <- gsub('GE-', '', seurat.obj$cellIDs)
-  reducedDim_ID	<- 'IterativeLSI'
-  clust_ID <- 'Clusters'
-  UMAP_ID<- 'UMAP'  
+  reducedDim_ID	<- 'IterativeLSI' 
+  clust_ID <- 'Clusters_reclust'  # Cluster QC now added for FC
+  UMAP_ID<- 'UMAP_reclust'  
 
 }
 
