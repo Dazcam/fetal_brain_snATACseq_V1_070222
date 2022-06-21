@@ -40,6 +40,7 @@ p <- add_argument(p, "markdown_file", help = "No markdown file path specified")
 p <- add_argument(p, "report_dir", help = "No report output directory specified")
 p <- add_argument(p, "report_file", help = "No report filename specified")
 p <- add_argument(p, "clustID_dir", help = "No cluster ID output directory specified")
+p <- add_argument(p, "pre_or_post_clust_QC", help = "State if running pre- or post- clust QC")
 args <- parse_args(p)
 print(args)
 
@@ -53,6 +54,7 @@ CLUSTID_DIR <- args$clustID_dir
 MARKDOWN_FILE <- args$markdown_file
 REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
+CLUST_QC_STATUS <- args$pre_or_post_clust_QC
 MARKER_DIR <- "../resources/sheets/"
 MARKER_FDR <- c(0.05) # Default 0.01
 MARKER_LOG2FC <- c(0.585) # Default 1.25 / 0.585 = 1.5x FC
@@ -66,21 +68,30 @@ cat(paste0('\nLoading ArchR project for ', REGION, ' ... \n'))
 archR <- loadArchRProject(path = OUT_DIR)
 
 
-##  If statement to specify cluster ID to use  --------------------------------------------
-# Load Seurat RNA data
+##  If statement to specify if script is being run pre-or post cluster QC  ----------------
+if (CLUST_QC_STATUS == 'PRE')	{
+
+  clust_ID <- 'Clusters' 
+  CLUST_TYPE <- 'Clusters'    
+  UMAP_ID <- 'UMAP'
+
+} else {
+
+  clust_ID <- 'Clusters_reclust' 
+  CLUST_TYPE <- 'Clusters_reclust'     
+  UMAP_ID <- 'UMAP'
+
+}
+
+
+# Assign Marker genes for plots
 if (REGION == 'FC') {
   
-  clust_ID <- 'Clusters' # Due to cluster QC being run for FC
-  CLUST_TYPE <- 'Clusters'     # Can be run before or after reclustering and broad cluster assignments
-  UMAP_ID <- 'UMAP'
   MARKER_GENES <-  c('SLC17A7', 'GAD1', 'GAD2', 'SLC32A1', 'GLI3',
                      'TNC', 'C3', 'SPI1', 'MEF2C')
   
 } else {
   
-  clust_ID <- 'Clusters' # Cluster QC now added for GE
-  CLUST_TYPE <-	'Clusters' 
-  UMAP_ID <- 'UMAP'
   MARKER_GENES <-  c('GAD1', 'GAD2', 'SLC32A1', 'GLI3', 'SLC17A7',
                      'TNC', 'PROX1', 'SCGN', 'LHX6', 'NXPH1', 
                      'MEIS2','ZFHX3', 'SPI1', 'LHX8', 'ISL1', 'GBX2')

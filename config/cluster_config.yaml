@@ -38,10 +38,13 @@ snATAC_seq_QC_LSI_params:
 snATAC_remove_batch_effects:
     num_cores: 12
     total_mem: 96G
-snATAC_seq_cluster_ID:
+snATAC_seq_cluster_ID_pre_clustQC:
     num_cores: 12
     total_mem: 96G
 snATAC_unconstrained_integration:
+    num_cores: 12
+    total_mem: 96G
+snATAC_seq_cluster_ID_post_clustQC:
     num_cores: 12
     total_mem: 96G
 snATAC_constrained_integration:
