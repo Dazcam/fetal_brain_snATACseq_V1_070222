@@ -266,14 +266,14 @@ print(clust_cM_harmony_compare)
 
 # Gene specific UMAPs using imputation
 # Note that I'm not saving these imputation weights in Save ArchR sectiion below
-archR.3 <- addImputeWeights(archR)
+archR.3 <- addImputeWeights(archR.2)
 
 genes_UMAP <- plotEmbedding(
   ArchRProj = archR.3, 
   colorBy = "GeneScoreMatrix", 
   name = MARKER_GENES, 
   embedding = UMAP_BATCH_CORRECTED_ID,
-  imputeWeights = getImputeWeights(archR.2)
+  imputeWeights = getImputeWeights(archR.3)
 )
 
 all_genes_UMAP <- lapply(genes_UMAP, function(x){
