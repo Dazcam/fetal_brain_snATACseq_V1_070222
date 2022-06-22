@@ -100,7 +100,37 @@ if (REGION == "FC") {
 
 LEVELS <- SAMPLE_IDs %>% str_remove("_ATAC") # For stacked barplots
 
-##  Load data - Cptr 1.5  -------------------------------------------------------------
+# Assign Marker genes for plots
+if (REGION == 'FC') {
+
+  MARKER_GENES <-  c('SLC17A7', 'GAD1', 'GAD2', 'SLC32A1', 'GLI3',
+                     'TNC', 'C3', 'SPI1', 'MEF2C')
+
+} else {
+
+  MARKER_GENES <-  c('GAD1', 'GAD2', 'SLC32A1', 'GLI3', 'SLC17A7',
+                     'TNC', 'PROX1', 'SCGN', 'LHX6', 'NXPH1',
+                     'MEIS2','ZFHX3', 'SPI1', 'LHX8', 'ISL1', 'GBX2')
+
+}
+
+# Load Seurat RNA data for unconstrained integration
+cat(paste0('\nLoading Seurat snRNAseq data for ', REGION, ' ... \n'))
+if (REGION == 'FC') {
+
+  cat(paste0('\nLoading Seurat object for and region specific variables for', REGION, ' ... \n'))
+  seurat.obj <- readRDS("../resources/R_objects/seurat.pfc.final.rds")
+  seurat.obj$cellIDs <- gsub('FC-', '', seurat.obj$cellIDs)
+
+} else {
+
+  cat(paste0('\nLoading Seurat object for and region specific variables for', REGION, ' ... \n'))
+  seurat.obj <- readRDS("../resources/R_objects/seurat.wge.final.rds")
+  seurat.obj$cellIDs <- gsub('GE-', '', seurat.obj$cellIDs)
+
+}
+
+##  Load snATACseq data - Cptr 1.5  ---------------------------------------------------
 cat('\nCreating Arrow files ... \n')
 ArrowFiles <- createArrowFiles(
   inputFiles = c(paste0(DATA_DIR, SAMPLES[1], "/outs/fragments.tsv.gz"),
@@ -374,6 +404,85 @@ cat('Creating group plot ... \n')
   group_plot <- plot_grid(clusters_UMAP, clusters_UMAP_BySample, plot_stacked_pct,
                           clust_CM_LSI$gtable, ncol = 2, align = 'hv', axis = 'rl')
 
+
+# Gene specific UMAPs using imputation
+# Note that I'm not saving these imputation weights in Save ArchR section below
+# They are for visual cell IDing only at this stage
+archR.3 <- addImputeWeights(archR.2)
+
+genes_UMAP <- plotEmbedding(
+  ArchRProj = archR.3, 
+  colorBy = "GeneScoreMatrix", 
+  name = MARKER_GENES, 
+  embedding = 'UMAP',
+  imputeWeights = getImputeWeights(archR.3)
+)
+
+all_genes_UMAP <- lapply(genes_UMAP, function(x){
+  
+  x + guides(color = FALSE, fill = FALSE) + 
+    theme_ArchR(baseSize = 6.5) +
+    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
+    theme(
+      axis.text.x=element_blank(), 
+      axis.ticks.x=element_blank(), 
+      axis.text.y=element_blank(), 
+      axis.ticks.y=element_blank()
+    )
+})
+
+#  Run unconstrained integration  -----------------------------------------------------
+cat('\nRunning unconstrained integration ... \n')
+archR.3 <- addGeneIntegrationMatrix(
+  ArchRProj = archR.3, 
+  useMatrix = "GeneScoreMatrix",
+  matrixName = "GeneIntegrationMatrix",
+  reducedDims = "IterativeLSI",
+  seRNA = seurat.obj,
+  addToArrow = FALSE,
+  groupRNA = "cellIDs",
+  nameCell = "predictedCell_Un",
+  nameGroup = "predictedGroup_Un",
+  nameScore = "predictedScore_Un"
+)
+
+## Unconstrained integration - reporting  ---------------------------------------------
+# Confusion matrix - unconstrained cell mappings 
+cat('\nCreating confusion matrix ... \n')
+cM_geneExp <- as.matrix(confusionMatrix(unname(unlist(getCellColData(archR.3)['Clusters'])), 
+                        archR.3$predictedGroup_Un))
+clust_CM_geneExp <- pheatmap::pheatmap(
+  mat = as.matrix(cM_geneExp), 
+  color = paletteContinuous("whiteBlue"), 
+  border_color = "black", display_numbers = TRUE, number_format =  "%.0f",
+  cluster_rows = F, # Needed for row order https://stackoverflow.com/questions/59306714
+  treeheight_col = 0,
+  treeheight_row = 0,
+  number_color = 'black'
+)
+
+
+# Get df of top cellID matches from RNA for each ATAC cluster
+preClust <- colnames(cM_geneExp)[apply(cM_geneExp, 1 , which.max)]
+integration_df <- t(as.data.frame(cbind(preClust, rownames(cM_geneExp)))) #Assignments
+rownames(integration_df) <- c("RNA", "ATAC")
+colnames(integration_df) <- NULL 
+
+
+# Plot RNA and ATAC UMAPs for comparison
+cat('\nCreating UMAP ... \n')
+clusters_UMAP <- plotEmbedding(ArchRProj = archR.3, colorBy = "cellColData", 
+                               name = 'Clusters', 
+                               embedding = 'UMAP') +
+  NoLegend() + ggtitle('Clusters')
+
+# Prepare cell groupings for constrained integration
+# Only cell-types in preClust need to be included 
+cM_unconstrained <- as.matrix(confusionMatrix(unname(unlist(getCellColData(archR.3)['Clusters'])),
+                              archR.3$predictedGroup_Un))
+preClust <- colnames(cM_unconstrained)[apply(cM_unconstrained, 1 , which.max)]
+cM_unconstrained2 <- cbind(preClust, rownames(cM_unconstrained))
+unique(unique(archR.3$predictedGroup_Un))
 
 ## Save ArchR project  ----------------------------------------------------------------
 cat('\nSaving project ... \n')
