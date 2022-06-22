@@ -118,6 +118,20 @@ if (CLUST_QC_STATUS == 'PRE')	{
 
 }
 
+# Assign Marker genes for plots
+if (REGION == 'FC') {
+
+  MARKER_GENES <-  c('SLC17A7', 'GAD1', 'GAD2', 'SLC32A1', 'GLI3',
+                     'TNC', 'C3', 'SPI1', 'MEF2C')
+
+} else {
+
+  MARKER_GENES <-  c('GAD1', 'GAD2', 'SLC32A1', 'GLI3', 'SLC17A7',
+                     'TNC', 'PROX1', 'SCGN', 'LHX6', 'NXPH1',
+                     'MEIS2','ZFHX3', 'SPI1', 'LHX8', 'ISL1', 'GBX2')
+
+}
+
 ## Batch effect correction - correcting for Sample based batch effects  ---------------
 # Batch correct the LSI reduction using harmony save as new reduction named 'Harmony'
 cat(paste0('\nRunning batch correction for ', REGION, ' ... \n'))
@@ -155,7 +169,7 @@ archR.2 <- addUMAP(
 ## Batch effects - reporting  -------------------------------------------------------------
 # Cluster counts - after Iterative LSI based clustering
 cat('\nCreating tables and plots for Iterative LSI based clustering ... \n')
-clusters_cnts_harmony <- as.data.frame(t(as.data.frame(as.vector((table(names(table(unname(unlist(getCellColData(archR.2)[CLUSTERS_BATCH_CORRECTED_ID]))))))))))
+clusters_cnts_harmony <- as.data.frame(t(as.data.frame(as.vector(table(unname(unlist(getCellColData(archR.2)[CLUSTERS_BATCH_CORRECTED_ID])))))))
 rownames(clusters_cnts_harmony) <- NULL
 colnames(clusters_cnts_harmony) <- names(table(unname(unlist(getCellColData(archR.2)[CLUSTERS_BATCH_CORRECTED_ID]))))
 
@@ -250,7 +264,30 @@ clust_cM_harmony_compare <- pheatmap::pheatmap(
 )
 print(clust_cM_harmony_compare)
 
+# Gene specific UMAPs using imputation
+# Note that I'm not saving these imputation weights in Save ArchR sectiion below
+archR.3 <- addImputeWeights(archR)
 
+genes_UMAP <- plotEmbedding(
+  ArchRProj = archR.3, 
+  colorBy = "GeneScoreMatrix", 
+  name = MARKER_GENES, 
+  embedding = UMAP_BATCH_CORRECTED_ID,
+  imputeWeights = getImputeWeights(archR.2)
+)
+
+all_genes_UMAP <- lapply(genes_UMAP, function(x){
+  
+  x + guides(color = FALSE, fill = FALSE) + 
+    theme_ArchR(baseSize = 6.5) +
+    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
+    theme(
+      axis.text.x=element_blank(), 
+      axis.ticks.x=element_blank(), 
+      axis.text.y=element_blank(), 
+      axis.ticks.y=element_blank()
+    )
+})
 
 
 ## Save ArchR project  ----------------------------------------------------------------

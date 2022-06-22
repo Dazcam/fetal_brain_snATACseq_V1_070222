@@ -62,7 +62,6 @@ results/homer/peaks_with_snp/knownResults.txt
 results/homer/peaks_with_snp/knownResults/
 results/homer/peaks_with_snp/motifFindingParameters.txt
 results/homer/peaks_with_snp/seq.autonorm.tsv
-results/archR_data_processing/cluster_ID/FC_FDR_0.05_Log2FC_0.585.xlsx
 results/archR_data_processing/rds_files/FC_ASCL1_843_footprint_grob.rds
 results/archR_data_processing/rds_files/FC_ASCL1_843_footprint_plot.rds
 results/archR_data_processing/rds_files/FC_NEUROD2_73_footprint_grob.rds
