@@ -29,19 +29,16 @@ CR_aggr_ATAC:
 snATAC_seq_QC:
     num_cores: 32
     total_mem: 128G
-snATAC_seq_cluster_QC:
-    num_cores: 12
-    total_mem: 96G
-snATAC_seq_QC_LSI_params:
-    num_cores: 32
-    total_mem: 128G
-snATAC_remove_batch_effects:
-    num_cores: 12
-    total_mem: 96G
 snATAC_seq_cluster_ID_pre_clustQC:
     num_cores: 12
     total_mem: 96G
-snATAC_unconstrained_integration:
+snATAC_unconstrained_integration_pre_clustQC:
+    num_cores: 12
+    total_mem: 96G
+snATAC_remove_batch_effects_pre_clustQC:
+    num_cores: 12
+    total_mem: 96G
+snATAC_seq_cluster_QC:
     num_cores: 12
     total_mem: 96G
 snATAC_seq_cluster_ID_post_clustQC:
@@ -62,6 +59,9 @@ snATAC_additional_analyses:
 snATACseq_SVM_prep:
     num_cores: 2
     total_mem: 40G
+snATAC_seq_QC_LSI_params:
+    num_cores: 32
+    total_mem: 128G
 
 # -----------  LDSR  ---------------
 make_annot:

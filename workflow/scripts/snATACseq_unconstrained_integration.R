@@ -44,6 +44,7 @@ p <- add_argument(p, "archR_out_dir", help = "No ArchR output directory specifie
 p <- add_argument(p, "markdown_file", help = "No markdown file path specified")
 p <- add_argument(p, "report_dir", help = "No report output directory specified")
 p <- add_argument(p, "report_file", help = "No report filename specified")
+p <- add_argument(p, "pre_or_post_clust_QC", help = "State if running pre- or post- clust QC")
 args <- parse_args(p)
 print(args)
 
@@ -56,37 +57,50 @@ OUT_DIR <- args$archR_out_dir
 MARKDOWN_FILE <- args$markdown_file
 REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
+CLUST_QC_STATUS <- args$pre_or_post_clust_QC
 
 addArchRThreads(threads = 8) # Set Hawk to 32 cores so 0.75 of total
 addArchRGenome("hg38")
 
 
 ##  Load ArchR project  -------------------------------------------------------------------
-cat(paste0('\nLoading ArchR project for ', REGION, ' ... \n'))
+cat(paste0('\nLoading ArchR snATACseq project for ', REGION, ' ... \n'))
 archR <- loadArchRProject(path = OUT_DIR)
 
 
 ##  Integrating snATACseq with snRNAseq - Cptr 8  -----------------------------------------
 # Load Seurat RNA data
+cat(paste0('\nLoading Seurat snRNAseq data for ', REGION, ' ... \n'))
 if (REGION == 'FC') {
   
   cat(paste0('\nLoading Seurat object for and region specific variables for', REGION, ' ... \n'))
   seurat.obj <- readRDS("../resources/R_objects/seurat.pfc.final.rds")
   seurat.obj$cellIDs <- gsub('FC-', '', seurat.obj$cellIDs)
-  reducedDim_ID <- 'IterativeLSI'
-  clust_ID <- 'Clusters' # Due to cluster QC being run for FC
-  UMAP_ID<- 'UMAP_reclust'
 
 } else {
   
   cat(paste0('\nLoading Seurat object for and region specific variables for', REGION, ' ... \n'))
   seurat.obj <- readRDS("../resources/R_objects/seurat.wge.final.rds")
   seurat.obj$cellIDs <- gsub('GE-', '', seurat.obj$cellIDs)
-  reducedDim_ID	<- 'IterativeLSI' 
-  clust_ID <- 'Clusters'  # Cluster QC now added for FC
-  UMAP_ID<- 'UMAP'  
 
 }
+
+#  Specify if script is being run pre-or post cluster QC  
+if (CLUST_QC_STATUS == 'PRE')	{
+  
+  reducedDim_ID <- 'IterativeLSI'
+  clust_ID <- 'Clusters' 
+  UMAP_ID <- 'UMAP'
+
+} else {
+
+  reducedDim_ID <- 'IterativeLSI_reclust'
+  clust_ID <- 'Clusters_reclust' 
+  UMAP_ID <- 'UMAP_reclust'
+
+}
+
+
 
 #  Run unconstrained integration
 cat('\nRunning unconstrained integration ... \n')
@@ -106,7 +120,8 @@ archR.2 <- addGeneIntegrationMatrix(
 ## Unconstrained integration - reporting  ---------------------------------------------
 # Confusion matrix - unconstrained cell mappings 
 cat('\nCreating confusion matrix ... \n')
-cM_geneExp <- as.matrix(confusionMatrix(unname(unlist(getCellColData(archR.2)[clust_ID])), archR.2$predictedGroup_Un))
+cM_geneExp <- as.matrix(confusionMatrix(unname(unlist(getCellColData(archR.2)[clust_ID])), 
+                        archR.2$predictedGroup_Un))
 clust_CM_geneExp <- pheatmap::pheatmap(
   mat = as.matrix(cM_geneExp), 
   color = paletteContinuous("whiteBlue"), 
@@ -128,12 +143,13 @@ colnames(integration_df) <- NULL
 # Plot RNA and ATAC UMAPs for comparison
 cat('\nCreating UMAP ... \n')
 clusters_UMAP <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
-                                   name = clust_ID, embedding = UMAP_ID) +
+                               name = clust_ID, embedding = UMAP_ID) +
   NoLegend() + ggtitle('Clusters')
 
 # Prepare cell groupings for constrained integration
 # Only cell-types in preClust need to be included 
-cM_unconstrained <- as.matrix(confusionMatrix(archR.2$Clusters, archR.2$predictedGroup_Un))
+cM_unconstrained <- as.matrix(confusionMatrix(unname(unlist(getCellColData(archR.2)[clust_ID])),
+                              archR.2$predictedGroup_Un))
 preClust <- colnames(cM_unconstrained)[apply(cM_unconstrained, 1 , which.max)]
 cM_unconstrained2 <- cbind(preClust, rownames(cM_unconstrained))
 unique(unique(archR.2$predictedGroup_Un))

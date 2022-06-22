@@ -48,6 +48,7 @@ p <- add_argument(p, "archR_out_dir", help = "No ArchR output directory specifie
 p <- add_argument(p, "markdown_file", help = "No markdown file path specified")
 p <- add_argument(p, "report_dir", help = "No report output directory specified")
 p <- add_argument(p, "report_file", help = "No report filename specified")
+p <- add_argument(p, "pre_or_post_clust_QC", help = "State if running pre- or post- clust QC")
 args <- parse_args(p)
 print(args)
 
@@ -60,6 +61,7 @@ OUT_DIR <- args$archR_out_dir
 MARKDOWN_FILE <- args$markdown_file
 REPORT_DIR <- args$report_dir
 REPORT_FILE <- args$report_file
+CLUST_QC_STATUS <- args$pre_or_post_clust_QC
 
 addArchRThreads(threads = 8) # Set Hawk to 12 cores so 0.75 of total
 addArchRGenome("hg38")
@@ -95,20 +97,25 @@ LEVELS <- SAMPLE_IDs %>% str_remove("_ATAC") # For stacked barplots
 cat('\nLoading ArchR project ... \n')
 archR <- loadArchRProject(path = OUT_DIR)
 
-##  If statement to specify cluster ID to use  --------------------------------------------
-# Load Seurat RNA data
-if (REGION == 'FC') {
-  
-  LSI_ID <- 'IterativeLSI_reclust'
-  clust_ID <- 'Clusters_reclust' # Due to cluster QC being run on FC
-  UMAP_ID<- 'UMAP_reclust'
-  
-} else {
+##  Specify if scripts is run pre- or post clustQC  
+if (CLUST_QC_STATUS == 'PRE')	{
   
   LSI_ID <- 'IterativeLSI'
-  clust_ID <- 'Clusters'
-  UMAP_ID<- 'UMAP'
+  clust_ID <- 'Clusters' # Due to cluster QC being run on FC
+  UMAP_ID<- 'UMAP_reclust'
+  HARMONY_ID <- 'Harmony'  
+  CLUSTERS_BATCH_CORRECTED_ID <- 'Clusters_harmony' 
+  UMAP_BATCH_CORRECTED_ID <- 'UMAPHarmony'  
+
+} else {
   
+  LSI_ID <- 'IterativeLSI_reclust'
+  clust_ID <- 'Clusters_reclust'
+  UMAP_ID<- 'UMAP_reclust'
+  HARMONY_ID <- 'Harmony_reclust'
+  CLUSTERS_BATCH_CORRECTED_ID <- 'Clusters_harmony_reclust'  
+  UMAP_BATCH_CORRECTED_ID <- 'UMAPHarmony_reclust'
+
 }
 
 ## Batch effect correction - correcting for Sample based batch effects  ---------------
@@ -117,7 +124,7 @@ cat(paste0('\nRunning batch correction for ', REGION, ' ... \n'))
 archR.2 <- addHarmony(
   ArchRProj = archR,
   reducedDims = LSI_ID,
-  name = "Harmony",
+  name = HARMONY_ID,
   groupBy = "Sample",
   force = TRUE
 )
@@ -126,9 +133,9 @@ archR.2 <- addHarmony(
 cat('\nRe-clustering ... \n')
 archR.2 <- addClusters(
   input = archR.2,
-  reducedDims = "Harmony",
+  reducedDims = HARMONY_ID,
   method = "Seurat",
-  name = "Clusters_harmony",
+  name = CLUSTERS_BATCH_CORRECTED_ID,
   resolution = 0.8,
   force = TRUE
 )
@@ -136,8 +143,8 @@ archR.2 <- addClusters(
 # Plot UMAP
 archR.2 <- addUMAP(
   ArchRProj = archR.2,
-  reducedDims = "Harmony",
-  name = "UMAPHarmony",
+  reducedDims = HARMONY_ID,
+  name = UMAP_BATCH_CORRECTED_ID,
   nNeighbors = 30,
   minDist = 0.5,
   metric = "cosine",
@@ -148,13 +155,14 @@ archR.2 <- addUMAP(
 ## Batch effects - reporting  -------------------------------------------------------------
 # Cluster counts - after Iterative LSI based clustering
 cat('\nCreating tables and plots for Iterative LSI based clustering ... \n')
-clusters_cnts_harmony <- as.data.frame(t(as.data.frame(as.vector((table(archR.2$Clusters_harmony))))))
+clusters_cnts_harmony <- as.data.frame(t(as.data.frame(as.vector((table(names(table(unname(unlist(getCellColData(archR.2)[CLUSTERS_BATCH_CORRECTED_ID]))))))))))
 rownames(clusters_cnts_harmony) <- NULL
-colnames(clusters_cnts_harmony) <- names(table(archR.2$Clusters_harmony))
+colnames(clusters_cnts_harmony) <- names(table(unname(unlist(getCellColData(archR.2)[CLUSTERS_BATCH_CORRECTED_ID]))))
 
 # Confusion matrix - cell counts per donor
 cat('Creating confusion matrix for cell counts per donor ... \n')
-cM_harmony <- confusionMatrix(paste0(archR.2$Clusters_harmony), paste0(archR.2$Sample))
+cM_harmony <- confusionMatrix(paste0(unname(unlist(getCellColData(archR.2)[CLUSTERS_BATCH_CORRECTED_ID]))),
+                              paste0(archR.2$Sample))
 colnames(cM_harmony) <- colnames(cM_harmony) %>% str_remove("_ATAC")
 cM_harmony <- cM_harmony[ gtools::mixedsort(row.names(cM_harmony)), ]
 rownames(cM_harmony) <- factor(rownames(cM_harmony),
@@ -176,11 +184,12 @@ print(clust_cM_harmony)
 # Plot UMAPs
 cat('\nPlotting UMAPs ... \n')
 clusters_UMAP_har <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
-                                   name = "Clusters_harmony", embedding = "UMAPHarmony") +
+                                   name = CLUSTERS_BATCH_CORRECTED_ID, 
+                                   embedding = UMAP_BATCH_CORRECTED_ID) +
   Seurat::NoLegend() + ggtitle('Clusters')
 
 clusters_UMAP_BySample_har <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
-                                            name = "Sample", embedding = "UMAPHarmony") +
+                                            name = "Sample", embedding = UMAP_BATCH_CORRECTED_ID) +
   Seurat::NoLegend() + ggtitle('By Donor. R: 510, B: 611, G: 993')
 
 # Stacked barplots
@@ -228,7 +237,7 @@ cat('Creating group plot ... \n')
 
 # Confusion matrix to compare LSI based and batch corrected based clusters
 cM_harmony_compare <- confusionMatrix(paste0(unname(unlist(getCellColData(archR.2)[clust_ID]))),
-                                      paste0(archR.2$Clusters_harmony))
+                                      paste0(unname(unlist(getCellColData(archR.2)[CLUSTERS_BATCH_CORRECTED_ID]))))
 clust_cM_harmony_compare <- pheatmap::pheatmap(
   mat = as.matrix(cM_harmony_compare),
   color = paletteContinuous("whiteBlue"),

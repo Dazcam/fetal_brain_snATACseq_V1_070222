@@ -35,7 +35,7 @@ rule snATAC_seq_cluster_ID_pre_clustQC:
     # Broad categories are assigned to archR object at start of snATAC_pseudo_bulk_reps_and_peak_calling
     # Before is good for assiting with cluster assignment / after is good for sanity check  
     input:  markdown = "scripts/snATACseq_cluster_ID_geneScoreMatrix.Rmd",
-            html = "../results/rmarkdown_reports/snATACseq_QC_GE.html"
+            html = "../results/rmarkdown_reports/snATACseq_QC_{REGION}.html"
     output: "../results/rmarkdown_reports/snATACseq_cluster_ID_geneScoreMatrix_pre_clustQC_{REGION}.html"
     params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
             archR_out_dir = "../results/ARCHR/{REGION}",
@@ -57,15 +57,16 @@ rule snATAC_seq_cluster_ID_pre_clustQC:
             
             """
 
-rule snATAC_unconstrained_integration:
+rule snATAC_unconstrained_integration_pre_clustQC:
     input:  markdown = "scripts/snATACseq_unconstrained_integration.Rmd",
-            html = "../results/rmarkdown_reports/snATACseq_cluster_ID_geneScoreMatrix_GE.html" # Needed for rule order
-    output: "../results/rmarkdown_reports/snATACseq_unconstrained_integration_{REGION}.html"
+            html = "../results/rmarkdown_reports/snATACseq_cluster_ID_geneScoreMatrix_pre_clustQC_{REGION}.html" # Needed for rule order
+    output: "../results/rmarkdown_reports/snATACseq_unconstrained_integration_pre_clustQC_{REGION}.html"
     params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
             archR_out_dir = "../results/ARCHR/{REGION}",
             report_dir = "../results/rmarkdown_reports/",
-            report_file = "snATACseq_unconstrained_integration_{REGION}.html"
-    log:    "../results/logs/archR_data_processsing/snATAC_unconstrained_integration_{REGION}.log"
+            report_file = "snATACseq_unconstrained_integration_pre_clustQC_{REGION}.html",
+            pre_or_post_clustQC = "PRE"
+    log:    "../results/logs/archR_data_processsing/snATAC_unconstrained_integration_pre_clustQC_{REGION}.log"
     shell:
             """
 
@@ -74,19 +75,21 @@ rule snATAC_unconstrained_integration:
             module load pandoc/2.7.3
             /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
             scripts/snATACseq_unconstrained_integration.R {wildcards.REGION} {params.data_dir} \
-            {params.archR_out_dir} {input.markdown} {params.report_dir} {params.report_file} 2> {log}
+            {params.archR_out_dir} {input.markdown} {params.report_dir} {params.report_file} \
+            {params.pre_or_post_clustQC} 2> {log}
 
             """
 
-rule snATAC_remove_batch_effects:
+rule snATAC_remove_batch_effects_pre_clustQC:
     input:  markdown = "scripts/snATACseq_remove_batch_effects.Rmd",
-            html = "../results/rmarkdown_reports/snATACseq_unconstrained_integration_GE.html", # Needed for rule order
-    output: "../results/rmarkdown_reports/snATACseq_remove_batch_effects_{REGION}.html"
+            html = "../results/rmarkdown_reports/snATACseq_unconstrained_integration_pre_clustQC_{REGION}.html", # Needed for rule order
+    output: "../results/rmarkdown_reports/snATACseq_remove_batch_effects_pre_clustQC_{REGION}.html"
     params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
             archR_out_dir = "../results/ARCHR/{REGION}",
             report_dir = "../results/rmarkdown_reports/",
-            report_file = "snATACseq_remove_batch_effects_{REGION}.html"
-    log:    "../results/logs/archR_data_processsing/snATAC_remove_batch_effects_{REGION}.log"
+            report_file = "snATACseq_remove_batch_effects_pre_clustQC_{REGION}.html",
+            pre_or_post_clustQC = "PRE"
+    log:    "../results/logs/archR_data_processsing/snATAC_remove_batch_effects_pre_clustQC_{REGION}.log"
     shell:
             """
 
@@ -95,7 +98,8 @@ rule snATAC_remove_batch_effects:
             module load pandoc/2.7.3
             /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
             scripts/snATACseq_remove_batch_effects.R {wildcards.REGION} {params.data_dir} \
-            {params.archR_out_dir} {input.markdown} {params.report_dir} {params.report_file} 2> {log}
+            {params.archR_out_dir} {input.markdown} {params.report_dir} {params.report_file} \
+            {params.pre_or_post_clustQC} 2> {log}
 
             
             """
