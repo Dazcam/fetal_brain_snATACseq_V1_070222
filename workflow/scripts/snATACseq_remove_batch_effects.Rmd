@@ -51,3 +51,30 @@ print(do.call(cowplot::plot_grid, c(list(ncol = 3), all_genes_UMAP)))
 ```
 
 ***
+
+#### Unconstrained Integration 
+
+**Cluster mappings**
+
+```{R, GeneExp_df, echo=FALSE, warning=FALSE}
+knitr::kable(integration_df)
+```
+
+***
+
+**Cell counts**
+
+```{R, GeneExp_cM, echo=FALSE}
+clust_CM_geneExp
+```
+
+***
+
+**UMAP**
+
+```{R, integration_UMAP, echo=FALSE}
+clusters_UMAP
+```
+
+***
+

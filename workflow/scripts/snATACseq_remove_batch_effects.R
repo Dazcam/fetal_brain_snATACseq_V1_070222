@@ -132,6 +132,22 @@ if (REGION == 'FC') {
 
 }
 
+# Load Seurat RNA data for unconstrained integration
+cat(paste0('\nLoading Seurat snRNAseq data for ', REGION, ' ... \n'))
+if (REGION == 'FC') {
+
+  cat(paste0('\nLoading Seurat object for and region specific variables for', REGION, ' ... \n'))
+  seurat.obj <- readRDS("../resources/R_objects/seurat.pfc.final.rds")
+  seurat.obj$cellIDs <- gsub('FC-', '', seurat.obj$cellIDs)
+
+} else {
+
+  cat(paste0('\nLoading Seurat object for and region specific variables for', REGION, ' ... \n'))
+  seurat.obj <- readRDS("../resources/R_objects/seurat.wge.final.rds")
+  seurat.obj$cellIDs <- gsub('GE-', '', seurat.obj$cellIDs)
+
+}
+
 ## Batch effect correction - correcting for Sample based batch effects  ---------------
 # Batch correct the LSI reduction using harmony save as new reduction named 'Harmony'
 cat(paste0('\nRunning batch correction for ', REGION, ' ... \n'))
@@ -289,6 +305,58 @@ all_genes_UMAP <- lapply(genes_UMAP, function(x){
     )
 })
 
+#  Run unconstrained integration  -----------------------------------------------------
+cat('\nRunning unconstrained integration ... \n')
+archR.3 <- addGeneIntegrationMatrix(
+  ArchRProj = archR.3, 
+  useMatrix = "GeneScoreMatrix",
+  matrixName = "GeneIntegrationMatrix",
+  reducedDims = HARMONY_ID,
+  seRNA = seurat.obj,
+  addToArrow = FALSE,
+  groupRNA = "cellIDs",
+  nameCell = "predictedCell_Un",
+  nameGroup = "predictedGroup_Un",
+  nameScore = "predictedScore_Un"
+)
+
+## Unconstrained integration - reporting  ---------------------------------------------
+# Confusion matrix - unconstrained cell mappings 
+cat('\nCreating confusion matrix ... \n')
+cM_geneExp <- as.matrix(confusionMatrix(unname(unlist(getCellColData(archR.3)[CLUSTERS_BATCH_CORRECTED_ID])), 
+                        archR.3$predictedGroup_Un))
+clust_CM_geneExp <- pheatmap::pheatmap(
+  mat = as.matrix(cM_geneExp), 
+  color = paletteContinuous("whiteBlue"), 
+  border_color = "black", display_numbers = TRUE, number_format =  "%.0f",
+  cluster_rows = F, # Needed for row order https://stackoverflow.com/questions/59306714
+  treeheight_col = 0,
+  treeheight_row = 0,
+  number_color = 'black'
+)
+
+
+# Get df of top cellID matches from RNA for each ATAC cluster
+preClust <- colnames(cM_geneExp)[apply(cM_geneExp, 1 , which.max)]
+integration_df <- t(as.data.frame(cbind(preClust, rownames(cM_geneExp)))) #Assignments
+rownames(integration_df) <- c("RNA", "ATAC")
+colnames(integration_df) <- NULL 
+
+
+# Plot RNA and ATAC UMAPs for comparison
+cat('\nCreating UMAP ... \n')
+clusters_UMAP <- plotEmbedding(ArchRProj = archR.3, colorBy = "cellColData", 
+                               name = CLUSTERS_BATCH_CORRECTED_ID, 
+                               embedding = UMAP_BATCH_CORRECTED_ID) +
+  NoLegend() + ggtitle('Clusters')
+
+# Prepare cell groupings for constrained integration
+# Only cell-types in preClust need to be included 
+cM_unconstrained <- as.matrix(confusionMatrix(unname(unlist(getCellColData(archR.3)[CLUSTERS_BATCH_CORRECTED_ID])),
+                              archR.3$predictedGroup_Un))
+preClust <- colnames(cM_unconstrained)[apply(cM_unconstrained, 1 , which.max)]
+cM_unconstrained2 <- cbind(preClust, rownames(cM_unconstrained))
+unique(unique(archR.3$predictedGroup_Un))
 
 ## Save ArchR project  ----------------------------------------------------------------
 cat('\nSaving project ... \n')
