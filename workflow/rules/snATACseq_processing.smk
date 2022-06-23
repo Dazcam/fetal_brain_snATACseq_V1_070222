@@ -30,59 +30,59 @@ rule snATAC_seq_QC:
             
             """
 
-rule snATAC_seq_cluster_ID_pre_clustQC:
-    # Note that this can be run prior to assigning broad cluster categories or after
-    # Broad categories are assigned to archR object at start of snATAC_pseudo_bulk_reps_and_peak_calling
-    # Before is good for assiting with cluster assignment / after is good for sanity check  
-    input:  markdown = "scripts/snATACseq_cluster_ID_geneScoreMatrix.Rmd",
-            html = "../results/rmarkdown_reports/snATACseq_QC_{REGION}.html"
-    output: "../results/rmarkdown_reports/snATACseq_cluster_ID_geneScoreMatrix_pre_clustQC_{REGION}.html"
-    params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
-            archR_out_dir = "../results/ARCHR/{REGION}",
-            report_dir = "../results/rmarkdown_reports/",
-            report_file = "snATACseq_cluster_ID_geneScoreMatrix_pre_clustQC_{REGION}.html",
-            clustID_dir = "../results/archR_data_processing/cluster_ID/",
-            pre_or_post_clustQC = "PRE"
-    log:    "../results/logs/archR_data_processing/snATACseq_cluster_ID_geneScoreMatrix_pre_clustQC_{REGION}.log"
-    shell:
-            """
+#rule snATAC_seq_cluster_ID_pre_clustQC:
+#    # Note that this can be run prior to assigning broad cluster categories or after
+#    # Broad categories are assigned to archR object at start of snATAC_pseudo_bulk_reps_and_peak_calling
+#    # Before is good for assiting with cluster assignment / after is good for sanity check  
+#    input:  markdown = "scripts/snATACseq_cluster_ID_geneScoreMatrix.Rmd",
+#            html = "../results/rmarkdown_reports/snATACseq_QC_{REGION}.html"
+#    output: "../results/rmarkdown_reports/snATACseq_cluster_ID_geneScoreMatrix_pre_clustQC_{REGION}.html"
+#    params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
+#            archR_out_dir = "../results/ARCHR/{REGION}",
+#            report_dir = "../results/rmarkdown_reports/",
+#            report_file = "snATACseq_cluster_ID_geneScoreMatrix_pre_clustQC_{REGION}.html",
+#            clustID_dir = "../results/archR_data_processing/cluster_ID/",
+#            pre_or_post_clustQC = "PRE"
+#    log:    "../results/logs/archR_data_processing/snATACseq_cluster_ID_geneScoreMatrix_pre_clustQC_{REGION}.log"
+#    shell:
+#            """
 
-            export R_LIBS_USER=/scratch/c.c1477909/R/library
-            module load libgit2/1.1.0
-            module load pandoc/2.7.3
-            /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
-            scripts/snATACseq_cluster_ID_geneScoreMatrix.R {wildcards.REGION} {params.data_dir} \
-            {params.archR_out_dir} {input.markdown} {params.report_dir} {params.report_file} \
-            {params.clustID_dir} {params.pre_or_post_clustQC} 2> {log}
-            
-            """
+#            export R_LIBS_USER=/scratch/c.c1477909/R/library
+#            module load libgit2/1.1.0
+#            module load pandoc/2.7.3
+#            /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
+#            scripts/snATACseq_cluster_ID_geneScoreMatrix.R {wildcards.REGION} {params.data_dir} \
+#            {params.archR_out_dir} {input.markdown} {params.report_dir} {params.report_file} \
+#            {params.clustID_dir} {params.pre_or_post_clustQC} 2> {log}
+#            
+#            """
 
-rule snATAC_unconstrained_integration_pre_clustQC:
-    input:  markdown = "scripts/snATACseq_unconstrained_integration.Rmd",
-            html = "../results/rmarkdown_reports/snATACseq_cluster_ID_geneScoreMatrix_pre_clustQC_{REGION}.html" # Needed for rule order
-    output: "../results/rmarkdown_reports/snATACseq_unconstrained_integration_pre_clustQC_{REGION}.html"
-    params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
-            archR_out_dir = "../results/ARCHR/{REGION}",
-            report_dir = "../results/rmarkdown_reports/",
-            report_file = "snATACseq_unconstrained_integration_pre_clustQC_{REGION}.html",
-            pre_or_post_clustQC = "PRE"
-    log:    "../results/logs/archR_data_processsing/snATAC_unconstrained_integration_pre_clustQC_{REGION}.log"
-    shell:
-            """
+#rule snATAC_unconstrained_integration_pre_clustQC:
+#    input:  markdown = "scripts/snATACseq_unconstrained_integration.Rmd",
+#            html = "../results/rmarkdown_reports/snATACseq_QC_{REGION}.html" # Needed for rule order
+#    output: "../results/rmarkdown_reports/snATACseq_unconstrained_integration_pre_clustQC_{REGION}.html"
+#    params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
+#            archR_out_dir = "../results/ARCHR/{REGION}",
+#            report_dir = "../results/rmarkdown_reports/",
+#            report_file = "snATACseq_unconstrained_integration_pre_clustQC_{REGION}.html",
+#            pre_or_post_clustQC = "PRE"
+#    log:    "../results/logs/archR_data_processsing/snATAC_unconstrained_integration_pre_clustQC_{REGION}.log"
+#    shell:
+#            """
 
-            export R_LIBS_USER=/scratch/c.c1477909/R/library
-            module load libgit2/1.1.0
-            module load pandoc/2.7.3
-            /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
-            scripts/snATACseq_unconstrained_integration.R {wildcards.REGION} {params.data_dir} \
-            {params.archR_out_dir} {input.markdown} {params.report_dir} {params.report_file} \
-            {params.pre_or_post_clustQC} 2> {log}
+#            export R_LIBS_USER=/scratch/c.c1477909/R/library
+#            module load libgit2/1.1.0
+#            module load pandoc/2.7.3
+#            /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
+#            scripts/snATACseq_unconstrained_integration.R {wildcards.REGION} {params.data_dir} \
+#            {params.archR_out_dir} {input.markdown} {params.report_dir} {params.report_file} \
+#            {params.pre_or_post_clustQC} 2> {log}
 
-            """
+#            """
 
 rule snATAC_remove_batch_effects_pre_clustQC:
     input:  markdown = "scripts/snATACseq_remove_batch_effects.Rmd",
-            html = "../results/rmarkdown_reports/snATACseq_unconstrained_integration_pre_clustQC_{REGION}.html", # Needed for rule order
+            html = "../results/rmarkdown_reports/snATACseq_QC_{REGION}.html", # Needed for rule order
     output: "../results/rmarkdown_reports/snATACseq_remove_batch_effects_pre_clustQC_{REGION}.html"
     params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
             archR_out_dir = "../results/ARCHR/{REGION}",
