@@ -22,11 +22,13 @@ snATACseq analysis with ArchR - cluster QC 1.
 *** 
 
 
-### Results {.tabset}
+## Results {.tabset}
 
 ***
 
-#### Cluster QC {.tabset}
+### Cluster QC {.tabset}
+
+#### No Harmony {.tabset}
 
 Remove clusters that do not have >= 30 cells in at least 2 donors
 
@@ -37,19 +39,112 @@ Remove clusters that do not have >= 30 cells in at least 2 donors
 
 ***
 
-**Cell counts per donor in each cluster after cluster QC**
+#### Reclustering plots {.tabset}
 
-```{R, Cluster_CM_reClust, echo=FALSE}
-re_clust_CM_LSI
+```{R, Clusters, echo=FALSE, , fig.height = 10, fig.width = 10}
+print(FC_group_plot_reclust)
+```
+
+***
+
+**Batch corrected cell counts per cluster**
+
+```{R, FC_re_cluster_cnts, echo=FALSE}
+knitr::kable(FC_re_cluster_cnts)
+```
+
+***
+
+#### UMAPs
+
+```{R, UMAP_per_gene_reclust, echo=FALSE, fig.height = 10, fig.width = 10}
+print(do.call(cowplot::plot_grid, c(list(ncol = 3), FC_Clusters_reclust_all_genes_UMAP)))
+```
+
+***
+
+#### Unconstrained Integration 
+
+**Cluster mappings**
+
+```{R, GeneExp_df_reclust, echo=FALSE, warning=FALSE}
+knitr::kable(FC_Clusters_reclust_integration_df)
+```
+
+***
+
+**Cell counts**
+
+```{R, GeneExp_cM_reclust, echo=FALSE}
+FC_Clusters_reclust_clust_CM_geneExp
+```
+
+***
+
+**UMAP**
+
+```{R, integration_reclust_UMAP, echo=FALSE}
+FC_clusters_reclust_UMAP
+```
+
+***
+
+#### With Harmony {.tabset}
+
+Remove clusters that do not have >= 30 cells in at least 2 donors
+
++ Cell count before filter = `r length(archR$cellNames)`
++ Clusters to be retained from initial QC pass  = `r cluster_list`
++ No. of cells to be removed = `r length(archR$cellNames) - length(cells_to_keep)`
++ Cell count after filter = `r length(archR.2$cellNames)`
+
+***
+
+#### Reclustering plots {.tabset}
+
+```{R, FC_group_plot_reclust_harmony, echo=FALSE, , fig.height = 10, fig.width = 10}
+print(FC_group_plot_reclust_harmony)
 ```
 
 ***
 
 
-#### Cluster plots
+#### UMAPs
 
-```{R, Clusters, echo=FALSE, , fig.height = 10, fig.width = 10}
-print(group_plot)
+```{R, UMAP_per_gene_harmony, echo=FALSE, fig.height = 10, fig.width = 10}
+print(do.call(cowplot::plot_grid, c(list(ncol = 3), FC_Clusters_harmony_reclust_all_genes_UMAP)))
+```
+
+***
+
+#### Unconstrained Integration
+
+**Cluster mappings**
+
+```{R, GeneExp_df_harmony, echo=FALSE, warning=FALSE}
+knitr::kable(FC_Clusters_harmony_reclust_integration_df)
+```
+
+***
+
+**Cell counts**
+
+```{R, GeneExp_cM_harmony, echo=FALSE}
+FC_Clusters_harmony_reclust_clust_CM_geneExp
+```
+
+***
+
+```{R, Cluster_CM_harmony_compare, echo=FALSE}
+FC_clust_cM_harmony_compare
+```
+
+***
+
+**UMAP**
+
+```{R, integration_harmony_UMAP, echo=FALSE}
+FC_clusters_UMAP_har
 ```
 
 ***

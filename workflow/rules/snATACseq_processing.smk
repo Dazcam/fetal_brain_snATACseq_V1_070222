@@ -106,7 +106,7 @@ rule snATAC_remove_batch_effects_pre_clustQC:
 
 rule snATAC_seq_cluster_QC:
     input:  markdown = "scripts/snATACseq_cluster_QC_{REGION}.Rmd",
-            html = "../results/rmarkdown_reports/snATACseq_unconstrained_integration_{REGION}.html"
+            html = "../results/rmarkdown_reports/snATACseq_remove_batch_effects_pre_clustQC_{REGION}.html"
     output: "../results/rmarkdown_reports/snATACseq_cluster_QC_{REGION}.html"
     params: data_dir = "../results/snATACseq_CR-atac_1.2.0/",
             archR_out_dir = "../results/ARCHR/{REGION}",
