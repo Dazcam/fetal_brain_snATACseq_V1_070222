@@ -150,16 +150,17 @@ for (CLUSTER_TYPE in c('Clusters', 'Clusters_harmony')) {
     print(archR)
     cell_cnt_post_GE_rm <- length(archR$cellNames)
     
+    cat('\nAssign cell cnts before/after removing GE cluster expressing SPI1 and SLC17A7 ')
     assign(paste0(REGION, '_', CLUSTER_TYPE, '_cell_cnt_pre_GE_rm'),
            cell_cnt_pre_GE_rm)
-    assign(paste0(REGION, '_', CLUSTER_TYPE, '_cell_cnt_pre_GE_rm'),
+    assign(paste0(REGION, '_', CLUSTER_TYPE, '_cell_cnt_post_GE_rm'),
            cell_cnt_post_GE_rm)
 
   }
 
   ## Retain clusters that have >= 30 cells in at least 2 donors  --------------------------
   # As matrix needed to convert sparse matrix to dense matrix
-  cat('\nCheck for clusters that do not have >= 30 cells in at least 2 donors ... \n')
+  cat('\nCheck for clusters that do not have >= 30 cells in at least 2 donors ... \n\n')
   donor_cell_cnts <- as.data.frame(as.matrix(confusionMatrix(paste0(unname(unlist(getCellColData(archR)[CLUSTER_TYPE]))) , 
                                                               paste0(archR$Sample)))) %>%
   rownames_to_column(var = 'Cluster')
@@ -168,7 +169,7 @@ for (CLUSTER_TYPE in c('Clusters', 'Clusters_harmony')) {
   cluster_list <- vector()
 
   # Loop to extract cluster IDs for clusters that have >= 30 cells in at least 2 donors 
-  cat('\nDo the following clusters have >= 30 cells in at least 2 donors?\n')
+  cat('\nDo the following clusters have >= 30 cells in at least 2 donors?\n\n')
   for (line in 1:dim(donor_cell_cnts)[1]) {
 
     donor_A <- donor_cell_cnts[line, 2] >= 30
@@ -182,7 +183,7 @@ for (CLUSTER_TYPE in c('Clusters', 'Clusters_harmony')) {
 
   }
 
-  cat('The clusters to be retained are: ', cluster_list, '\n')
+  cat('\nThe clusters to be retained are: ', cluster_list, '\n')
 
   cell_list <- as.data.frame(getCellColData(archR, select = c("donor", CLUSTER_TYPE)))
   cells_to_keep <- rownames(cell_list %>% filter(get(CLUSTER_TYPE) %in% cluster_list))

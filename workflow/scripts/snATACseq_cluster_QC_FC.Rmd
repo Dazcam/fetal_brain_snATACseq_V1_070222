@@ -33,7 +33,7 @@ snATACseq analysis with ArchR - FC cluster QC 1.
 Remove clusters that do not have >= 30 cells in at least 2 donors:
 
 + Cell count before filter = `r FC_Clusters_cell_cnt_pre_filter`
-+ Clusters to be retained from initial QC pass  = `r FC_Clusters_clusters_retained'`
++ Clusters to be retained from initial QC pass  = `r FC_Clusters_clusters_retained`
 + No. of cells to be removed = `r FC_Clusters_cnts_cells_to_rm`
 + Cell count after filter = `r FC_Clusters_cell_cnt_post_filter`
 
@@ -94,7 +94,7 @@ FC_clusters_reclust_UMAP
 Remove clusters that do not have >= 30 cells in at least 2 donors:
 
 + Cell count before filter = `r FC_Clusters_harmony_cell_cnt_pre_filter`
-+ Clusters to be retained from initial QC pass  = `r FC_Clusters_harmony_clusters_retained'`
++ Clusters to be retained from initial QC pass  = `r FC_Clusters_harmony_clusters_retained`
 + No. of cells to be removed = `r FC_Clusters_harmony_cnts_cells_to_rm`
 + Cell count after filter = `r FC_Clusters_harmony_cell_cnt_post_filter`
 

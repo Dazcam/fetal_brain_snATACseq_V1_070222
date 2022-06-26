@@ -38,7 +38,7 @@ Cluster that expresses SPI1 and SLC17A7 to remove: `r GE_CLUST_TO_RM`
 Remove clusters that do not have >= 30 cells in at least 2 donors:
 
 + Cell count before filter = `r GE_Clusters_cell_cnt_pre_filter`
-+ Clusters to be retained from initial QC pass  = `r GE_Clusters_clusters_retained'`
++ Clusters to be retained from initial QC pass  = `r GE_Clusters_clusters_retained`
 + No. of cells to be removed = `r GE_Clusters_cnts_cells_to_rm`
 + Cell count after filter = `r GE_Clusters_cell_cnt_post_filter`
 
@@ -104,7 +104,7 @@ Cluster that expresses SPI1 and SLC17A7 to remove: `r GE_CLUST_TO_RM_HARMONY`
 Remove clusters that do not have >= 30 cells in at least 2 donors:
 
 + Cell count before filter = `r GE_Clusters_harmony_cell_cnt_pre_filter`
-+ Clusters to be retained from initial QC pass  = `r GE_Clusters_harmony_clusters_retained'`
++ Clusters to be retained from initial QC pass  = `r GE_Clusters_harmony_clusters_retained`
 + No. of cells to be removed = `r GE_Clusters_harmony_cnts_cells_to_rm`
 + Cell count after filter = `r GE_Clusters_harmony_cell_cnt_post_filter`
 
