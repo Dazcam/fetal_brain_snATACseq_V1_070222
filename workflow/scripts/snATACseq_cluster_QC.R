@@ -141,12 +141,19 @@ for (CLUSTER_TYPE in c('Clusters', 'Clusters_harmony')) {
     cat('\nObject before removing GE cluster expressing SPI1 and SLC17A7 ...\n')
     print(archR)
     cat('\nRemoving cluster ', CLUSTER_RM, 'from ', CLUSTER_TYPE, 'LSI in the GE ...\n')
+    cell_cnt_pre_GE_rm <- length(archR$cellNames)
     SPI1_SLC17_cells  <- BiocGenerics::which(unname(unlist(getCellColData(archR)[CLUSTER_TYPE])) != CLUSTER_RM)
     cells_to_keep <- archR$cellNames[SPI1_SLC17_cells]
     archR <- archR[cells_to_keep, ]
 
     cat('\nObject after removing GE cluster expressing SPI1 and SLC17A7 ...\n')
     print(archR)
+    cell_cnt_post_GE_rm <- length(archR$cellNames)
+    
+    assign(paste0(REGION, '_', CLUSTER_TYPE, '_cell_cnt_pre_GE_rm'),
+           cell_cnt_pre_GE_rm)
+    assign(paste0(REGION, '_', CLUSTER_TYPE, '_cell_cnt_pre_GE_rm'),
+           cell_cnt_post_GE_rm)
 
   }
 
@@ -457,6 +464,16 @@ for (CLUSTER_TYPE in c('Clusters', 'Clusters_harmony')) {
   assign(paste0(REGION, '_group_plot_reclust_harmony'), group_plot_reclust_harmony)
   assign(paste0(REGION, '_clusters_UMAP_har'), clusters_UMAP_har)
   assign(paste0(REGION, '_clust_cM_harmony_compare'), clust_cM_harmony_compare)
+  
+  # Assign cell counts
+  assign(paste0(REGION, '_', CLUSTER_TYPE, '_cell_cnt_pre_filter'),
+         length(archR$cellNames))
+  assign(paste0(REGION, '_', CLUSTER_TYPE, '_clusters_retained'), 
+         cluster_list)
+  assign(paste0(REGION, '_', CLUSTER_TYPE, '_cnts_cells_to_rm'), 
+         length(archR$cellNames) - length(cells_to_keep))
+  assign(paste0(REGION, '_', CLUSTER_TYPE, '_cell_cnt_post_filter'), 
+         length(archR.2$cellNames))
   
   ## In this section we are generating UMAPs and unconstrained integration plots ------
   #  For reclust and harmony reclusts clusters to assess which is best

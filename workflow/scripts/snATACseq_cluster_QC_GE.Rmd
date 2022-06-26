@@ -1,5 +1,5 @@
 ---
-title: "snATACseq ArchR: Cluster QC 1 report - `r REGION`"
+title: "snATACseq ArchR: GE Cluster QC 1 report - `r REGION`"
 author: "Darren Cameron"
 date: "`r format(Sys.time(), '%d/%m/%y')`"
 output: 
@@ -17,38 +17,144 @@ library(knitr)
 ```
 
 
-snATACseq analysis with ArchR - cluster QC 1.
+snATACseq analysis with ArchR - GE cluster QC 1.
 
 *** 
 
 
-### Results {.tabset}
+## Results {.tabset}
 
 ***
 
-#### Cluster QC {.tabset}
+### Cluster QC {.tabset}
 
-Remove cluster labelled as expressing SPI1 and SLC17A7
+#### No Harmony 
 
-+ Cell count before filtering  = `r length(archR$cellNames)`
-+ No. of cells to be removed = `r length(archR$cellNames) - length(cells_to_keep)`
-+ Cell count after filtering = `r length(archR.2$cellNames)`
+Cluster that expresses SPI1 and SLC17A7 to remove: `r GE_CLUST_TO_RM`
+
++ Cell count before filter = `r GE_Clusters_cell_cnt_pre_GE_rm`
++ Cell count after filter = `r GE_Clusters_cell_cnt_post_GE_rm`
+
+Remove clusters that do not have >= 30 cells in at least 2 donors:
+
++ Cell count before filter = `r GE_Clusters_cell_cnt_pre_filter`
++ Clusters to be retained from initial QC pass  = `r GE_Clusters_clusters_retained'`
++ No. of cells to be removed = `r GE_Clusters_cnts_cells_to_rm`
++ Cell count after filter = `r GE_Clusters_cell_cnt_post_filter`
 
 ***
 
-**Cell counts per donor in each cluster after cluster QC**
+##### Reclustering plots {.tabset}
 
-```{R, Cluster_CM_reClust, echo=FALSE}
-re_clust_CM_LSI
+```{R, Clusters, echo=FALSE, , fig.height = 10, fig.width = 10}
+print(GE_group_plot_reclust)
+```
+
+***
+
+**Batch corrected cell counts per cluster**
+
+```{R, GE_re_cluster_cnts, echo=FALSE}
+knitr::kable(GE_re_cluster_cnts)
+```
+
+***
+
+##### UMAPs
+
+```{R, UMAP_per_gene_reclust, echo=FALSE, fig.height = 10, fig.width = 10}
+print(do.call(cowplot::plot_grid, c(list(ncol = 3), GE_Clusters_reclust_all_genes_UMAP)))
+```
+
+***
+
+##### Unconstrained Integration 
+
+**Cluster mappings**
+
+```{R, GeneExp_df_reclust, echo=FALSE, warning=FALSE}
+knitr::kable(GE_Clusters_reclust_integration_df)
+```
+
+***
+
+**Cell counts**
+
+```{R, GeneExp_cM_reclust, echo=FALSE}
+GE_Clusters_reclust_clust_CM_geneExp
+```
+
+***
+
+**UMAP**
+
+```{R, integration_reclust_UMAP, echo=FALSE}
+GE_clusters_reclust_UMAP
+```
+
+***
+
+#### With Harmony {.tabset}
+
+Cluster that expresses SPI1 and SLC17A7 to remove: `r GE_CLUST_TO_RM_HARMONY`
+
++ Cell count before filter = `r GE_Clusters_harmony_cell_cnt_pre_GE_rm`
++ Cell count after filter = `r GE_Clusters_harmony_cell_cnt_post_GE_rm`
+
+Remove clusters that do not have >= 30 cells in at least 2 donors:
+
++ Cell count before filter = `r GE_Clusters_harmony_cell_cnt_pre_filter`
++ Clusters to be retained from initial QC pass  = `r GE_Clusters_harmony_clusters_retained'`
++ No. of cells to be removed = `r GE_Clusters_harmony_cnts_cells_to_rm`
++ Cell count after filter = `r GE_Clusters_harmony_cell_cnt_post_filter`
+
+***
+
+##### Reclustering plots {.tabset}
+
+```{R, GE_group_plot_reclust_harmony, echo=FALSE, , fig.height = 10, fig.width = 10}
+print(GE_group_plot_reclust_harmony)
 ```
 
 ***
 
 
-#### Cluster plots
+##### UMAPs
 
-```{R, Clusters, echo=FALSE, , fig.height = 10, fig.width = 10}
-print(group_plot)
+```{R, UMAP_per_gene_harmony, echo=FALSE, fig.height = 10, fig.width = 10}
+print(do.call(cowplot::plot_grid, c(list(ncol = 3), GE_Clusters_harmony_reclust_all_genes_UMAP)))
+```
+
+***
+
+##### Unconstrained Integration
+
+**Cluster mappings**
+
+```{R, GeneExp_df_harmony, echo=FALSE, warning=FALSE}
+knitr::kable(GE_Clusters_harmony_reclust_integration_df)
+```
+
+***
+
+**Cell counts**
+
+```{R, GeneExp_cM_harmony, echo=FALSE}
+GE_Clusters_harmony_reclust_clust_CM_geneExp
+```
+
+***
+
+```{R, Cluster_CM_harmony_compare, echo=FALSE}
+GE_clust_cM_harmony_compare
+```
+
+***
+
+**UMAP**
+
+```{R, integration_harmony_UMAP, echo=FALSE}
+GE_clusters_UMAP_har
 ```
 
 ***

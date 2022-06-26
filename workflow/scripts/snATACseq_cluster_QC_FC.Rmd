@@ -1,5 +1,5 @@
 ---
-title: "snATACseq ArchR: Cluster QC 1 report - `r REGION`"
+title: "snATACseq ArchR: FC Cluster QC 1 report - `r REGION`"
 author: "Darren Cameron"
 date: "`r format(Sys.time(), '%d/%m/%y')`"
 output: 
@@ -17,7 +17,7 @@ library(knitr)
 ```
 
 
-snATACseq analysis with ArchR - cluster QC 1.
+snATACseq analysis with ArchR - FC cluster QC 1.
 
 *** 
 
@@ -28,18 +28,18 @@ snATACseq analysis with ArchR - cluster QC 1.
 
 ### Cluster QC {.tabset}
 
-#### No Harmony {.tabset}
+#### No Harmony 
 
-Remove clusters that do not have >= 30 cells in at least 2 donors
+Remove clusters that do not have >= 30 cells in at least 2 donors:
 
-+ Cell count before filter = `r length(archR$cellNames)`
-+ Clusters to be retained from initial QC pass  = `r cluster_list`
-+ No. of cells to be removed = `r length(archR$cellNames) - length(cells_to_keep)`
-+ Cell count after filter = `r length(archR.2$cellNames)`
++ Cell count before filter = `r FC_Clusters_cell_cnt_pre_filter`
++ Clusters to be retained from initial QC pass  = `r FC_Clusters_clusters_retained'`
++ No. of cells to be removed = `r FC_Clusters_cnts_cells_to_rm`
++ Cell count after filter = `r FC_Clusters_cell_cnt_post_filter`
 
 ***
 
-#### Reclustering plots {.tabset}
+##### Reclustering plots {.tabset}
 
 ```{R, Clusters, echo=FALSE, , fig.height = 10, fig.width = 10}
 print(FC_group_plot_reclust)
@@ -55,7 +55,7 @@ knitr::kable(FC_re_cluster_cnts)
 
 ***
 
-#### UMAPs
+##### UMAPs
 
 ```{R, UMAP_per_gene_reclust, echo=FALSE, fig.height = 10, fig.width = 10}
 print(do.call(cowplot::plot_grid, c(list(ncol = 3), FC_Clusters_reclust_all_genes_UMAP)))
@@ -63,7 +63,7 @@ print(do.call(cowplot::plot_grid, c(list(ncol = 3), FC_Clusters_reclust_all_gene
 
 ***
 
-#### Unconstrained Integration 
+##### Unconstrained Integration 
 
 **Cluster mappings**
 
@@ -91,16 +91,16 @@ FC_clusters_reclust_UMAP
 
 #### With Harmony {.tabset}
 
-Remove clusters that do not have >= 30 cells in at least 2 donors
+Remove clusters that do not have >= 30 cells in at least 2 donors:
 
-+ Cell count before filter = `r length(archR$cellNames)`
-+ Clusters to be retained from initial QC pass  = `r cluster_list`
-+ No. of cells to be removed = `r length(archR$cellNames) - length(cells_to_keep)`
-+ Cell count after filter = `r length(archR.2$cellNames)`
++ Cell count before filter = `r FC_Clusters_harmony_cell_cnt_pre_filter`
++ Clusters to be retained from initial QC pass  = `r FC_Clusters_harmony_clusters_retained'`
++ No. of cells to be removed = `r FC_Clusters_harmony_cnts_cells_to_rm`
++ Cell count after filter = `r FC_Clusters_harmony_cell_cnt_post_filter`
 
 ***
 
-#### Reclustering plots {.tabset}
+##### Reclustering plots {.tabset}
 
 ```{R, FC_group_plot_reclust_harmony, echo=FALSE, , fig.height = 10, fig.width = 10}
 print(FC_group_plot_reclust_harmony)
@@ -109,7 +109,7 @@ print(FC_group_plot_reclust_harmony)
 ***
 
 
-#### UMAPs
+##### UMAPs
 
 ```{R, UMAP_per_gene_harmony, echo=FALSE, fig.height = 10, fig.width = 10}
 print(do.call(cowplot::plot_grid, c(list(ncol = 3), FC_Clusters_harmony_reclust_all_genes_UMAP)))
@@ -117,7 +117,7 @@ print(do.call(cowplot::plot_grid, c(list(ncol = 3), FC_Clusters_harmony_reclust_
 
 ***
 
-#### Unconstrained Integration
+##### Unconstrained Integration
 
 **Cluster mappings**
 
