@@ -73,5 +73,20 @@ UMAP_broad
 
 ***
 
+#### Cluster plots
 
+
+```{R, Clusters, echo=FALSE, , fig.height = 10, fig.width = 10}
+print(group_plot)
+```
+
+***
+
+#### UMAPs
+
+```{R, UMAP_per_gene, echo=FALSE, fig.height = 10, fig.width = 10}
+print(do.call(cowplot::plot_grid, c(list(ncol = 3), all_genes_UMAP)))
+```
+
+***
 

@@ -77,28 +77,45 @@ cat(paste0('\nAssign cell IDs to clusters for ', REGION, ' ... \n'))
 if (REGION == 'FC') {
 
   # Reclassify cell IDs into broader catagories
-  newLabel <- c("FC-ExN", "FC-ExN", "FC-undef", "FC-RG", "FC-ExN", "FC-ExN", "FC-ExN", "FC-InN", "FC-RG", "FC-RG", "FC-MG", "FC-InN", "FC-InN", "FC-InN")
-  oldLabel <- c("C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14")
-  archR$Clusters_broad <- mapLabels(archR$Clusters_reclust, newLabels = newLabel, oldLabels = oldLabel)
+  newLabel <- c("FC-ExN", "FC-ExN", "FC-ExN", "FC-InN", "FC-InN", 
+                "FC-InN", "FC-ExN", "FC-Undef", "FC-InN", "FC-RG", 
+                "FC-RG", "FC-RG", "FC-MG", "FC-RG", "FC-RG", 
+                "FC-RG")
+  oldLabel <- c("C1", "C2", "C3", "C4", "C5", 
+                "C6", "C7", "C8", "C9", "C10", 
+                "C11", "C12", "C13", "C14", "C15", 
+                "C16")
+  archR$Clusters_broad <- mapLabels(archR$Clusters, newLabels = newLabel, oldLabels = oldLabel)
 
 } else { 
 
   # Reclassify cell IDs	into broader catagories
-  newLabel <- c("LGE-InN", "LGE-InN", "LGE-InN", "MGE-InN", "MGE-InN", "MGE-InN", "GE-Proj", "GE-Proj", "CGE-InN", "GE-RG", "GE-RG", "GE-RG")
-  oldLabel <- c("C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12")
+  newLabel <- c("LGE-InN", "GE-RG", "GE-RG", "CGE-InN", "MGE-InN", 
+                "MGE-InN", "GE-Undef", "LGE-InN", "CGE-InN", "MGE-InN", 
+                "LGE-InN")
+  oldLabel <- c("C1", "C2", "C3", "C4", "C5", 
+                "C6", "C7", "C8", "C9", "C10", 
+                "C11")
   archR$Clusters_broad <- mapLabels(archR$Clusters, newLabels = newLabel, oldLabels = oldLabel)
 
 }
 
+# Assign Marker genes for plots
+if (REGION == 'FC') {
+  
+  MARKER_GENES <-  c('SLC17A7', 'GAD1', 'GAD2', 'SLC32A1', 'GLI3',
+                     'TNC', 'C3', 'SPI1', 'MEF2C')
+  
+} else {
+  
+  MARKER_GENES <-  c('GAD1', 'GAD2', 'SLC32A1', 'GLI3', 'SLC17A7',
+                     'TNC', 'PROX1', 'SCGN', 'LHX6', 'NXPH1',
+                     'MEIS2','ZFHX3', 'SPI1', 'LHX8', 'ISL1', 'GBX2')
+  
+}
+
 
 ## Pseudo-bulk replicates - chtr 9  ---------------------------------------------------
-
-#  The underlying assumption in this process is that the single cells 
-#  that are being grouped together are sufficiently similar that we do 
-#  not care to understand the differences between them. These cell 
-#  groupings are almost always derived from individual clusters or 
-#  supersets of clusters that correspond to known cell types. 
-
 cat(paste0('\nCreate pseudo-bulk replicates for ', REGION, ' ... \n'))
 archR.2 <- addGroupCoverages(ArchRProj = archR, groupBy = "Clusters_broad", force = TRUE)
 
@@ -224,6 +241,113 @@ PEAK_CNT_DF
 cat(paste0('\nCreate broad cluster UMAP for ', REGION, ' ... \n'))
 UMAP_broad <- plotEmbedding(archR.2, colorBy = "cellColData", name = "Clusters_broad") +
   ggtitle('Clusters')  
+
+## Clustering - reporting  ------------------------------------------------------------
+# Cluster counts - after Iterative LSI based clustering
+cat('\nCreating tables and plots for Iterative LSI based clustering ... \n')
+clusters_cnts <- as.data.frame(t(as.data.frame(as.vector((table(archR.2$Clusters_broad))))))
+rownames(clusters_cnts) <- NULL
+colnames(clusters_cnts) <- names(table(archR.2$Clusters_broad))
+
+# Confusion matrix - cell counts per donor
+cat('Creating confusion matrix for cell counts per donor ... \n')
+cM_LSI <- confusionMatrix(paste0(archR.2$Clusters_broad), paste0(archR.2$Sample))
+colnames(cM_LSI) <- colnames(cM_LSI) %>% str_remove("_ATAC")
+cM_LSI <- cM_LSI[ gtools::mixedsort(row.names(cM_LSI)), ]
+rownames(cM_LSI) <- factor(rownames(cM_LSI),
+                           levels = rownames(cM_LSI))
+
+clust_CM_LSI <- pheatmap::pheatmap(
+  mat = cM_LSI,
+  color = paletteContinuous("whiteBlue"),
+  border_color = "black", display_numbers = TRUE, number_format =  "%.0f",
+  cluster_rows = F, # Needed for row order https://stackoverflow.com/questions/59306714
+  treeheight_col = 0,
+  treeheight_row = 0,
+  angle_col = 0,
+  number_color = 'black'
+)
+clust_CM_LSI
+
+# Plot UMAP - for Integrated LSI clusters
+cat('Create UMAPs ... \n')
+clusters_UMAP <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
+                               name = "Clusters_broad", embedding = "UMAP") +
+  NoLegend() + ggtitle('Clusters')
+clusters_UMAP_BySample <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
+                                        name = "Sample", embedding = "UMAP") +
+  NoLegend() + ggtitle('By Donor. R: 510, B: 611, G: 993')
+
+
+# Stacked barplots
+cat('Creating stacked barplots ... \n')
+cnts_per_donor <- as.data.frame(as.matrix(cM_LSI)) %>%
+  rownames_to_column("Cluster")
+cnts_per_donor$Cluster <- as.factor(cnts_per_donor$Cluster)
+cnts_per_donor_melt <- reshape2::melt(cnts_per_donor, id = 'Cluster')
+cnts_per_donor_melt$Cluster <- factor(cnts_per_donor_melt$Cluster,
+                                      levels = rownames(cM_LSI))
+
+# Get the levels for type in the required order - https://stackoverflow.com/questions/22231124
+cnts_per_donor_melt$variable = factor(cnts_per_donor_melt$variable,
+                                      levels = LEVELS)
+cnts_per_donor_melt = arrange(cnts_per_donor_melt, Cluster, desc(variable))
+
+# Calculate percentages
+cnts_per_donor_melt = plyr::ddply(cnts_per_donor_melt, .(Cluster), transform, percent = value/sum(value) * 100)
+
+# Format the labels and calculate their positions
+cnts_per_donor_melt <- plyr::ddply(cnts_per_donor_melt, .(Cluster), transform, pos = (cumsum(value) - 0.5 * value))
+cnts_per_donor_melt$label = paste0(sprintf("%.0f", cnts_per_donor_melt$percent), "%")
+
+# Plot - Note this could also be shown with bars filling plot
+plot_stacked_pct <- ggplot(cnts_per_donor_melt, aes(x = factor(Cluster), y = percent, fill = variable)) +
+  geom_bar(position = position_stack(), stat = "identity") +
+  geom_text(aes(label = label), position = position_stack(vjust = 0.5), size = 2) +
+  theme(legend.position = "none",
+        plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", size = 1, fill = NA),
+        panel.background = element_blank(),
+        plot.title = element_text(hjust = 0.5, size = 16, face = 'bold'),
+        axis.title.x = element_text(colour = "#000000", size = 14),
+        axis.title.y = element_text(colour = "#000000", size = 14),
+        axis.text.x  = element_text(colour = "#000000", size = 12, vjust = 0.5, angle = 45),
+        axis.text.y  = element_text(colour = "#000000", size = 12)) +
+  xlab(NULL) + ylab(NULL)
+
+cat('Creating group plot ... \n')
+group_plot <- plot_grid(clusters_UMAP, clusters_UMAP_BySample, plot_stacked_pct,
+                        clust_CM_LSI$gtable, ncol = 2, align = 'hv', axis = 'rl')
+
+
+# Gene specific UMAPs using imputation
+# Note that I'm not saving these imputation weights in Save ArchR section below
+# They are for visual cell IDing only at this stage
+archR.3 <- addImputeWeights(archR.2)
+
+genes_UMAP <- plotEmbedding(
+  ArchRProj = archR.3, 
+  colorBy = "GeneScoreMatrix", 
+  name = MARKER_GENES, 
+  embedding = 'UMAP',
+  imputeWeights = getImputeWeights(archR.3)
+)
+
+all_genes_UMAP <- lapply(genes_UMAP, function(x){
+  
+  x + guides(color = FALSE, fill = FALSE) + 
+    theme_ArchR(baseSize = 6.5) +
+    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
+    theme(
+      axis.text.x=element_blank(), 
+      axis.ticks.x=element_blank(), 
+      axis.text.y=element_blank(), 
+      axis.ticks.y=element_blank()
+    )
+})
+
 
 
 ## Save ArchR project  ----------------------------------------------------------------
