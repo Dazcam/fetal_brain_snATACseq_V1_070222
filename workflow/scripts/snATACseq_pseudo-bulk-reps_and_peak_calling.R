@@ -14,14 +14,7 @@
 
 ## Info  ------------------------------------------------------------------------------
 
-#  snATAC-seq - run contrained integration
-
-#   Here we map the RNA-seq cluster IDs to our ATAC-seq clusters. It is a 2-step process.
-#   First unconstrained integration is run which is a broad pass at mapping the RNA-seq 
-#   cluster IDs to the ATAC-seq clusters. Then the constrained integration is run, this 
-#   time by adding supervised cell groupings as IDed in the unconstrained analysis 
-#   i.e. InNs (InN-1, InN-2) and ExNs (ExN-1, ExN-2) etc. are clumped. This enables more 
-#   accurate cell mapping between the modalites.
+#  snATAC-seq - reate psuedo-bulk replicates and peak calling
 
 ##  Load Packages  --------------------------------------------------------------------
 library(ArchR)
@@ -33,6 +26,9 @@ library(ComplexHeatmap)
 library(clustree)
 library(cowplot)
 library(argparser)
+library(Seurat)
+library(plyr)
+library(gtools)
 
 ## Parse region / set region variable -------------------------------------------------
 cat('\nParsing args ... \n')
@@ -99,6 +95,31 @@ if (REGION == 'FC') {
   archR$Clusters_broad <- mapLabels(archR$Clusters, newLabels = newLabel, oldLabels = oldLabel)
 
 }
+
+# Loop to extract sample IDs
+if (REGION == "FC") {
+
+  # Without 993 AGGR
+  #SAMPLES <- c("14510_PFC_ATAC", "14611_PFC_ATAC", "14993_PFC_ATAC")
+  #SAMPLE_IDs <- SAMPLES %>% str_remove("P") %>% str_remove("14")
+
+  # With 993 AGGR
+  SAMPLES <- c("14510_PFC_ATAC", "14611_PFC_ATAC", "14993_PFC_ATAC_AGGR")
+  SAMPLE_IDs <- SAMPLES %>% str_remove("P") %>% str_remove("14")  %>% str_remove("_AGGR")
+
+} else if (REGION == "Cer") {
+
+  SAMPLES <- c("14510_Cerebellum_ATAC", "14611_Cerebellum_ATAC", "14993_Cerebellum_ATAC")
+  SAMPLE_IDs <- SAMPLES %>% str_remove("ebellum") %>% str_remove("14")
+
+} else {
+
+  SAMPLES <- c("14510_WGE_ATAC", "14611_WGE_ATAC", "14993_WGE_ATAC")
+  SAMPLE_IDs <- SAMPLES %>% str_remove("W") %>% str_remove("14")
+
+}
+
+LEVELS <- SAMPLE_IDs %>% str_remove("_ATAC") # For stacked barplots
 
 # Assign Marker genes for plots
 if (REGION == 'FC') {
