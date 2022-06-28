@@ -294,10 +294,10 @@ clust_CM_LSI
 cat('Create UMAPs ... \n')
 clusters_UMAP <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
                                name = "Clusters_broad", embedding = "UMAP") +
-  NoLegend() + ggtitle('Clusters')
+  ggtitle('Clusters')
 clusters_UMAP_BySample <- plotEmbedding(ArchRProj = archR.2, colorBy = "cellColData", 
                                         name = "Sample", embedding = "UMAP") +
-  NoLegend() + ggtitle('By Donor. R: 510, B: 611, G: 993')
+  ggtitle('By Donor. R: 510, B: 611, G: 993')
 
 
 # Stacked barplots

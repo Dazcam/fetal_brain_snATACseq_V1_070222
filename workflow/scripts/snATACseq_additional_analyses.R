@@ -53,7 +53,9 @@ for (REGION in c("FC", "GE")) {
   
   if (REGION == 'FC') {
 
-    reducedDim_ID <- 'IterativeLSI_reclust'
+    reducedDim_ID <- 'IterativeLSI'
+    clust_ID <- 'Clusters'
+    UMAP_ID<- 'UMAP'
 
   } else {
 
@@ -165,42 +167,46 @@ for (REGION in c("FC", "GE")) {
   HAR_regions <- c(HAR_REGIONS = HAR_regions) # Needs to be a named list
  
   archR <- addPeakAnnotations(ArchRProj = archR, regions = HAR_regions, name = "HARs")
-  
-  ##   --------  HARs enrichment in marker peaks  ----------------- 
-  enrichHarRegions <- peakAnnoEnrichment(
-    seMarker = markersPeaks,
-    ArchRProj = archR,
-    peakAnnotation = "HARs",
-    cutOff = "FDR <= 0.1 & Log2FC >= 0.5"
-  )
+ 
+## HARs section requires genome that bed files are aligned to to match ##
+## Currently our data is hg38 and HARs data is hg19. Probs can't do this ##
+## through ArchR ##
+ 
+#  ##   --------  HARs enrichment in marker peaks  ----------------- 
+#  enrichHarRegions <- peakAnnoEnrichment(
+#    seMarker = markersPeaks,
+#    ArchRProj = archR,
+#    peakAnnotation = "HARs",
+#    cutOff = "FDR <= 0.1 & Log2FC >= 0.5"
+#  )
     
-  # Export enrichMotifs and motif p-val table used for plotting
-  saveRDS(enrichHarRegions, paste0(RDS_DIR, REGION, '_HARs.rds'))
-  saveRDS(assays(enrichHarRegions)[["mlog10Padj"]], paste0(RDS_DIR, REGION, '_HARs_mlogPs.rds'))
+#  # Export enrichMotifs and motif p-val table used for plotting
+#  saveRDS(enrichHarRegions, paste0(RDS_DIR, REGION, '_HARs.rds'))
+#  saveRDS(assays(enrichHarRegions)[["mlog10Padj"]], paste0(RDS_DIR, REGION, '_HARs_mlogPs.rds'))
   
-  heatmapHARs <- plotEnrichHeatmap(enrichHarRegions, transpose = TRUE)
-  assign(paste0("HARs_heatmap_", REGION), heatmapHARs)
+#  heatmapHARs <- plotEnrichHeatmap(enrichHarRegions, transpose = TRUE)
+#  assign(paste0("HARs_heatmap_", REGION), heatmapHARs)
   
-  ## Create motif heatmap RDS files  ----------------------------------------------------
-  cat(paste0('\nCreating rds files  ... \n'))
-  # Return heatmap matrix
-  heatmap_HARs_matrix <- plotEnrichHeatmap(enrichHarRegions, transpose = TRUE,
-                                           returnMatrix = TRUE)
+#  ## Create motif heatmap RDS files  ----------------------------------------------------
+#  cat(paste0('\nCreating rds files  ... \n'))
+#  # Return heatmap matrix
+#  heatmap_HARs_matrix <- plotEnrichHeatmap(enrichHarRegions, transpose = TRUE,
+#                                           returnMatrix = TRUE)
   
-  # Remove all extra info from motif names
-  # new_cols <- as.data.frame(str_split(colnames(heatmap_HARs_matrix), 
-  #                                     fixed("_"), simplify = TRUE)) %>%
-  #   pull(V1)
-  # colnames(heatmap_HARs_matrix) <- new_cols
+#  # Remove all extra info from motif names
+#  # new_cols <- as.data.frame(str_split(colnames(heatmap_HARs_matrix), 
+#  #                                     fixed("_"), simplify = TRUE)) %>%
+#  #   pull(V1)
+#  # colnames(heatmap_HARs_matrix) <- new_cols
   
-  # Note that Complex heatmap also has a function called heatmap for object conversion!!
-  heatmap_HARs_plot <- as.ggplot(pheatmap::pheatmap(heatmap_HARs_matrix, cluster_rows = FALSE, cluster_cols = FALSE,
-                                                    cellwidth = 12, cellheight = 15, fontsize_row = 12,
-                                                    fontsize_col = 12)) 
+#  # Note that Complex heatmap also has a function called heatmap for object conversion!!
+#  heatmap_HARs_plot <- as.ggplot(pheatmap::pheatmap(heatmap_HARs_matrix, cluster_rows = FALSE, cluster_cols = FALSE,
+#                                                    cellwidth = 12, cellheight = 15, fontsize_row = 12,
+#                                                    fontsize_col = 12)) 
   
-  # Save motif heatmap RDS files
-  saveRDS(heatmap_HARs_plot, paste0(RDS_DIR, REGION, '_HARs_enrichment_heatmap_plot.rds')) 
-  saveRDS(heatmap_HARs_matrix, paste0(RDS_DIR, REGION, '_HARs_enrichment_heatmap_matrix.rds'))   
+#  # Save motif heatmap RDS files
+#  saveRDS(heatmap_HARs_plot, paste0(RDS_DIR, REGION, '_HARs_enrichment_heatmap_plot.rds')) 
+#  saveRDS(heatmap_HARs_matrix, paste0(RDS_DIR, REGION, '_HARs_enrichment_heatmap_matrix.rds'))   
 
 
   ## Motif Footprinting  -  Chptr 14  ---------------------------------------------------
