@@ -63,6 +63,16 @@ snATAC_seq_QC_LSI_params:
     num_cores: 32
     total_mem: 128G
 
+# -------  MUNGE SUMSTATS  ---------
+standardise_phenotype_sumstats:
+    num_cores: 1
+    maxvmem: 20G
+    duration: 3-00:00:00
+sumstats_for_ldsc_hg19:
+    num_cores: 1
+    maxvmem: 20G
+    duration: 3-00:00:00
+
 # -----------  LDSR  ---------------
 make_annot:
     num_cores: 1

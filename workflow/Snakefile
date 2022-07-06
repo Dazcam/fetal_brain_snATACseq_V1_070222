@@ -6,6 +6,7 @@ include: "rules/snATACseq_LDSR.smk"
 include: "rules/snATACseq_LDSR_conditional.smk"	
 #include: "rules/snATACseq_test.smk"
 include: "rules/snATACseq_garfield.smk"
+include: "rules/snATACseq_HARs_overlaps.smk"
 
 LDSR_CONDITIONAL = {'FC.ExN': ["FC.InN", "FC.RG"],
                     'FC.InN': ["FC.ExN", "FC.RG"],
@@ -18,7 +19,10 @@ for key, values in LDSR_CONDITIONAL.items():
 
 rule all:
     input:
-        "../results/rmarkdown_reports/snATACseq_additional_analyses.html"
+        "../results/rmarkdown_reports/snATACseq_additional_analyses.html",
+        expand("../results/GWAS_for_ldsc/{GWAS}_hg19_ldsc_ready.sumstats.gz", GWAS = config['LDSC_GWAS']),
+        expand("../results/HARs/{CELL_TYPE}_fishers.txt", CELL_TYPE = config['ATAC_CELL_TYPES'])
+
 #        expand("../results/rmarkdown_reports/snATACseq_pseudo-bulk-reps_and_peak_calling_{REGION}.html", REGION = config['ATAC_REGIONS'])
 
 #  MUNGE_SUMSTATS

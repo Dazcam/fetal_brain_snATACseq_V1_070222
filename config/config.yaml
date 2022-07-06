@@ -40,7 +40,7 @@ ATAC_CELL_TYPES:
     MGE.InN:  
     CGE.InN:  
     GE.RG:    
-    GE.Proj: 
+    GE.Undef: 
 
 GARFIELD_CELL_TYPES:
     FC.ExN:
@@ -54,11 +54,11 @@ LDSC_GWAS:
 #    ADHD:
 #    HEIGHT:
 #    MDD:
-     INSOMNIA: '../resources/gwas_sumstats/Insomnia_sumstats_Jansenetal.txt.gz'               
-     NEUROTICISM: '../resources/gwas_sumstats/neuroticism.gwas.full_fixHeader.txt.gz'
-     BRAIN_VOLUME: '../resources/gwas_sumstats/meta_analysis_BV_Jansenetal_2020.sumstats.txt.gz'  
-     AD: '../resources/gwas_sumstats/PGCALZ2sumstatsExcluding23andMe_fixHeader.txt.gz'
-     INTELLENGENCE: '../resources/gwas_sumstats/SavageJansen_2018_intelligence_metaanalysis.txt.gz'
+     INSMNA: '../resources/gwas_sumstats/Insomnia_sumstats_Jansenetal.txt.gz'               
+     NRTCSM: '../resources/gwas_sumstats/neuroticism.gwas.full_fixHeader.txt.gz'
+     BV: '../resources/gwas_sumstats/meta_analysis_BV_Jansenetal_2020.sumstats.txt.gz'  
+#     AD: '../resources/gwas_sumstats/PGCALZ2sumstatsExcluding23andMe_fixHeader.txt.gz'
+     INTEL: '../resources/gwas_sumstats/SavageJansen_2018_intelligence_metaanalysis.txt.gz'
 
 
 LDSR_CONDITIONAL:
