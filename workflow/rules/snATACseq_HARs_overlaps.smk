@@ -72,7 +72,7 @@ rule bedtools_fishers:
              """
              
              module load bedtools
-             bedtools fisher -a {input.myHARs} -b {input.mybed} -g {params} > {output} 2> {log} 
+             bedtools fisher -a {input.myHARs} -b {input.mybed} -g {params} -n 0.5 -r > {output} 2> {log} 
 
              """
 

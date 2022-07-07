@@ -1,6 +1,6 @@
 #include: "rules/snATACseq_cellRanger.smk"
 include: "rules/snATACseq_processing.smk"
-include: "rules/snATACseq_munge_sumstats.smk"
+#include: "rules/snATACseq_munge_sumstats.smk"
 include: "rules/snATACseq_LDSR.smk"
 #include:  "rules/snATACseq_QC_LSI_params.smk" 
 include: "rules/snATACseq_LDSR_conditional.smk"	
@@ -20,8 +20,9 @@ for key, values in LDSR_CONDITIONAL.items():
 rule all:
     input:
         "../results/rmarkdown_reports/snATACseq_additional_analyses.html",
-        expand("../results/GWAS_for_ldsc/{GWAS}_hg19_ldsc_ready.sumstats.gz", GWAS = config['LDSC_GWAS']),
-        expand("../results/HARs/{CELL_TYPE}_fishers.txt", CELL_TYPE = config['ATAC_CELL_TYPES'])
+        expand("../results/GWAS_for_ldsc/{GWAS}_hg19_ldsc_ready.sumstats.gz", GWAS = config['LDSC_GWAS']),   
+        expand("../results/HARs/{CELL_TYPE}_fishers.txt", CELL_TYPE = config['ATAC_CELL_TYPES']),
+        expand("../results/LDSR/part_herit/baseline_v1.2/snATACseq_LDSR_baseline.v1.2_summary_{GWAS}.tsv", GWAS = config['LDSC_GWAS'])
 
 #        expand("../results/rmarkdown_reports/snATACseq_pseudo-bulk-reps_and_peak_calling_{REGION}.html", REGION = config['ATAC_REGIONS'])
 
