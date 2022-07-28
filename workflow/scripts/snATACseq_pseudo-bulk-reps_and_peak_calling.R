@@ -206,6 +206,26 @@ cell_types <- gsub("\\-", "\\.", unique(archR$Clusters_broad))
 
 
 cat(paste0('\nCreating bed files for ', REGION, ' ... \n'))
+# Union Peaks
+PEAKS_UNION <- getPeakSet(archR)
+
+PEAKS_UNION_DF <- data.frame(seqnames=seqnames(PEAKS_UNION),
+                       starts=start(PEAKS_UNION)-1,
+                       ends=end(PEAKS_UNION),
+                       names=c(rep(".", length(PEAKS_UNION))),
+                       scores=c(rep(".", length(PEAKS_UNION))),
+                       strands=strand(PEAKS_UNION))
+
+write.table(PEAKS_UNION_DF, 
+            file=paste0(PEAKS_DIR, REGION, '.UNION.hg38.bed'),
+            quote=F, 
+            sep="\t", 
+            row.names=F, 
+            col.names=F)
+
+}
+
+# Individual cell type peaks
 for (CELL_TYPE in cell_types) {
   
   # Load reproducible peak set for each cell-type
