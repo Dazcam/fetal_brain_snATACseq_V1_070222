@@ -10,35 +10,38 @@
 # ---------  SET SMK PARAMS  ----------
 configfile: "../config/config.yaml"
 
+
+## FIRST TWO RULES ONLY REQUIRED IF USING CAPRA HG19 FILE
+
 # -------------  RULES  ---------------
-rule munge_HARs_file:
-    input:   "../resources/sheets/HARs_capra_2019_supp_table_5.csv",
-    output:  "../results/HARs/HARs_hg19.bed"
-    message: "Munge {input}: add tab delims and remove header"
-    log:     "../results/logs/HARs/munge_HARs_file.log"
-    shell:
-             """
+#rule munge_HARs_file:
+#    input:   "../resources/sheets/HARs_capra_2019_supp_table_5.csv",
+#    output:  "../results/HARs/HARs_hg19.bed"
+#    message: "Munge {input}: add tab delims and remove header"
+#    log:     "../results/logs/HARs/munge_HARs_file.log"
+#    shell:
+#             """
 
-             cat {input} | sed 's/,/\t/g' | tail -n +2 > {output} 2> {log}
+#             cat {input} | sed 's/,/\t/g' | tail -n +2 > {output} 2> {log}
 
-             """
+#             """
 
-rule lift_over_HARs:
-    input:   mybed = "../results/HARs/HARs_hg19.bed",
-             chain_file = "../resources/liftover/hg19ToHg38.over.chain.gz"
-    output:  "../results/HARs/HARs_hg38.bed"
-    message: "Lifting {input.mybed} to hg38"
-    log:     "../results/logs/HARs/munge_HARs_file.log"
-    params:  "../results/HARs/HARs_hg38_unlifted.bed"
-    shell:
-             """
+#rule lift_over_HARs:
+#    input:   mybed = "../results/HARs/HARs_hg19.bed",
+#             chain_file = "../resources/liftover/hg19ToHg38.over.chain.gz"
+#    output:  "../results/HARs/HARs_hg38.bed"
+#    message: "Lifting {input.mybed} to hg38"
+#    log:     "../results/logs/HARs/munge_HARs_file.log"
+#    params:  "../results/HARs/HARs_hg38_unlifted.bed"
+#    shell:
+#             """
 
-             ../resources/liftover/liftOver {input.mybed} {input.chain_file} {output} {params} 2> {log}
+#             ../resources/liftover/liftOver {input.mybed} {input.chain_file} {output} {params} 2> {log}
 
-             """
+#             """
 
 rule sort_HARs:
-    input:   "../results/HARs/HARs_hg38.bed"
+    input:   "../resources/public_datasets/girskis_2021/GSE180714_HARs.bed"
     output:  "../results/HARs/HARs_hg38_srtd.bed"
     message: "Sorting {input}"
     log:     "../results/logs/HARs/sort_HARs.log"
@@ -72,7 +75,7 @@ rule bedtools_fishers:
              """
              
              module load bedtools
-             bedtools fisher -a {input.myHARs} -b {input.mybed} -g {params} -n 0.5 -r > {output} 2> {log} 
+             bedtools fisher -a {input.myHARs} -b {input.mybed} -g {params} -f 1E-7  -r > {output} 2> {log} 
 
              """
 
