@@ -9,7 +9,7 @@
 
 # ---------  SET SMK PARAMS  ----------
 configfile: "../config/config.yaml"
-
+localrules: bedtools_fishers, bedtools_intersect
 
 ## FIRST TWO RULES ONLY REQUIRED IF USING CAPRA HG19 FILE
 
@@ -75,7 +75,21 @@ rule bedtools_fishers:
              """
              
              module load bedtools
-             bedtools fisher -a {input.myHARs} -b {input.mybed} -g {params} -f 1E-7  -r > {output} 2> {log} 
+             bedtools fisher -a {input.myHARs} -b {input.mybed} -g {params} > {output} 2> {log} 
+
+             """
+
+rule bedtools_intersect:
+    input:   mybed = "../results/peaks/{CELL_TYPE}_hg38_srtd.bed",
+             myHARs = "../results/HARs/HARs_hg38_srtd.bed"
+    output:  "../results/HARs/{CELL_TYPE}_overlaps.txt"
+    message: "Running fishers intersect to calculate bp overlap between {input.mybed} and {input.myHARs}"
+    log:     "../results/logs/HARs/bedtools_intersect_{CELL_TYPE}.log"
+    shell:
+             """
+
+             module load bedtools
+             bedtools intersect -a {input.myHARs} -b {input.mybed} -wo > {output} 2> {log}
 
              """
 
