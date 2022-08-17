@@ -9,7 +9,7 @@
 
 # ---------  SET SMK PARAMS  ----------
 configfile: "../config/config.yaml"
-localrules: bedtools_fishers, bedtools_intersect
+localrules: bedtools_fishers, bedtools_intersect, munge_overlap_df
 
 ## FIRST TWO RULES ONLY REQUIRED IF USING CAPRA HG19 FILE
 
@@ -90,6 +90,21 @@ rule bedtools_intersect:
 
              module load bedtools
              bedtools intersect -a {input.myHARs} -b {input.mybed} -wo > {output} 2> {log}
+
+             """
+
+rule munge_overlap_df:
+    input:   "../results/HARs/{CELL_TYPE}_overlaps.txt"
+    output:  "../results/HARs/{CELL_TYPE}_overlaps_munged.txt"
+    message: "Removing cols from overlap df for {wildcards.CELL_TYPE}"
+    log:     "../results/logs/HARs/munge_overlap_df_{CELL_TYPE}.log"
+    shell:
+             """
+
+             echo "HARSID    chr    start  end   nearest_gene    chrom   chrom_start  chrom_end  overlap_bp" > temp.{wildcards.CELL_TYPE}
+             cat {input} | cut -f 4,1,2,3,15-18,22 |\
+             awk '{{print $4"\t"$1"\t"$2"\t"$3"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9}}' >> temp.{wildcards.CELL_TYPE}
+             mv temp.{wildcards.CELL_TYPE} {output} 
 
              """
 
