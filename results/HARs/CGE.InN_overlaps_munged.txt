@@ -1,4 +1,4 @@
-HARSID    chr    start  end   nearest_gene    chrom   chrom_start  chrom_end  overlap_bp
+HARSID	chr	start	end	nearest_gene	chrom	chrom_start	chrom_end	overlap_bp
 HARsv2_0002	chr1	3012056	3012516	TTC34;ACTRT2	chr1	3011918	3012419	363
 HARsv2_0002	chr1	3012056	3012516	TTC34;ACTRT2	chr1	3012425	3012926	91
 HARsv2_0003	chr1	3173190	3173325	PRDM16	chr1	3172720	3173221	31
