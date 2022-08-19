@@ -131,14 +131,14 @@ for (REGION in BULK_REGIONS) {
 
 ## Peak overlaps of FC and GE cell types  ---------------------------------------------
 # Find peak overlaps
-FC_overlaps <- findOverlapsOfPeaks(FC.ExN_gr, FC.InN_gr, FC.RG_gr, minoverlap = 250)
-#GE_overlaps <- findOverlapsOfPeaks(MGE.InN_gr, CGE.InN_gr, LGE.InN_gr, GE.RG_gr, minoverlap = 250)
-GE_overlaps_InN <- findOverlapsOfPeaks(MGE.InN_gr, CGE.InN_gr, LGE.InN_gr, minoverlap = 250)
+FC_overlaps <- findOverlapsOfPeaks(FC.ExN_gr, FC.InN_gr, FC.RG_gr, minoverlap = 100)
+#GE_overlaps <- findOverlapsOfPeaks(MGE.InN_gr, CGE.InN_gr, LGE.InN_gr, GE.RG_gr, minoverlap = 100)
+GE_overlaps_InN <- findOverlapsOfPeaks(MGE.InN_gr, CGE.InN_gr, LGE.InN_gr, minoverlap = 100)
 
 # Create Venns
-FC_venn <- makeVennDiagram(FC_overlaps, minoverlap = 250)
-#GE_venn <- makeVennDiagram(GE_overlaps, minoverlap = 250) 
-GE_InN_venn <- makeVennDiagram(GE_overlaps_InN, minoverlap = 250) 
+FC_venn <- makeVennDiagram(FC_overlaps, minoverlap = 100)
+#GE_venn <- makeVennDiagram(GE_overlaps, minoverlap = 100) 
+GE_InN_venn <- makeVennDiagram(GE_overlaps_InN, minoverlap = 100) 
 
 GE_InN_venn2 <- threeway_venn(GE_InN_venn, 'MGE InN', 'CGE InN', 'LGE InN') 
 FC_venn2 <- threeway_venn(FC_venn, 'FC ExN', 'FC InN', 'FC RG') 
@@ -158,10 +158,10 @@ mscoff_peaks <- readxl::read_excel(paste0(PUBLIC_DATA_DIR,
 MSCOFF_PEAKS_GR <- toGRanges(mscoff_peaks, format="BED", header=FALSE) 
 
 # Find peak overlaps
-MSCOFF_PEAKS_overlaps <- findOverlapsOfPeaks(GE.UNION_gr, MSCOFF_PEAKS_GR, minoverlap = 250)
+MSCOFF_PEAKS_overlaps <- findOverlapsOfPeaks(GE.UNION_gr, MSCOFF_PEAKS_GR, minoverlap = 100)
 
 # Create Venns
-MSCOFF_venn <- makeVennDiagram(MSCOFF_PEAKS_overlaps, minoverlap = 250, 
+MSCOFF_venn <- makeVennDiagram(MSCOFF_PEAKS_overlaps, minoverlap = 100, 
                                fill = c("#CC79A7", "#56B4E9"), 
                                col = c("#D55E00", "#0072B2"), 
                                cat.col = c("#D55E00", "#0072B2"),
@@ -182,12 +182,12 @@ ubieta_peaks <- read_csv(paste0(PUBLIC_DATA_DIR,'de_la_Torre_Ubieta_2019/GSE9502
 UBIETA_PEAKS_GR <- toGRanges(ubieta_peaks, format="BED", header=FALSE) 
 
 # Find peak overlaps
-KOUAKOU_overlaps <- findOverlapsOfPeaks(FC.UNION_gr, KOUAKOU_PEAKS_GR, minoverlap = 250)
-UBIETA_overlaps <- findOverlapsOfPeaks(FC.UNION_gr, UBIETA_PEAKS_GR, minoverlap = 250)
+KOUAKOU_overlaps <- findOverlapsOfPeaks(FC.UNION_gr, KOUAKOU_PEAKS_GR, minoverlap = 100)
+UBIETA_overlaps <- findOverlapsOfPeaks(FC.UNION_gr, UBIETA_PEAKS_GR, minoverlap = 100)
 
 # Create Venns
-KOUAKOU_venn <- makeVennDiagram(KOUAKOU_overlaps, minoverlap = 250) 
-UBIETA_venn <- makeVennDiagram(UBIETA_overlaps, minoverlap = 250)
+KOUAKOU_venn <- makeVennDiagram(KOUAKOU_overlaps, minoverlap = 100) 
+UBIETA_venn <- makeVennDiagram(UBIETA_overlaps, minoverlap = 100)
 
 KOUAKOU_venn2 <- pairwise_venn(KOUAKOU_venn, 'FC union', 'Kouakou FC') 
 UBIETA_venn2 <- pairwise_venn(UBIETA_venn, 'FC union', 'de la Torre-Ubieta FC') 

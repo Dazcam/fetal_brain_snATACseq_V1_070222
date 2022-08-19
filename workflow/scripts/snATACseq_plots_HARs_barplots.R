@@ -7,6 +7,7 @@
 ##  Load Packages  --------------------------------------------------------------------
 library(tidyverse) 
 library(ChIPpeakAnno)
+library(cowplot)
 
 ##  Set Variables  --------------------------------------------------------------------
 FISHERS_DIR <- '~/Desktop/fetal_brain_snATACseq_070222/results/HARs/'
