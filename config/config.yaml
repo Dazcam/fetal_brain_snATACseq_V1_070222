@@ -47,18 +47,34 @@ GARFIELD_CELL_TYPES:
     FC.InN:
     FC.RG:
 
+LDSR_CELL_TYPES:
+    FC.ExN:
+    FC.InN:
+    FC.RG:
+    FC.MG:
+    FC.undef:
+    FC.UNION:
+    LGE.InN:
+    MGE.InN:
+    CGE.InN:
+    GE.RG:
+    GE.Undef:
+    GE.UNION:
+
 LDSC_GWAS:
     SCZ:
     BPD:
     ASD:
     ADHD:
-    HEIGHT:
+#    HEIGHT:
     MDD:
     INSMNA: '../resources/gwas_sumstats/Insomnia_sumstats_Jansenetal.txt.gz'               
     NRTCSM: '../resources/gwas_sumstats/neuroticism.gwas.full_fixHeader.txt.gz'
     BV: '../resources/gwas_sumstats/meta_analysis_BV_Jansenetal_2020.sumstats.txt.gz'  
 #     AD: '../resources/gwas_sumstats/PGCALZ2sumstatsExcluding23andMe_fixHeader.txt.gz'
     INTEL: '../resources/gwas_sumstats/SavageJansen_2018_intelligence_metaanalysis.txt.gz'
+
+LDSR_CONDITIONS: '../resources/sheets/LDSR_conditions.tsv'
 
 
 LDSR_CONDITIONAL:
