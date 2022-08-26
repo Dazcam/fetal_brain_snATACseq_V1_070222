@@ -24,8 +24,10 @@ LDSR_CONDITIONAL = {'FC.ExN': ["FC.InN", "FC.RG"],
 
 rule all:
     input:
-        expand("../results/LDSR/annotation_files/snATACseq.{CELL_TYPE}.{CHR}.l2.ldscore.gz", CELL_TYPE = config['LDSR_CELL_TYPES'], CHR = range(1,23)),
+        expand("../results/LDSR/annotation_files/snATACseq.{CELL_TYPE}.noMHC.{CHR}.l2.ldscore.gz", CELL_TYPE = config['LDSR_CELL_TYPES'], CHR = range(1,23)),
         expand("../results/LDSR/part_herit/baseline_v1.2/{CELL_TYPE}_vs_UNION_noMHC_{GWAS}.done", CELL_TYPE = config['ATAC_CELL_TYPES'], GWAS = config['LDSC_GWAS']),
+        expand("../results/LDSR/part_herit/baseline_v1.2/snATACseq_LDSR_baseline.v1.2_summary_conditional_noMHC_{GWAS}.tsv", GWAS = config['LDSC_GWAS'])
+
 #        expand("../results/peaks/{CELL_TYPE}.hg19.noMHC.bed", CELL_TYPE = config['LDSR_CELL_TYPES'])
 #       	expand("../results/HARs/{CELL_TYPE}_fishers.txt", CELL_TYPE = config['ATAC_CELL_TYPES']),
 #        expand("../results/HARs/{CELL_TYPE}_overlaps_munged.txt", CELL_TYPE = config['ATAC_CELL_TYPES']),
@@ -66,7 +68,6 @@ rule all:
 #        expand("../results/rmarkdown_reports/snATACseq_LDSR_baseline.v1.2_{EXT}_report.html", EXT = config['PEAK_EXTENSION']),
 #        all_input,
 #        "../results/LDSR/part_herit/baseline_v1.2/conditional/snATACseq_LDSR_baseline.v1.2_ext250bp_summary_SCZ.tsv",
-
 
 #  GARFIELD
 #        "../results/garfield/QTL_for_Garfield/Hannon_mQTL/chr22",

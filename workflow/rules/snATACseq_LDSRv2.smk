@@ -6,6 +6,15 @@
 #
 # -------------------------------------------------------------------------------------
 
+# Note that to get this to work you need to run to ldsr rule with LDSR_CELL_TYPES rule 
+# in order to get annotation files and LD Scores for UNION peaks that will be used for
+# conditional analysis. From partitioned_heritability rule use ATAC_CELL_TYPES
+
+# Also used shell solution for if statement in the partitioned heritability rule as 
+# Snakemake does not accept using conda env with run directive for some reason 
+
+# See: https://github.com/snakemake/snakemake/issues/163
+
 # ---------  SET SMK PARAMS  ----------
 configfile: "../config/config.yaml"
 
@@ -50,8 +59,9 @@ rule ldsr:
 
 rule partitioned_heritability:
     input:   SUMSTATS = "../results/GWAS_for_ldsc/{GWAS}_hg19_ldsc_ready.sumstats.gz",
-             LDSR_FC = expand("../results/LDSR/annotation_files/snATACseq.FC.UNION.noMHC.{CHR}.annot.gz", CHR = range(1,23)),
-             LDSR_GE = expand("../results/LDSR/annotation_files/snATACseq.GE.UNION.noMHC.{CHR}.annot.gz", CHR = range(1,23))
+             LDSR_FC = expand("../results/LDSR/annotation_files/snATACseq.FC.UNION.noMHC.{CHR}.l2.ldscore.gz", CHR = range(1,23)),
+             LDSR_GE = expand("../results/LDSR/annotation_files/snATACseq.GE.UNION.noMHC.{CHR}.l2.ldscore.gz", CHR = range(1,23)),
+             LDSR_CELLS =  expand("../results/LDSR/annotation_files/snATACseq.{CELL_TYPE}.noMHC.{CHR}.l2.ldscore.gz", CELL_TYPE = config['ATAC_CELL_TYPES'], CHR = range(1,23))
     output:  "../results/LDSR/part_herit/baseline_v1.2/{CELL_TYPE}_vs_UNION_noMHC_{GWAS}.done",
     conda:   "../envs/ldsc.yml"
     params:  weights = "../resources/ldsc/reference_files/weights_hm3_no_hla/weights.",
@@ -94,11 +104,6 @@ rule partitioned_heritability:
              fi
              """
 
-
-
-
-
-
 #    run:
 #             if wildcards.CELL_TYPE in ['FC.ExN', 'FC.InN', 'FC.RG', 'FC.MG', 'FC.undef']: 
 
@@ -113,45 +118,30 @@ rule partitioned_heritability:
 #                 "--frqfile-chr {params.frqfile} --out {params.GE_out} --print-coefficients 2> {log}")
 
 
+rule create_partHerit_summary:
+    # Requires list of snATACseq cell types in atac_celltypes.tsv
+    input:   expand("../results/LDSR/part_herit/baseline_v1.2/{CELL_TYPE}_vs_UNION_noMHC_{GWAS}.done", CELL_TYPE = config["ATAC_CELL_TYPES"], GWAS = config['LDSC_GWAS'])
+    output:  "../results/LDSR/baseline_v1.2/snATACseq_LDSR_baseline.v1.2_summary_conditional_noMHC_{GWAS}.tsv"
+    message: "Creating summary file for {wildcards.GWAS} GWAS"
+    params:  ph_dir = "../results/LDSR/baseline_v1.2/",
+             results_dir = "../results/LDSR/",
+             cell_types = "../resources/sheets/atac_celltypes.tsv"
+    log:     "../results/logs/LDSR/snATACseq.{GWAS}_baseline_v1.2_partHerit.summary.log"
+    shell:
+             """
 
-#rule partitioned_heritability_GC:
-#    input:   SUMSTATS = "../results/GWAS_for_ldsc/{GWAS}_hg19_ldsc_ready.sumstats.gz",
-#             LDSR_GE = expand("../results/LDSR/annotation_files/snATACseq.GE.UNION.{CHR}.annot.gz", CHR = range(1,23))
-#    output:  GE = "../results/LDSR/part_herit/baseline_v1.2/snATACseq_LDSR_{CELL_TYPE}_vs_GE.UNION_{GWAS}_baseline.v1.2.results",
-#    conda:   "../envs/ldsc.yml"
-#    wildcard_constraints: pattern='FC.+'
-#    params:  weights = "../resources/ldsc/reference_files/weights_hm3_no_hla/weights.",
-#             baseline = "../resources/ldsc/reference_files/baseline_v1.2_1000G_Phase3/baseline.",
-#             frqfile = "../resources/ldsc/reference_files/1000G_Phase3_frq/1000G.EUR.QC.",
-#             LD_anns = "../results/LDSR/annotation_files/snATACseq.{CELL_TYPE}.",
-#             GE_out = "../results/LDSR/part_herit/baseline_v1.2/snATACseq_LDSR_{CELL_TYPE}_vs_GE.UNION_{GWAS}_baseline.v1.2",
-#    message: "Running Prt Hrt conditional with {wildcards.CELL_TYPE}, the union peak sets and {wildcards.GWAS} GWAS"
-#    log:     "../results/logs/LDSR/snATACseq.{CELL_TYPE}.vs.UNION.{GWAS}_baseline.v1.2_partHerit.log"
-#    shell:
-#             "python ../resources/ldsc/ldsc.py --h2 {input.SUMSTATS} --w-ld-chr {params.weights} "
-#             "--ref-ld-chr {params.baseline},{input.LDSR_GE},{params.LD_anns} --overlap-annot "
-#             "--frqfile-chr {params.frqfile} --out {params.GE_out} --print-coefficients 2> {log}"
+             head -1 {params.ph_dir}snATACseq_LDSR_CGE.InN_vs_GE.UNION_noMHC_ADHD_baseline.v1.2.results > {output}
 
-#rule create_partHerit_summary:
-#    # Requires list of snATACseq cell types in atac_celltypes.tsv
-#    input:   expand("../results/LDSR/part_herit/baseline_v1.2/snATACseq_LDSR_{CELL_TYPE}_{GWAS}_baseline.v1.2.results", CELL_TYPE = config["ATAC_CELL_TYPES"], GWAS = config['LDSC_GWAS'])
-#    output:  "../results/LDSR/part_herit/baseline_v1.2/snATACseq_LDSR_baseline.v1.2_summary_{GWAS}.tsv"
-#    message: "Creating summary file for {wildcards.GWAS} GWAS"
-#    params:  ph_dir = "../results/LDSR/part_herit/baseline_v1.2/",
-#             results_dir = "../results/LDSR/part_herit/baseline_v1.2/",
-#             cell_types = "../resources/sheets/atac_celltypes.tsv"
-#    log:     "../results/logs/LDSR/snATACseq.{GWAS}_baseline_v1.2_partHerit.summary.log"
-#    shell:
-#             """
+             File={params.cell_types}
+             Lines=$(cat $File)
 
-#             head -1 {params.ph_dir}snATACseq_LDSR_FC.ExN_SCZ_baseline.v1.2.results > {output}
+             for Line in $Lines; do
 
-#             File={params.cell_types}
-#             Lines=$(cat $File)
-#             for Line in $Lines
-#             do
-#             grep L2_1 {params.ph_dir}snATACseq_LDSR_"$Line"_{wildcards.GWAS}_baseline.v1.2.results | sed "s/L2_1/$Line/g" >> {output}
-#             done
+             grep L2_2 {params.ph_dir}snATACseq_LDSR_"$Line"_noMHC_{wildcards.GWAS}_baseline.v1.2.results | sed "s/L2_2/$Line/g" >> {output}
 
-#             """
+             done
 
+             """
+
+# -------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
