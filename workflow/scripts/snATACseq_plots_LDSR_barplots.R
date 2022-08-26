@@ -11,17 +11,17 @@ library(cowplot)
 
 ##  Set Variables  --------------------------------------------------------------------
 DATA_DIR <- '~/Desktop/fetal_brain_snATACseq_070222/results/LDSR/'
-GWASs <- c('ASD', 'ADHD', 'BPD', 'MDD', 'SCZ', 'HEIGHT', 'BV', 'INSMNA', 'INTEL', 'NRTCSM')
+GWASs <- c('ASD', 'ADHD', 'BPD', 'MDD', 'SCZ', 'BV', 'INSMNA', 'INTEL', 'NRTCSM')
   
 ##  Load Data  ------------------------------------------------------------------------
 for (GWAS in GWASs) {
   
-  SUMSTATS <- read_tsv(paste0(DATA_DIR, 'snATACseq_LDSR_baseline.v1.2_summary_', GWAS, '.tsv')) %>%
-    mutate(GWAS = rep(GWAS, nrow(.))) %>%
-    mutate(REGION = ifelse(str_detect(Category, 'FC')  == TRUE, 'Frontal Cortex', 'Ganglionic eminence'))
-  assign(paste0(GWAS, '_ldsr'), SUMSTATS)
+  # SUMSTATS <- read_tsv(paste0(DATA_DIR, 'snATACseq_LDSR_baseline.v1.2_summary_', GWAS, '.tsv')) %>%
+  #   mutate(GWAS = rep(GWAS, nrow(.))) %>%
+  #   mutate(REGION = ifelse(str_detect(Category, 'FC')  == TRUE, 'Frontal Cortex', 'Ganglionic eminence'))
+  # assign(paste0(GWAS, '_ldsr'), SUMSTATS)
   
-  SUMSTATS_COND <- read_tsv(paste0(DATA_DIR, 'snATACseq_LDSR_baseline.v1.2_summary_conditional_', GWAS, '.tsv')) %>%
+  SUMSTATS_COND <- read_tsv(paste0(DATA_DIR, 'snATACseq_LDSR_baseline.v1.2_summary_conditional_noMHC_', GWAS, '.tsv')) %>%
     mutate(GWAS = rep(GWAS, nrow(.))) %>%
     mutate(REGION = ifelse(str_detect(Category, 'FC')  == TRUE, 'Frontal Cortex', 'Ganglionic eminence'))
   assign(paste0(GWAS, '_cond_ldsr'), SUMSTATS_COND)
@@ -31,14 +31,15 @@ for (GWAS in GWASs) {
 ldsr_cond_grp_df <- rbind(ADHD_cond_ldsr, ASD_cond_ldsr, BPD_cond_ldsr, MDD_cond_ldsr, SCZ_cond_ldsr, 
                      BV_cond_ldsr, INSMNA_cond_ldsr, INTEL_cond_ldsr, NRTCSM_cond_ldsr) %>%
   mutate(LDSR = if_else(`Coefficient_z-score` > 0, -log10(pnorm(`Coefficient_z-score`, lower.tail = FALSE)), 0)) %>%
-  separate(Category, c('cell_type', 'suffix'), sep = '_', remove = FALSE)
+  separate(Category, c('cell_type', 'suffix'), sep = '_', remove = FALSE, extra = 'drop') %>%
+  mutate(across('GWAS', str_replace, 'ASD', 'AUT')) 
 
 ldsr_cond_grp_df$cell_type <- factor(ldsr_cond_grp_df$cell_type, 
                                      levels=c("FC.ExN", "FC.InN", "FC.MG", "FC.RG", "FC.undef",
                                               "CGE.InN", "MGE.InN", "LGE.InN", "GE.RG", "GE.Undef"))
 
 ldsr_cond_grp_df$GWAS <- factor(ldsr_cond_grp_df$GWAS, 
-                                levels=c('NRTCSM', 'INTEL', 'INSMNA', 'BV', 'SCZ', 'MDD', 'BPD', 'ADHD', 'ASD'))
+                                levels=c('ADHD', 'AUT', 'BPD', 'MDD', 'SCZ', 'BV', 'INSMNA', 'INTEL', 'NRTCSM'))
 
 ldsr_plot <- ggplot(ldsr_cond_grp_df, aes(fill = cell_type, y = LDSR, x = GWAS)) + 
   geom_bar(position = position_dodge2(reverse = TRUE), stat = "identity") +
