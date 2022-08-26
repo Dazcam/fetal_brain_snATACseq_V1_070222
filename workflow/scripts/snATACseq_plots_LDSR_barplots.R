@@ -47,7 +47,7 @@ ldsr_plot <- ggplot(ldsr_cond_grp_df, aes(fill = cell_type, y = LDSR, x = GWAS))
   facet_grid(cols = vars(REGION), rows = vars(GWAS), scales = 'free_y') +
   ylab(expression(-log[10](P))) +
   xlab(NULL) +
-  geom_hline(yintercept=-log10(0.05/100), linetype = "dashed", color = "black") +
+  geom_hline(yintercept=-log10(0.05/90), linetype = "dashed", color = "black") +
   geom_hline(yintercept=-log10(0.05), linetype = "dotted", color = "black") +
   theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"),
         panel.grid.major = element_blank(), 

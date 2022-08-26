@@ -49,7 +49,7 @@ for (REGION in c('FC', 'GE')) {
     
   } else {
     
-    MARKER_GENES <-  c('GAD1', 'LHX6', 'SCGN', 'ZFHX3', 'GLI3')
+    MARKER_GENES <-  c('GAD2', 'LHX6', 'SCGN', 'ZFHX3', 'GLI3')
     
   }
   

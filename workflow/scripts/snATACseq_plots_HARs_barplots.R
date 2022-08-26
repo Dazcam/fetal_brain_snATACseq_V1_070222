@@ -6,7 +6,7 @@
 
 ##  Load Packages  --------------------------------------------------------------------
 library(tidyverse) 
-library(ChIPpeakAnno)
+#library(ChIPpeakAnno)
 library(cowplot)
 
 ##  Set Variables  --------------------------------------------------------------------
@@ -26,7 +26,7 @@ for (CELL_TYPE in CELL_TYPES) {
     as.data.frame() %>%
     t() %>%
     as_tibble() %>%
-    rename("left" = 'V1', "right" = 'V2', "two_tailed" = 'V3', "ratio" = 'V4') %>%
+    dplyr::rename("left" = 'V1', "right" = 'V2', "two_tailed" = 'V3', "ratio" = 'V4') %>%
     mutate(Cell_type = CELL_TYPE) %>%
     mutate(REGION = ifelse(str_detect(Cell_type, 'FC')  == TRUE, 'FC', 'GE'))
   
@@ -34,24 +34,27 @@ for (CELL_TYPE in CELL_TYPES) {
   
 }
 
-# HARs - Duplicate entry line 134 and 136 - this makes overlap function choke
-HARs <- read_tsv(paste0(HARs_DIR, 'GSE180714_HARs.bed')) %>%
-  filter(HAR_ID != 'HARsv2_0136')
-HARs_GR <- toGRanges(HARs, format="BED", header = FALSE, ) 
 
+# This is now obsolete as we did the overlaps in bedtools
 
-# Cell specific peaks
-for (CELL_TYPE in CELL_TYPES) {
-  
-  PEAKS <- read_tsv(paste0(PEAK_DIR, CELL_TYPE, '.hg38.bed'), col_names = FALSE) %>%
-    dplyr::rename(chr = X1, start = X2, end = X3) %>%
-    select(chr, start, end)
-  PEAKS_GR <- toGRanges(PEAKS, format="BED", header = FALSE) 
-  
-  assign(paste0(CELL_TYPE, '_peaks'), PEAKS)
-  assign(paste0(CELL_TYPE, '_gr'), PEAKS_GR)
-  
-}
+# # HARs - Duplicate entry line 134 and 136 - this makes overlap function choke
+# HARs <- read_tsv(paste0(HARs_DIR, 'GSE180714_HARs.bed')) %>%
+#   filter(HAR_ID != 'HARsv2_0136')
+# HARs_GR <- toGRanges(HARs, format="BED", header = FALSE, ) 
+# 
+# 
+# # Cell specific peaks
+# for (CELL_TYPE in CELL_TYPES) {
+#   
+#   PEAKS <- read_tsv(paste0(PEAK_DIR, CELL_TYPE, '.hg38.bed'), col_names = FALSE) %>%
+#     dplyr::rename(chr = X1, start = X2, end = X3) %>%
+#     select(chr, start, end)
+#   PEAKS_GR <- toGRanges(PEAKS, format="BED", header = FALSE) 
+#   
+#   assign(paste0(CELL_TYPE, '_peaks'), PEAKS)
+#   assign(paste0(CELL_TYPE, '_gr'), PEAKS_GR)
+#   
+# }
 
 
 ##  Create Fishers plot  --------------------------------------------------------------
