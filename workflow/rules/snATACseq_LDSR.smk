@@ -64,7 +64,7 @@ rule ldsr:
 
 rule partitioned_heritability:
     input:   SUMSTATS = "../results/GWAS_for_ldsc/{GWAS}_hg19_ldsc_ready.sumstats.gz",
-             LDSR = expand(rules.ldsr.output, CELL_TYPE = config['ATAC_CELL_TYPES'], CHR = range(1,23))
+             LDSR = expand(rules.ldsr.output, CELL_TYPE = config['LDSR_CELL_TYPES'], CHR = range(1,23))
     output:  "../results/LDSR/part_herit/baseline_v1.2/snATACseq_LDSR_{CELL_TYPE}_{GWAS}_baseline.v1.2.results"
     conda:   "../envs/ldsc.yml"
     params:  weights = "../resources/ldsc/reference_files/weights_hm3_no_hla/weights.",
@@ -81,7 +81,7 @@ rule partitioned_heritability:
 
 rule create_partHerit_summary:
     # Requires list of snATACseq cell types in atac_celltypes.tsv 
-    input:   expand("../results/LDSR/part_herit/baseline_v1.2/snATACseq_LDSR_{CELL_TYPE}_{GWAS}_baseline.v1.2.results", CELL_TYPE = config["ATAC_CELL_TYPES"], GWAS = config['LDSC_GWAS'])
+    input:   expand("../results/LDSR/part_herit/baseline_v1.2/snATACseq_LDSR_{CELL_TYPE}_{GWAS}_baseline.v1.2.results", CELL_TYPE = config["LDSR_CELL_TYPES"], GWAS = config['LDSC_GWAS'])
     output:  "../results/LDSR/part_herit/baseline_v1.2/snATACseq_LDSR_baseline.v1.2_summary_{GWAS}.tsv"
     message: "Creating summary file for {wildcards.GWAS} GWAS"
     params:  ph_dir = "../results/LDSR/part_herit/baseline_v1.2/",
@@ -117,7 +117,7 @@ rule ldsr_mrkdwn_report:
             module load libgit2/1.1.0
             module load pandoc/2.7.3 
             /apps/languages/R/4.0.3/el7/AVX512/gnu-8.1/bin/Rscript --vanilla \
-            scripts/snATACseq_LDSR_report.R {input.markdown} {params.out_dir} {params.report_file} {wildcards.EXT} 2> {log}
+            scripts/snATACseq_LDSR_report.R {input.markdown} {params.out_dir} {params.report_file} 2> {log}
 
              """
     
