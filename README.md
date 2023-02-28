@@ -18,6 +18,8 @@ Datasets for peak correspondence
 
 Scripts
 
+ArchR
+
 1. [snATACseq_cellRanger.smk](workflow/rules/snATACseq_cellRanger.smk) - Run Cell Ranger `atac-count` on fastQ files 
 
 2. [snATACseq_processing.smk](workflow/rules/snATACseq_processing.smk) - snATACseq QC, clustering, visualisation, peak calling and downstream analysis in ArchR
@@ -30,6 +32,9 @@ Scripts
     + [snATACseq_call_peaks_ext_500bp.R](workflow/scripts/snATACseq_call_peaks_ext_500bp.R) - Call peaks with 500bp peak extension
     + [snATACseq_additional_analyses.R](workflow/scripts/snATACseq_additional_analyses.R) - Motif enrichment analysis, TF footprinting, co-accesibility analysis
  
+ 
+ sLDSR
+ 
 3.  [snATACseq_remove_MHC_regions_from_peaks.smk](workflow/rules/snATACseq_remove_MHC_regions_from_peaks) - Use bedtools to remove MHC peaks from snATACseq peak files
  
 4. [snATACseq_munge_sumstats.smk](workflow/rules/snATACseq_munge_sumstats.smk) - Prepare 10 GWAS sumstats files for sLDSR
@@ -38,9 +43,22 @@ Scripts
 
 6. [snATACseq_LDSR_union_conditional.smk](workflow/rules/snATACseq_LDSR_union_conditional.smk) - Run sLD score regression on individual snATACseq cell type peaks and various GWAS sumstats adding UNION peaksets to baseline model
 
-7. [snATACseq_HARs_overlaps.smk](workflow/rules/snATACseq_HARs_overlaps.smk) - Identify overlaps between human accelerated regions (HARs) and snATACseq peaks
+7. [snATACseq_LDSR_conditional.smk](workflow/rules/snATACseq_LDSR_conditional.smk) - Run sLD score regression on individual snATACseq cell type peaks and various GWAS sumstats adding UNION peaksets to baseline model. Alternative (and better) approach to 7, using key value pairs.
 
-+ snATACseq_map_PGC3_SCZ_index_and_proxy_SNPs_to_peaks.R
+Peak file analyses
+
+8. [snATACseq_HARs_overlaps.smk](workflow/rules/snATACseq_HARs_overlaps.smk) - Find overlaps between human accelerated regions (HARs) and snATACseq peaks.
+
+9. [snATACseq_annotate_archR_coaccesible_peaks.R](scripts/snATACseq_annotate_archR_coaccesible_peaks.R) - Find overlaps of SCZ finemapped SNPs and snATACseq cA peaks.
+
+10. [snATACseq_compare_peaks_with_public_datasets.R](scripts/snATACseq_compare_peaks_with_public_datasets.R) - Test jaccard similarity between our peaks and Ziffra et al. peaks.
+
+11. [snATACseq_find_overlapping_peaks_venn.R](scripts/snATACseq_find_overlapping_peaks_venn.R) - Find overlaps of between our peaks and public dataset peaks (listed above).
+
+12. [snATACseq_map_PGC3_SCZ_index_and_proxy_SNPs_to_peaks.R](scripts/snATACseq_map_PGC3_SCZ_index_and_proxy_SNPs_to_peaks.R) - Find overlaps of SCZ index SNPs (and proxies) and snATACseq peaks.
+
+13. [snATACseq_map_PGC3_SCZ_finemapped_SNPs_to_peaks.R](scripts/snATACseq_map_PGC3_SCZ_finemapped_SNPs_to_peaks.R) - Find overlaps of SCZ finemapped SNPs and snATACseq peaks.
+
 
 
 Additional exploratory scripts
