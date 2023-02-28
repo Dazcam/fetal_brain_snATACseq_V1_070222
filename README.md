@@ -16,7 +16,7 @@ Datasets for peak correspondence
 
 ***
 
-Scripts
+Main scripts of interest
 
 ArchR
 
