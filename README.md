@@ -1,6 +1,6 @@
 # Fetal brain snATACseq analyses (version 1)
 
-Initial approach was to run FC and GE snATACseq data together using ArchR. Much replicated code here that was optimised in version 2 (but some nice tid bits that may be useful in the future that we didn't use). 
+Initial approach was to run FC and GE snATACseq data together using ArchR. Much replicated code here that is optimised in version 2 (but some nice tid bits that may be useful in the future that we didn't use). 
 
 ***
 
