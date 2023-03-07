@@ -24,7 +24,7 @@ ArchR
 
 2. [snATACseq_processing.smk](workflow/rules/snATACseq_processing.smk) - snATACseq QC, clustering, visualisation, peak calling and downstream analysis in ArchR
 
-    + [snATAC_QC.R](workflow/scripts/snATAC_QC.R) - Running QCs and clustering up until unconstrained integration
+    + [snATACseq_QC.R](workflow/scripts/snATACseq_QC.R) - Running QCs and clustering up until unconstrained integration
     + [snATACseq_cluster_QC.R](workflow/scripts/snATACseq_cluster_QC.R) - Remove clusters with fewer than remove clusters that do not have >= 30 cells in at least 2 donors (decided to drop this as unnecessary)
     + [snATACseq_cluster_ID_geneExpMatrix.R](workflow/scripts/snATACseq_cluster_ID_geneExpMatrix.R) - Assign cluster identity using canonical marker genes
     + [snATACseq_unconstrained_integration.R](workflow/scripts/snATACseq_unconstrained_integration.R) - Run unconstrained integration of snATACseq and snRNAseq data
