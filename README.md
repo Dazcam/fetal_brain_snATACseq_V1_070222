@@ -69,3 +69,11 @@ Additional exploratory scripts
     + [snATACseq_garfield_munge_UK10K_SNP_list.sh](workflow/scripts/snATACseq_garfield_munge_UK10K_SNP_list.sh) - Transform uk10k SNP data into bedtools friendy format
     + [snATACseq_garfield_create_annotation_file.sh](workflow/scripts/snATACseq_garfield_create_annotation_file.sh) - Create annotation file for each snATACseq cell type and munge into Garfield friendy format
     + [snATACseq_garfield.sh](workflow/scripts/snATACseq_garfield.sh) - Run Garfield
+    
+***
+
+## Copyright and Licence Information
+
+See the [LICENCE file](LICENCE.md).
+
+
